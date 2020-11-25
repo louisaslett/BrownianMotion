@@ -17,8 +17,8 @@ plot.BrownianMotion <- function(x, y, ...) {
 
   if(nrow(bm$bounds) > 0) {
     p <- p +
-      geom_segment(aes(x = t.l, xend = t.u, y = L, yend = L), bm$bounds, colour = "red", linetype = "dashed") +
-      geom_segment(aes(x = t.l, xend = t.u, y = U, yend = U), bm$bounds, colour = "red", linetype = "dashed") +
+      geom_segment(aes(x = t.l, xend = t.u, y = L, yend = L), bm$bounds, colour = "red") + #, linetype = "dashed") +
+      geom_segment(aes(x = t.l, xend = t.u, y = U, yend = U), bm$bounds, colour = "red") + #, linetype = "dashed") +
       geom_segment(aes(x = t.l, xend = t.u, y = u, yend = u), bm$bounds, colour = "red") +
       geom_segment(aes(x = t.l, xend = t.u, y = l, yend = l), bm$bounds, colour = "red")
   }

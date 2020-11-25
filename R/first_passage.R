@@ -51,7 +51,7 @@ first.passage <- function(bm, l = NULL, u = NULL, delta.l = NULL, delta.u = NULL
   # Convert every combination to an l&u pair
   x <- state(bm)
   if(!is.null(delta)) {
-    if(!is.realscalar(delta.u) || delta.u <= 0) {
+    if(!is.realscalar(delta) || delta <= 0) {
       stop("if delta is specified, it must be a positive real scalar.")
     }
     l <- x - delta
@@ -75,14 +75,14 @@ first.passage <- function(bm, l = NULL, u = NULL, delta.l = NULL, delta.u = NULL
   if(!is.realscalar(u)) {
     stop("l must specify a scalar upper first passage bound.")
   }
+  if(l >= u) {
+    stop("l cannot be greater than or equal to u.")
+  }
   if(l >= x) {
     stop("l must be less than the current endpoint state of the Brownian motion.")
   }
   if(u <= x) {
     stop("u must be greater than the current endpoint state of the Brownian motion.")
-  }
-  if(l >= u) {
-    stop("l cannot be greater than or equal to u.")
   }
 
   invisible(first.passage_(bm, l, u))
@@ -174,6 +174,8 @@ first.passage_ <- function(bm, l, u) {
 # print(p/(p+q), digits = 22)
 # print(1-q/(p+q), digits = 22)
 # identical(p/(p+q), 1-q/(p+q))
+
+# Adapted from Scale.R (git:mpoll/scale:93fcd7f) dev.pr:159
 stdbm.first.passage.proposal_ <- function() {
   p.over.pplusq <- 0.5776968790939969178311
 
@@ -190,6 +192,7 @@ stdbm.first.passage.proposal_ <- function() {
   }
 }
 
+# Adapted from Scale.R (git:mpoll/scale:93fcd7f) dev.ref:167
 stdbm.first.passage_ <- function() {
   accept <- FALSE
   while(!accept) {

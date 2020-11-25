@@ -41,7 +41,7 @@ sim <- function(bm, t) {
   if(length(t.bmbb) > 0) {
     # Check if any are in bounded regions
     if(nrow(bm$bounds) > 0) {
-      t.bdd <- t.bmbb[rowSums(matrix(apply(bm$bounds, 1, function(y) { t.bmbb > y[1] & t.bmbb < y[2] }), ncol = 2)) > 0]
+      t.bdd <- t.bmbb[colSums(matrix(apply(bm$bounds, 1, function(y) { t.bmbb > y[1] & t.bmbb < y[2] }), ncol = 2)) > 0]
       warning(glue("Currently unable to simulate constrained Brownian motion at timepoint {t.bdd}.\n\n"))
       # Keep rest as standard Brownian bridges
       t.bmbb <- setdiff(t.bmbb, t.bdd)
