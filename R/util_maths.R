@@ -37,6 +37,67 @@ eazetaC_ <- function(m, s, t, x, y, L, U) {
 
 ##########
 
+eabe3C <- function(m, s, t, x, y, Ll, Lu, Ul, Uu) {
+  if(m >= mpfrthr) {
+    pbn <- m*mpfrpbn
+    s <- mpfr(s, precBits = pbn)
+    t <- mpfr(t, precBits = pbn)
+    x <- mpfr(x, precBits = pbn)
+    y <- mpfr(y, precBits = pbn)
+    Ll <- mpfr(Ll, precBits = pbn)
+    Lu <- mpfr(Lu, precBits = pbn)
+    Ul <- mpfr(Ul, precBits = pbn)
+    Uu <- mpfr(Uu, precBits = pbn)
+  }
+  z1 <- eaze3C(m,s,t,x,y,Ll,Uu)
+  z2 <- c(eaze3C(m,s,t,x,y,Lu,Uu)[2:3],
+          eaze3C(m+2,s,t,x,y,Lu,Uu)[2])
+  z3 <- c(eaze3C(m,s,t,x,y,Ll,Ul)[2:3],
+          eaze3C(m+2,s,t,x,y,Ll,Ul)[2])
+  z4 <- eaze3C(m,s,t,x,y,Lu,Ul)
+  c(s1 = as.numeric(-z1[1]+z2[1]+z3[1]-z4[1]),
+    s2 = as.numeric(-z1[2]+z2[2]+z3[2]-z4[2]),
+    s3 = as.numeric(-z1[3]+z2[3]+z3[3]-z4[3]))
+}
+
+eaze3C <- function(m, s, t, x, y, L, U) {
+  if(max(x-U,y-U,L-x,L-y) >= 0) {
+    s1 <- s2 <- s3 <- 1
+  } else {
+    j <- 1:((m+1)/2)
+    P <- -2/(t-s)
+    D <- U-L
+    D1 <- D*j+L
+    D2 <- D*j-U
+    z <- y-x
+    s2 <- sum(exp(P*(D1-x)*(D1-y))+exp(P*(D2+x)*(D2+y))-exp(P*j^2*D^2-P*j*D*z)-exp(P*j^2*D^2+P*j*D*z))
+    s1 <- s2+exp(P*((m+1)/2)^2*D^2-P*((m+1)/2)*D*z)+exp(P*((m+1)/2)^2*D^2+P*((m+1)/2)*D*z)
+    s3 <- s2+exp(P*(D*((m+3)/2)+L-x)*(D*((m+3)/2)+L-y))+exp(P*(D*((m+3)/2)-U+x)*(D*((m+3)/2)-U+y))
+  }
+  c(s1=s1,s2=s2,s3=s3)
+}
+
+eabetaC		<- function(m,s,t,x,y,Ll,Lu,Ul,Uu){if(m>=mpfrthr){pbn<-m*mpfrpbn;s<-mpfr(s,precBits=pbn);t<-mpfr(t,precBits=pbn);x<-mpfr(x,precBits=pbn);y<-mpfr(y,precBits=pbn);Ll<-mpfr(Ll,precBits=pbn);Lu<-mpfr(Lu,precBits=pbn);Ul<-mpfr(Ul,precBits=pbn);Uu<-mpfr(Uu,precBits=pbn)};z1<-eazetaC(m,s,t,x,y,Ll,Uu); z2<-c(eazetaC(m,s,t,x,y,Lu,Uu)[2],eazetaC(m+2,s,t,x,y,Lu,Uu)[1]);z3<-c(eazetaC(m,s,t,x,y,Ll,Ul)[2],eazetaC(m+2,s,t,x,y,Ll,Ul)[1]);z4<-eazetaC(m,s,t,x,y,Lu,Ul);c(s1=as.numeric(-z1[1]+z2[1]+z3[1]-z4[1]),s2=as.numeric(-z1[2]+z2[2]+z3[2]-z4[2]))}
+
+eazetaC		<- function(m,s,t,x,y,L,U){if(max(x-U,y-U,L-x,L-y)>=0){s1<-s2<-1}else{j<-1:((m+1)/2);P<--2/(t-s);D<-U-L;D1<-D*j+L;D2<-D*j-U;z<-y-x;s2<-sum(exp(P*(D1-x)*(D1-y))+exp(P*(D2+x)*(D2+y))-exp(P*j^2*D^2-P*j*D*z)-exp(P*j^2*D^2+P*j*D*z));s1<-s2+exp(P*((m+1)/2)^2*D^2-P*((m+1)/2)*D*z)+exp(P*((m+1)/2)^2*D^2+P*((m+1)/2)*D*z)};c(s1=s2,s2=s2)}
+
+
+##########
+
+earhoC		<- function(m,s,q,t,x,w,y,Ll,Lu,Ul,Uu){if(m>=mpfrthr){pbn<-m*mpfrpbn;s<-mpfr(s,precBits=pbn);q<-mpfr(q,precBits=pbn);t<-mpfr(t,precBits=pbn);x<-mpfr(x,precBits=pbn);w<-mpfr(w,precBits=pbn);y<-mpfr(y,precBits=pbn);Ll<-mpfr(Ll,precBits=pbn);Lu<-mpfr(Lu,precBits=pbn);Ul<-mpfr(Ul,precBits=pbn);Uu<-mpfr(Uu,precBits=pbn)}; z1L<-eaze3C(m,s,q,x,w,Ll,Uu); z1R<-eaze3C(m,q,t,w,y,Ll,Uu); z2L<-eaze3C(m,s,q,x,w,Lu,Uu); z2R<-eaze3C(m,q,t,w,y,Lu,Uu); z3L<-eaze3C(m,s,q,x,w,Ll,Ul); z3R<-eaze3C(m,q,t,w,y,Ll,Ul); z4L<-eaze3C(m,s,q,x,w,Lu,Ul); z4R<-eaze3C(m,q,t,w,y,Lu,Ul);c(s1=as.numeric(-z1L[2]-z1R[2]+z1L[1]*z1R[1]+z2L[1]+z2R[1]-z2L[2]*z2R[2]+z3L[1]+z3R[1]-z3L[2]*z3R[2]-z4L[2]-z4R[2]+z4L[1]*z4R[1]),s2=as.numeric(-z1L[3]-z1R[3]+z1L[2]*z1R[2]+z2L[2]+z2R[2]-z2L[3]*z2R[3]+z3L[2]+z3R[2]-z3L[3]*z3R[3]-z4L[3]-z4R[3]+z4L[2]*z4R[2]))}
+
+
+##########
+
+easiga <- function(P,z,A,L) { P*(A*(A+2*L-z)+L*(L-z)) }
+easigb <- function(P,z,A,L) { P*(z-A-L) }
+eaphia <- function(P,z,A,si) { P*(A^2-si*A*z) }
+eaphib <- function(P,z,A,si) { P*si*A }
+earh3C <- function(m,s,q,t,x,w,y,Ll,Lu,Ul,Uu){if(m>=mpfrthr){pbn<-m*mpfrpbn;s<-mpfr(s,precBits=pbn);q<-mpfr(q,precBits=pbn);t<-mpfr(t,precBits=pbn);x<-mpfr(x,precBits=pbn);w<-mpfr(w,precBits=pbn);y<-mpfr(y,precBits=pbn);Ll<-mpfr(Ll,precBits=pbn);Lu<-mpfr(Lu,precBits=pbn);Ul<-mpfr(Ul,precBits=pbn);Uu<-mpfr(Uu,precBits=pbn)}; z1L<-eaze4C(m,s,q,x,w,Ll,Uu); z1R<-eaze4C(m,q,t,w,y,Ll,Uu); z2L<-eaze4C(m,s,q,x,w,Lu,Uu); z2R<-eaze4C(m,q,t,w,y,Lu,Uu); z3L<-eaze4C(m,s,q,x,w,Ll,Ul); z3R<-eaze4C(m,q,t,w,y,Ll,Ul); z4L<-eaze4C(m,s,q,x,w,Lu,Ul); z4R<-eaze4C(m,q,t,w,y,Lu,Ul); c(s1=as.numeric(-z1L[2]-z1R[2]+z1L[1]*z1R[1]+z2L[1]+z2R[1]-z2L[2]*z2R[2]+z3L[1]+z3R[1]-z3L[2]*z3R[2]-z4L[2]-z4R[2]+z4L[1]*z4R[1]),s2=as.numeric(-z1L[3]-z1R[3]+z1L[2]*z1R[2]+z2L[2]+z2R[2]-z2L[3]*z2R[3]+z3L[2]+z3R[2]-z3L[3]*z3R[3]-z4L[3]-z4R[3]+z4L[2]*z4R[2]),s3=as.numeric(-z1L[4]-z1R[4]+z1L[3]*z1R[3]+z2L[3]+z2R[3]-z2L[4]*z2R[4]+z3L[3]+z3R[3]-z3L[4]*z3R[4]-z4L[4]-z4R[4]+z4L[3]*z4R[3]))}
+eaze4C		<- function(m,s,t,x,y,L,U){if(max(x-U,y-U,L-x,L-y)>=0){s1<-1;s2<-1;s3<-1;s4<-1}else{j<-1:((m+1)/2);P<--2/(t-s);D<-U-L;D1<-D*j+L;D2<-D*j-U;z<-y-x;s2<-sum(exp(P*(D1-x)*(D1-y))+exp(P*(D2+x)*(D2+y))-exp(P*j^2*D^2-P*j*D*z)-exp(P*j^2*D^2+P*j*D*z));s1<-s2+exp(P*((m+1)/2)^2*D^2-P*((m+1)/2)*D*z)+exp(P*((m+1)/2)^2*D^2+P*((m+1)/2)*D*z);s3<-s2+exp(P*(D*((m+3)/2)+L-x)*(D*((m+3)/2)+L-y))+exp(P*(D*((m+3)/2)-U+x)*(D*((m+3)/2)-U+y));s4<-s3-exp(P*((m+3)/2)^2*D^2-P*((m+3)/2)*D*z)-exp(P*((m+3)/2)^2*D^2+P*((m+3)/2)*D*z)};c(s1=s1,s2=s2,s3=s3,s4=s4)}
+
+##########
+
 eazeta_ <- function(n, s, t, x, y, L, U) {
   if(max(x-U, y-U, L-x, L-y) >= 0) {
     1

@@ -4,15 +4,19 @@
 \alias{bessel.layers}
 \title{Construct Bessel layers}
 \usage{
-bessel.layers(bm, s, t)
+bessel.layers(bm, s, t, mult = 1)
 }
 \arguments{
 \item{bm}{a Brownian motion object from which simulation should continue.
-Note the object is updated in place.}
+Note the object is updated in place}
 
 \item{s}{left hand time point}
 
 \item{t}{right hand time point}
+
+\item{mult}{the default layer size is \code{sqrt(t-s)}.  You can scale
+this by specifying the \code{mult} argument which will result in layer
+sizes of \code{mult*sqrt(t-s)}.}
 }
 \value{
 The Brownian motion object which was passed in argument \code{bm} is
@@ -20,7 +24,7 @@ updated in place and returned, enabling chaining of commands with
 dplyr (and other) style pipes.
 }
 \description{
-Unbiasedly simulates the smallest Bessel layers which contains the Brownian
-motion between two known sample points by retrospective Bernoulli sampling
-and inversion sampling.
+Performs unbiased simulation of the smallest Bessel layers which contain the
+Brownian motion between two known sample points by retrospective Bernoulli
+sampling and inversion sampling.
 }

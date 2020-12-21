@@ -47,6 +47,9 @@ sim.uncond <- function(bm, t, t.grid = NULL) {
     t <- sort(t)
   }
 
+  # Eliminate times we know
+  t <- setdiff(t, bm$t)
+
   invisible(sim.uncond_(bm, t))
 }
 

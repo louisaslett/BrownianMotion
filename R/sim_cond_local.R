@@ -1,23 +1,17 @@
-#' Simulate Brownian motion conditional on
+#' Simulate Brownian motion conditional on localised layer
 #'
-#' Simulates Brownian motion unconditionally at times beyond the current
-#' endpoint stored in the supplied object.  Providing times in \code{t} which
-#' are not beyond the latest simulated endpoint will result in an error.
+#' Simulates Brownian motion
+#'
 #'
 #' @param bm a Brownian motion object from which simulation should continue.
 #'   Note the object is updated in place.
-#' @param t either a vector of times to simulate at, or a single endpoint time
-#'   if t.grid is supplied.
-#' @param t.grid by default this is NULL so that only the times supplied in
-#'   \code{t} are simulated.  If a scalar integer is supplied then an evenly
-#'   spaced grid of this many times will be simulated up to \code{t}.
 #'
 #' @return the Brownian motion object which was passed in argument \code{bm} is
 #'   updated in place and returned, enabling chaining of commands with
 #'   dplyr (and other) style pipes.
 #'
 #' @export
-sim.cond <- function(bm, s, t, q = NULL, q.grid = NULL) {
+sim.condlocal <- function(bm, s, t, q = NULL, q.grid = NULL) {
   # Arg types & combos
   if(!("BrownianMotion" %in% class(bm))) {
     stop("bm argument must be a BrownianMotion object.")
@@ -45,9 +39,12 @@ sim.cond <- function(bm, s, t, q = NULL, q.grid = NULL) {
   if(!(t %in% bm$t)) {
     stop("t not found in bm path.")
   }
-  if(!(t %in% bm$bounds$t.u)) {
-    stop("t is not the time of a realised maximum/minimum.  At present this package only supports conditional bridge simulation where the right-end conditioning time is a maximum or minimum.")
+  localised <- bm$layers[bm$layers$type == "localised",]
+  if(!(t %in% localised$t.u)) {
+    stop("t is not the time of a realised maximum/minimum in a localised layer.  At present this package only supports conditional bridge simulation where the right-end conditioning time is a maximum or minimum.")
   }
+  # Do we then need to check that s is the start of this same localised layer?
+  # Actually this is taken care of by the following which allows no intermediate obs
   s_idx <- match(s, bm$t)
   t_idx <- match(t, bm$t)
   if(t_idx != s_idx+1) {
@@ -64,16 +61,20 @@ sim.cond <- function(bm, s, t, q = NULL, q.grid = NULL) {
   if(is.unsorted(q)) {
     q <- sort(q)
   }
+  # Eliminate times we know
+  q <- setdiff(q, bm$t)
+
   for(qq in q) {
-    bm.res <- sim.cond_(bm, s_idx, qq, t_idx)
+    bm.res <- sim.condlocal_(bm, s_idx, qq, t_idx)
     s_idx <- s_idx+1
     t_idx <- t_idx+1
   }
 
+  bm.res$layers <- bm.res$layers[order(bm$layers$t.l),]
   invisible(bm.res)
 }
 
-sim.cond_ <- function(bm, s_idx, q, t_idx) {
+sim.condlocal_ <- function(bm, s_idx, q, t_idx) {
 
 # TODO: tidy this up, vectorise wrt q and remove dependency on scale pkg C++ code!
 
@@ -90,18 +91,18 @@ sim.cond_ <- function(bm, s_idx, q, t_idx) {
   tau <- bm$t[t_idx]
   x <- bm$W_t[s_idx]
   y <- bm$W_t[t_idx]
-  minmax_idx <- match(tau, bm$bounds$t.u)
-  if(y == bm$bounds$L[minmax_idx]) {
+  minmax_idx <- match(tau, bm$layers$t.u)
+  if(y == bm$layers$Ld[minmax_idx]) {
     minI <- +1
-    bdry <- bm$bounds$U[minmax_idx]
-  } else if(y == bm$bounds$U[minmax_idx]) {
+    bdry <- bm$layers$Uu[minmax_idx]
+  } else if(y == bm$layers$Uu[minmax_idx]) {
     minI <- -1
-    bdry <- bm$bounds$L[minmax_idx]
+    bdry <- bm$layers$Ld[minmax_idx]
   } else {
     stop("Error: min/max mismatch at tau")
   }
 
-# sim.cond_ <- function(q, s, tau, x, y, minI, bdry) {
+# sim.condlocal_ <- function(q, s, tau, x, y, minI, bdry) {
 
 
   ## Repeat until acceptance
@@ -141,6 +142,32 @@ sim.cond_ <- function(bm, s_idx, q, t_idx) {
   bm$W_t <- c(bm$W_t[1:s_idx],
               W_t,
               bm$W_t[t_idx:length(bm$W_t)])
+
+  # Update layer info
+  # We split the layer in two, adding left and right layers either side of the
+  # newly simulated time, then remove the old layer
+  cur.layer <- which(bm$layers$t.l == s & bm$layers$t.u == tau)
+  bm$layers <- add_row(bm$layers,
+                       type = "intersection",
+                       t.l = s,
+                       t.u = q,
+                       Ld = bm$layers[cur.layer,"Ld",TRUE],
+                       Uu = bm$layers[cur.layer,"Uu",TRUE],
+                       Lu = min(x, W_t),
+                       Ud = max(x, W_t),
+                       Lu.hard = TRUE, #ifelse(head(c(0, x.new), -1) > x.new, TRUE, FALSE)
+                       Ud.hard = TRUE)
+  bm$layers <- add_row(bm$layers,
+                       type = "localised",
+                       t.l = q,
+                       t.u = tau,
+                       Ld = bm$layers[cur.layer,"Ld",TRUE],
+                       Uu = bm$layers[cur.layer,"Uu",TRUE],
+                       Lu = min(y, W_t),
+                       Ud = max(y, W_t),
+                       Lu.hard = TRUE, #ifelse(head(c(0, x.new), -1) > x.new, TRUE, FALSE)
+                       Ud.hard = TRUE)
+  bm$layers <- bm$layers[-cur.layer,]
 
   bm
 }

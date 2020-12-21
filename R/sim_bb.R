@@ -1,8 +1,7 @@
 #' Simulate a Brownian bridge
 #'
-#' Simulates Brownian motion conditional upon two (previously simulated)
-#' endpoints.  Exacltly one of the arguments \code{q} or \code{q.grid} should be
-#' supplied.
+#' Simulates Brownian motion conditional upon two (previously simulated) endpoints, outside of any layer.
+#' Exactly one of the arguments \code{q} or \code{q.grid} should be supplied.
 #'
 #' @param bm a Brownian motion object from which simulation should continue.
 #'   Note the object is updated in place.
@@ -69,6 +68,11 @@ sim.bb <- function(bm, s, t, q = NULL, q.grid = NULL) {
     q <- sort(q)
   }
   q <- c(s, q, t)
+
+  # Final check that the q values are not inside of a layer
+  if(any(colSums(matrix(apply(bm$layers, 1, function(y) { q > y[2] & q < y[3] }), ncol = 2)) > 0)) {
+    stop("A standard Brownian Bridge cannot be simulated inside of a layer.")
+  }
 
   invisible(sim.bb_(bm, s_idx, q, t_idx))
 }

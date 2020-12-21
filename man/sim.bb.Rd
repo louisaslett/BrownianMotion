@@ -32,7 +32,6 @@ the Brownian motion object which was passed in argument \code{bm} is
   dplyr (and other) style pipes.
 }
 \description{
-Simulates Brownian motion conditional upon two (previously simulated)
-endpoints.  Exacltly one of the arguments \code{q} or \code{q.grid} should be
-supplied.
+Simulates Brownian motion conditional upon two (previously simulated) endpoints, outside of any layer.
+Exactly one of the arguments \code{q} or \code{q.grid} should be supplied.
 }

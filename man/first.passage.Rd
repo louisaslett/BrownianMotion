@@ -4,8 +4,14 @@
 \alias{first.passage}
 \title{Find a first passage time and state}
 \usage{
-first.passage(bm, l = NULL, u = NULL, delta.l = NULL,
-  delta.u = NULL, delta = NULL)
+first.passage(
+  bm,
+  l = NULL,
+  u = NULL,
+  delta.l = NULL,
+  delta.u = NULL,
+  delta = NULL
+)
 }
 \arguments{
 \item{bm}{a Brownian motion object from which simulation should continue.

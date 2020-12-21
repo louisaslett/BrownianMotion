@@ -8,9 +8,9 @@
 #'   Note the object is updated in place
 #' @param s left hand time point
 #' @param t right hand time point
-#' @param mult the default layer size is \code{sqrt((t-s)/2)}.  You can scale
+#' @param mult the default layer size is \code{sqrt(t-s)}.  You can scale
 #'   this by specifying the \code{mult} argument which will result in layer
-#'   sizes of \code{mult*sqrt((t-s)/2)}.
+#'   sizes of \code{mult*sqrt(t-s)}.
 #'
 #' @return
 #' The Brownian motion object which was passed in argument \code{bm} is
@@ -33,11 +33,20 @@ bessel.layers <- function(bm, s, t, mult = 1) {
   }
 
   # Are these endpoints part of the skeleton?
+  # If not, and the point is beyond the end, simulate it.  Otherwise, error
   if(!(s %in% bm$t)) {
-    stop("s is not a known time point in the supplied Brownian motion object.")
+    if(s > max(bm$t)) {
+      bm <- sim(bm, s)
+    } else {
+      stop("s is not a known time point in the supplied Brownian motion object.")
+    }
   }
   if(!(t %in% bm$t)) {
-    stop("t is not a known time point in the supplied Brownian motion object.")
+    if(t > max(bm$t)) {
+      bm <- sim(bm, t)
+    } else {
+      stop("t is not a known time point in the supplied Brownian motion object.")
+    }
   }
 
   # Make sure no part of [s,t] interval lies inside any other layer
@@ -52,8 +61,8 @@ bessel.layers <- function(bm, s, t, mult = 1) {
   mid <- (all.pairs[,2]+all.pairs[,1])/2
   incl <- rep(TRUE, nrow(all.pairs))
   for(i in 1:length(mid)) {
-    if(any(mid[i] >= bm$bounds$t.l & mid[i] <= bm$bounds$t.u) ||
-       any(mid[i] >= bm$bessel.layers$t.l & mid[i] <= bm$bessel.layers$t.u)) {
+    if(any(mid[i] >= bm$layers$t.l & mid[i] <= bm$layers$t.u) ||
+       any(mid[i] >= bm$user.layers$t.l & mid[i] <= bm$user.layers$t.u)) {
       incl[i] <- FALSE
     }
   }
@@ -71,15 +80,18 @@ bessel.layers <- function(bm, s, t, mult = 1) {
 }
 
 bessel.layers_ <- function(bm, s, t, mult) {
-  res <- bessel.layers.sim_(bm, s, t, bm$W_t[match(s, bm$t)], bm$W_t[match(t, bm$t)])
+  res <- bessel.layers.sim_(bm, s, t, bm$W_t[match(s, bm$t)], bm$W_t[match(t, bm$t)], mult)
 
-  bm$bessel.layers <- add_row(bm$bessel.layers,
-                              t.l = s,
-                              t.u = t,
-                              l = res$xb - res$au,
-                              u = res$yb + res$au,
-                              L = res$xb - res$al,
-                              U = res$yb + res$al)
+  bm$layers <- add_row(bm$layers,
+                       type = ifelse(res$act == 1, "intersection", "bessel"),
+                       t.l = s,
+                       t.u = t,
+                       Ld = res$xb - res$au,
+                       Uu = res$yb + res$au,
+                       Lu = res$xb - res$al,
+                       Ud = res$yb + res$al,
+                       Lu.hard = ifelse(res$act == 1, TRUE, FALSE),
+                       Ud.hard = ifelse(res$act == 1, TRUE, FALSE))
 
   bm
 }
@@ -87,7 +99,7 @@ bessel.layers_ <- function(bm, s, t, mult) {
 bessel.layers.sim_ <- function(bm, s, t, x, y, mult = 1) {
   xb <- min(x,y)
   yb <- max(x,y)
-  adf <- sqrt((t-s)/2) * mult
+  adf <- sqrt(t-s) * mult
   act <- 1
   gind <- 0
   u1 <- runif(1,0,1)

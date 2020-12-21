@@ -18,18 +18,19 @@ create.bm_ <- function(W_0 = 0) {
   bm <- new.env(parent = emptyenv())
   bm$t <- 0
   bm$W_t <- W_0
-  bm$bounds <- tibble(t.l = numeric(),
+  bm$layers <- tibble(type = factor(levels = c("localised", "bessel", "intersection")),
+                      t.l = numeric(),
                       t.u = numeric(),
-                      l = numeric(),
-                      u = numeric(),
-                      L = numeric(),
-                      U = numeric())
-  bm$bessel.layers <- tibble(t.l = numeric(),
-                             t.u = numeric(),
-                             l = numeric(),
-                             u = numeric(),
-                             L = numeric(),
-                             U = numeric())
+                      Ld = numeric(),
+                      Uu = numeric(),
+                      Lu = numeric(),
+                      Ud = numeric(),
+                      Lu.hard = logical(),
+                      Ud.hard = logical())
+  bm$user.layers <- tibble(t.l = numeric(),
+                           t.u = numeric(),
+                           L = numeric(),
+                           U = numeric()) # What was user specified vs what was actually computed to achieve the simulation
   class(bm) <- "BrownianMotion"
   bm
 }

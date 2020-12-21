@@ -108,7 +108,7 @@ first.passage_ <- function(bm, l, u) {
   u <- u - x
 
   if(isTRUE(all.equal(abs(l), u))) {
-    # Simulate passage time + location and done
+    # Symmetric interval, so go straight to simulate passage time + location and done
     t.new <- t + stdbm.first.passage_()*u^2
     x.new <- sample(c(l, u), 1)
 
@@ -153,13 +153,21 @@ first.passage_ <- function(bm, l, u) {
   # Now append the new sims to the BM object
   bm$t <- c(bm$t, t.new)
   bm$W_t <- c(bm$W_t, x.new+x)
-  bm$bounds <- add_row(bm$bounds,
+  bm$layers <- add_row(bm$layers,
+                       type = "localised",
                        t.l = t.l.new,
                        t.u = t.u.new,
-                       l = l+x,
-                       u = u+x,
-                       L = L.new+x,
-                       U = U.new+x)
+                       Ld = L.new+x,
+                       Uu = U.new+x,
+                       Lu = pmin(head(c(x, x.new+x), -1), x.new+x),
+                       Ud = pmax(head(c(x, x.new+x), -1), x.new+x),
+                       Lu.hard = TRUE, #ifelse(head(c(0, x.new), -1) > x.new, TRUE, FALSE)
+                       Ud.hard = TRUE)
+  bm$user.layers <- add_row(bm$user.layers,
+                            t.l = min(t.l.new),
+                            t.u = max(t.u.new),
+                            L = l+x,
+                            U = u+x)
 
   bm
 }

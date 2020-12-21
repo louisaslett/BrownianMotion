@@ -4,13 +4,16 @@
 \alias{sim}
 \title{Simulate Brownian motion at a target time}
 \usage{
-sim(bm, t)
+sim(bm, t, refine = FALSE)
 }
 \arguments{
 \item{bm}{a Brownian motion object from which simulation should continue.
 Note the object is updated in place.}
 
 \item{t}{a vector of times to simulate at.}
+
+\item{refine}{whether to automatically refine layers where the simulated
+time results in bisection of an existing layer.  Defaults to \code{FALSE}.}
 }
 \value{
 the Brownian motion object which was passed in argument \code{bm} is
