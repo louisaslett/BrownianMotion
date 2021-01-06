@@ -68,12 +68,17 @@ sim <- function(bm, t, refine = FALSE) {
       for(l in unique(t.local[1,])) {
         i <- which(t.local[1,]==l)
         r <- t.local[2,i[1]]
+        if(any(!bm$layers[match(bm$t[r], bm$layers$t.u),c("Lu.hard","Ud.hard")])) {
+          stop("Cannot currently simulate conditional on soft localised layer")
+        }
         for(qq in rev(t.local[3,i])) {
           bm.res <- sim.condlocal_(bm, l, qq, r)
           l <- l+1
           r <- r+1
-          if(!isFALSE(refine))
+          if(!isFALSE(refine)) {
             refine.intersection_(bm, match(qq, bm$layers$t.u), refine)
+            refine.local_(bm, match(qq, bm$layers$t.l), refine)
+          }
         }
       }
     }

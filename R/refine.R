@@ -67,3 +67,100 @@ refine.intersection_ <- function(bm, lyr.idx, mult) {
 
   bm
 }
+
+refine.local_ <- function(bm, lyr.idx, mult) {
+  s <- bm$layers[lyr.idx,"t.l",drop=TRUE]
+  t <- bm$layers[lyr.idx,"t.u",drop=TRUE]
+  x <- bm$W_t[match(s, bm$t)]
+  y <- bm$W_t[match(t, bm$t)]
+  Ll <- bm$layers[lyr.idx,"Ld",drop=TRUE]
+  Lu <- bm$layers[lyr.idx,"Lu",drop=TRUE]
+  Ul <- bm$layers[lyr.idx,"Ud",drop=TRUE]
+  Uu <- bm$layers[lyr.idx,"Uu",drop=TRUE]
+  if(y == Ll) {
+    minI <- +1
+  } else if(y == Uu) {
+    minI <- 0
+    flip <- -c(x,y,Ll,Lu,Ul,Uu)
+    x <- flip[1]
+    y <- flip[2]
+    Ll <- flip[6]
+    Lu <- flip[5]
+    Ul <- flip[4]
+    Uu <- flip[3]
+  } else {
+    stop("Error: min/max mismatch at tau")
+  }
+
+  if(Uu-Ul > mult*2*(t-s)^(0.5)) {
+    while(Uu-Ul > mult*2*(t-s)^(0.5)) { # Condition to determine whether refinement is necessary
+      m <- 3 # Base for the truncation of alternating series
+      Um <- (Ul+Uu)/2 # Mid point of upper intersection
+      u <- runif(1,0,1) # Uniform draw to determine layer
+      evalind <- 0
+      while(evalind == 0) {
+        LlUuprob <- eadelC_(m,s,t,x,y,Ll,Uu) # Probability associated with Ll->UU
+        LlUmprob <- eadelC_(m,s,t,x,y,Ll,Um) # Probability associated with Ll->Um
+        LlUlprob <- eadelC_(m,s,t,x,y,Ll,Ul) # Probability associated with Ll->Ul
+        if(min(LlUuprob[1],LlUmprob[1],LlUlprob[1]) < 0) {
+          m <- m + 2
+        } else {
+          UlUuprob <- LlUuprob - LlUlprob
+          UlUmprob <- LlUmprob - LlUlprob
+          if(u <= UlUmprob[1]/UlUuprob[2]) {
+            evalind <- 1 # We have now refined
+            Ul <- Ul
+            Uu <- Um
+          } # Update the layers
+          if(u > UlUmprob[2]/UlUuprob[1]) {
+            evalind <- 1 # We have now refined
+            Ul <- Um
+            Uu <- Uu
+          } # Update the layers
+          if(evalind == 0) { # Not refined enough so index
+            m <- m + 2
+          }
+        }
+      }
+    }
+  }
+
+  if(Ul == x) {
+    hard <- TRUE
+  } else {
+    hard <- FALSE
+  }
+  if(minI == 0) {
+    flip <- -c(x,y,Ll,Lu,Ul,Uu)
+    x <- flip[1]
+    y <- flip[2]
+    Ll <- flip[6]
+    Lu <- flip[5]
+    Ul <- flip[4]
+    Uu <- flip[3]
+    if(!hard) {
+      bm$layers[lyr.idx,"Lu.hard"] <- FALSE
+    } else {
+      if(!bm$layers[lyr.idx,"Lu.hard"]) { # "Once soft you can't become hard again." - M Pollock, 6/1/2021
+        stop("Error: Soft layer has become hard")
+      }
+      bm$layers[lyr.idx,"Lu.hard"] <- TRUE
+    }
+  } else {
+    if(!hard) {
+      bm$layers[lyr.idx,"Ud.hard"] <- FALSE
+    } else {
+      if(!bm$layers[lyr.idx,"Ud.hard"]) { # "Once soft you can't become hard again." - M Pollock, 6/1/2021
+        stop("Error: Soft layer has become hard")
+      }
+      bm$layers[lyr.idx,"Ud.hard"] <- TRUE
+    }
+  }
+
+  bm$layers[lyr.idx,"Ld"] <- Ll
+  bm$layers[lyr.idx,"Lu"] <- Lu
+  bm$layers[lyr.idx,"Ud"] <- Ul
+  bm$layers[lyr.idx,"Uu"] <- Uu
+
+  bm
+}
