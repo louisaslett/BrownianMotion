@@ -3,9 +3,22 @@
 #' @param
 #'
 #'
-#'
-refine <- function() {
+#' @export
+refine <- function(bm, s, t, mult = 1) {
+  # TODO: tidy up and add error handling, this is a quick prototype
 
+  lyrs <- which(bm$layers$t.u > s & bm$layers$t.l<t)
+  for(l in lyrs) {
+    if(bm$layers$type[l] == "intersection") {
+      refine.intersection_(bm, l, mult)
+    } else if(bm$layers$type[l] == "localised") {
+      refine.local_(bm, l, mult)
+    } else {
+      warning("Cannot refine layer on interval [{bm$layers$t.l[l]},{bm$layers$t.u[l]}] of type {bm$layers$type[l]}.\n")
+    }
+  }
+
+  invisible(bm)
 }
 
 refine.intersection_ <- function(bm, lyr.idx, mult) {
