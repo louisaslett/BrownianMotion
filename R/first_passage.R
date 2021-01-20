@@ -67,7 +67,7 @@ first.passage <- function(bm, l = NULL, u = NULL, delta.l = NULL, delta.u = NULL
     if(!is.realscalar(delta.u) || delta.u <= 0) {
       stop("if delta.u is specified, it must be a positive real scalar.")
     }
-    l <- x + delta.u
+    u <- x + delta.u
   }
   if(!is.realscalar(l)) {
     stop("l must specify a scalar lower first passage bound.")
@@ -125,7 +125,7 @@ first.passage_ <- function(bm, l, u) {
     x.new <- 0
 
     # Loop until BM reaches either upper or lower boundary
-    while(!isTRUE(all.equal(l, tail(x.new, 1))) && !isTRUE(all.equal(u, tail(x.new, 1)))) {
+    while(!isTRUE(all.equal(l, tail(x.new, 1), check.attributes = FALSE)) && !isTRUE(all.equal(u, tail(x.new, 1), check.attributes = FALSE))) {
       t.new2 <- tail(t.l.new, 1) + stdbm.first.passage_()*delta^2
       x.new2 <- sample(c(+delta, -delta), 1) + tail(x.new, 1)
 # cat(glue::glue("Hitting time {t.new2}, at {x.new2}.\n\n"))
