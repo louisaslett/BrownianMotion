@@ -38,6 +38,8 @@ sim <- function(bm, t, refine = FALSE) {
   # Reverse sort them so that index in bm$t is correct over many iterations
   t.bmbb <- sort(t[which(t<tail(bm$t, 1))], decreasing = TRUE)
   t.local <- c()
+  t.intersection <- c()
+  t.bessel <- c()
 
   # Do forward sims
   if(length(t.bmfwd) > 0) {
@@ -69,7 +71,8 @@ sim <- function(bm, t, refine = FALSE) {
         i <- which(t.local[1,]==l)
         r <- t.local[2,i[1]]
         if(any(!bm$layers[match(bm$t[r], bm$layers$t.u),c("Lu.hard","Ud.hard")])) {
-          stop("Cannot currently simulate conditional on soft localised layer")
+          warning(glue("Cannot currently simulate conditional on soft localised layer (at time {t.local[3,i[1]]}), skipping ...\n"))
+          next
         }
         for(qq in rev(t.local[3,i])) {
           bm.res <- sim.condlocal_(bm, l, qq, r)
