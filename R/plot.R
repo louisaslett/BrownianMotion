@@ -24,10 +24,12 @@ plot.BrownianMotion <- function(x, y, ...) {
   intersection <- bm$layers[bm$layers$type == "intersection",]
   bessel <- bm$layers[bm$layers$type == "bessel",]
 
-  if(nrow(bm$user.layers) > 0) {
-    p <- p +
-      geom_segment(aes(x = t.l, xend = t.u, y = L, yend = L), bm$user.layers, colour = "green", size = 1.3) +
-      geom_segment(aes(x = t.l, xend = t.u, y = U, yend = U), bm$user.layers, colour = "green", size = 1.3)
+  if(is.null(opts[["hide.user"]]) || !opts[["hide.user"]]) {
+    if(nrow(bm$user.layers) > 0) {
+      p <- p +
+        geom_segment(aes(x = t.l, xend = t.u, y = L, yend = L), bm$user.layers, colour = "green", size = 1.3) +
+        geom_segment(aes(x = t.l, xend = t.u, y = U, yend = U), bm$user.layers, colour = "green", size = 1.3)
+    }
   }
 
   if(nrow(localised) > 0) {
