@@ -40,6 +40,8 @@ sim <- function(bm, t, refine = FALSE) {
   t.local <- c()
   t.intersection <- c()
   t.bessel <- c()
+  t.bblocal <- c()
+  t.bbintersection <- c()
 
   # Do forward sims
   if(length(t.bmfwd) > 0) {
@@ -60,6 +62,14 @@ sim <- function(bm, t, refine = FALSE) {
       t.bessel <- t.bmbb[colSums(matrix(apply(bm$layers[bm$layers$type == "bessel",2:3], 1, function(y) { t.bmbb > y[1] & t.bmbb < y[2] }), ncol = length(t.bmbb), byrow = TRUE)) > 0]
       # Keep rest as standard Brownian bridges
       t.bmbb <- setdiff(t.bmbb, t.bessel)
+
+      t.bblocal <- t.bmbb[colSums(matrix(apply(bm$layers[bm$layers$type == "localised-bb",2:3], 1, function(y) { t.bmbb > y[1] & t.bmbb < y[2] }), ncol = length(t.bmbb), byrow = TRUE)) > 0]
+      # Keep rest as standard Brownian bridges
+      t.bmbb <- setdiff(t.bmbb, t.bblocal)
+
+      t.bbintersection <- t.bmbb[colSums(matrix(apply(bm$layers[bm$layers$type == "intersection-bb",2:3], 1, function(y) { t.bmbb > y[1] & t.bmbb < y[2] }), ncol = length(t.bmbb), byrow = TRUE)) > 0]
+      # Keep rest as standard Brownian bridges
+      t.bmbb <- setdiff(t.bmbb, t.bbintersection)
     }
     if(length(t.local) > 0) {
       # Do simulation conditional on localised layers
@@ -121,6 +131,30 @@ sim <- function(bm, t, refine = FALSE) {
           if(!isFALSE(refine)) {
             refine.intersection_(bm, match(qq, bm$layers$t.u), refine)
             refine.intersection_(bm, match(qq, bm$layers$t.l), refine)
+          }
+        }
+      }
+    }
+    if(length(t.bblocal) > 0) {
+      # Do simulation conditional on bb-localised layers
+      t.bblocal <- sapply(t.bblocal,
+                        function(t) {
+                          c(l = tail(which(bm$t<t), 1), r = head(which(bm$t>t), 1), q = t)
+                        })
+      for(l in unique(t.bblocal[1,])) {
+        i <- which(t.bblocal[1,]==l)
+        r <- t.bblocal[2,i[1]]
+        if(any(!bm$layers[match(bm$t[r], bm$layers$t.u),c("Lu.hard","Ud.hard")])) {
+          warning(glue("Cannot currently simulate conditional on soft localised layer (at time {t.bblocal[3,i[1]]}), skipping ...\n"))
+          next
+        }
+        for(qq in rev(t.bblocal[3,i])) {
+          bm.res <- sim.condbblocal_(bm, l, qq, r)
+          l <- l+1
+          r <- r+1
+          if(!isFALSE(refine)) {
+            refine.bbintersection_(bm, match(qq, bm$layers$t.u), refine)
+            refine.bblocal_(bm, match(qq, bm$layers$t.l), refine)
           }
         }
       }

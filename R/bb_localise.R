@@ -106,33 +106,64 @@ bb.localise_ <- function(bm, s, t, mult) {
   bm$bb.local$layers <- rbind(bm$bb.local$layers, new.bm$layers)
   bm$bb.local$layers <- bm$bb.local$layers[order(bm$bb.local$layers$t.l),]
 
+  # The end points are removed before proceeding to transform if they were not removed for the above
+  if(s %in% new.bm$t) {
+    new.bm$t <- new.bm$t[-1]
+    new.bm$W_t <- new.bm$W_t[-1]
+  }
+  if(t %in% new.bm$t) {
+    new.bm$t <- head(new.bm$t, -1)
+    new.bm$W_t <- head(new.bm$W_t, -1)
+  }
+
   # Transform path back to master path
-  # for(i in 2:length(new.bm$t[new.bm$t<(t-s)])) {
-  #   bm$t <- c(bm$t,
-  #             s+new.bm$t[i])
-  #   bm$W_t <- c(bm$W_t,
-  #               x +
-  #                 new.bm$W_t[i] - new.bm$W_t[i-1] +
-  #                 (new.bm$t[i]-new.bm$t[i-1])/(t-s-new.bm$t[i-1])*((y-x)-W_T) + x)
-  # }
-  #
-  #
-  # new.bb.local <- cbind(new.bm$layers,
-  #                       W_t.l = head(new.bm$W_t,-1),
-  #                       W_t.u = tail(new.bm$W_t,-1))
-  #
-  #
-  # bm$layers <- add_row(bm$layers,
-  #                      type = "localised-bb",
-  #                      t.l = s,
-  #                      t.u = t,
-  #                      Ld = NA,
-  #                      Uu = NA,
-  #                      Lu = NA,
-  #                      Ud = NA,
-  #                      Lu.hard = TRUE,
-  #                      Ud.hard = TRUE)
-  # bm$bb.local <- rbind(bm$bb.local, new.bb.local[new.bb.local$t.u <= t-s,])
+  trans.B_t <- rep(0, length(new.bm$t))
+  B.last <- x
+  t.last <- s
+  W.last <- bm$bb.local$W_t[match(s, bm$bb.local$t)]
+  W.end <- bm$bb.local$W_t[match(t, bm$bb.local$t)]
+  if(length(new.bm$t)>0) {
+    for(i in 1:length(new.bm$t)) {
+      trans.B_t[i] <- B.last +
+        (new.bm$W_t[i] - W.last) +
+        (new.bm$t[i]-t.last)/(t-t.last)*((y-B.last)-(W.end-W.last))
+
+      bm$layers <- add_row(bm$layers,
+                           type = "localised-bb",
+                           t.l = new.bm$layers$t.l[i],
+                           t.u = new.bm$layers$t.u[i],
+                           Ld = B.last + new.bm$layers$Ld[i] - W.last,
+                           Uu = B.last + new.bm$layers$Uu[i] - W.last + ((trans.B_t[i]-B.last)-(new.bm$W_t[i]-W.last)),
+                           Lu = B.last + new.bm$layers$Ld[i] - W.last + ((trans.B_t[i]-B.last)-(new.bm$W_t[i]-W.last)),
+                           Ud = B.last + new.bm$layers$Uu[i] - W.last,
+                           Lu.hard = new.bm$layers$Lu.hard[i], #ifelse(head(c(0, x.new), -1) > x.new, TRUE, FALSE)
+                           Ud.hard = new.bm$layers$Ud.hard[i])
+
+      B.last <- trans.B_t[i]
+      t.last <- new.bm$t[i]
+      W.last <- new.bm$W_t[i]
+    }
+  } else {
+    i <- 0
+  }
+  # Final layer segment will be missing so add
+  bm$layers <- add_row(bm$layers,
+                       type = "intersection-bb",
+                       t.l = new.bm$layers$t.l[i+1],
+                       t.u = new.bm$layers$t.u[i+1],
+                       Ld = B.last + new.bm$layers$Ld[i+1] - W.last,
+                       Uu = B.last + new.bm$layers$Uu[i+1] - W.last + ((y-B.last)-(W.end-W.last)),
+                       Lu = B.last + new.bm$layers$Ld[i+1] - W.last + ((y-B.last)-(W.end-W.last)),
+                       Ud = B.last + new.bm$layers$Uu[i+1] - W.last,
+                       Lu.hard = new.bm$layers$Lu.hard[i+1], #ifelse(head(c(0, x.new), -1) > x.new, TRUE, FALSE)
+                       Ud.hard = new.bm$layers$Ud.hard[i+1])
+  bm$W_t <- c(bm$W_t[bm$t<=s],
+              trans.B_t,
+              bm$W_t[bm$t>=t])
+  bm$t <- c(bm$t[bm$t<=s],
+            new.bm$t,
+            bm$t[bm$t>=t])
+  bm$layers <- bm$layers[order(bm$layers$t.l),]
 
   rm(new.bm)
   invisible(bm)

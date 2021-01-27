@@ -23,6 +23,8 @@ plot.BrownianMotion <- function(x, y, ...) {
   localised <- bm$layers[bm$layers$type == "localised",]
   intersection <- bm$layers[bm$layers$type == "intersection",]
   bessel <- bm$layers[bm$layers$type == "bessel",]
+  localised.bb <- bm$layers[bm$layers$type == "localised-bb",]
+  intersection.bb <- bm$layers[bm$layers$type == "intersection-bb",]
 
   if(is.null(opts[["hide.user"]]) || !opts[["hide.user"]]) {
     if(nrow(bm$user.layers) > 0) {
@@ -54,6 +56,22 @@ plot.BrownianMotion <- function(x, y, ...) {
       geom_segment(aes(x = t.l, xend = t.u, y = Uu, yend = Uu), bessel, colour = "purple") +
       geom_segment(aes(x = t.l, xend = t.u, y = Ud, yend = Ud), bessel, colour = "purple", linetype = ifelse(bessel$Ud.hard, "longdash", "dotted")) +
       geom_segment(aes(x = t.l, xend = t.u, y = Lu, yend = Lu), bessel, colour = "purple", linetype = ifelse(bessel$Ud.hard, "longdash", "dotted"))
+  }
+
+  if(nrow(localised.bb) > 0) {
+    p <- p +
+      geom_segment(aes(x = t.l, xend = t.u, y = Ld, yend = Lu), localised.bb, colour = "red") +
+      geom_segment(aes(x = t.l, xend = t.u, y = Ud, yend = Uu), localised.bb, colour = "red") +
+      geom_segment(aes(x = t.l, xend = t.u, y = pmin(Ld,Lu), yend = pmin(Ld,Lu)), localised.bb, colour = "red", alpha = 0.75) +
+      geom_segment(aes(x = t.l, xend = t.u, y = pmax(Ud,Uu), yend = pmax(Ud,Uu)), localised.bb, colour = "red", alpha = 0.75)
+  }
+
+  if(nrow(intersection.bb) > 0) {
+    p <- p +
+      geom_segment(aes(x = t.l, xend = t.u, y = Ld, yend = Lu), intersection.bb, colour = "blue") +
+      geom_segment(aes(x = t.l, xend = t.u, y = Ud, yend = Uu), intersection.bb, colour = "blue") +
+      geom_segment(aes(x = t.l, xend = t.u, y = pmin(Ld,Lu), yend = pmin(Ld,Lu)), intersection.bb, colour = "blue", alpha = 0.75) +
+      geom_segment(aes(x = t.l, xend = t.u, y = pmax(Ud,Uu), yend = pmax(Ud,Uu)), intersection.bb, colour = "blue", alpha = 0.75)
   }
 
   if(!is.null(opts[["t.lim"]])) {
