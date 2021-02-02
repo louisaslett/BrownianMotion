@@ -47,7 +47,7 @@ plot.BrownianMotion <- function(x, y, ...) {
       geom_segment(aes(x = t.l, xend = t.u, y = Ld, yend = Ld), intersection, colour = "blue") +
       geom_segment(aes(x = t.l, xend = t.u, y = Uu, yend = Uu), intersection, colour = "blue") +
       geom_segment(aes(x = t.l, xend = t.u, y = Ud, yend = Ud), intersection, colour = "blue", linetype = ifelse(intersection$Ud.hard, "longdash", "dotted")) +
-      geom_segment(aes(x = t.l, xend = t.u, y = Lu, yend = Lu), intersection, colour = "blue", linetype = ifelse(intersection$Ud.hard, "longdash", "dotted"))
+      geom_segment(aes(x = t.l, xend = t.u, y = Lu, yend = Lu), intersection, colour = "blue", linetype = ifelse(intersection$Lu.hard, "longdash", "dotted"))
   }
 
   if(nrow(bessel) > 0) {
@@ -55,7 +55,7 @@ plot.BrownianMotion <- function(x, y, ...) {
       geom_segment(aes(x = t.l, xend = t.u, y = Ld, yend = Ld), bessel, colour = "purple") +
       geom_segment(aes(x = t.l, xend = t.u, y = Uu, yend = Uu), bessel, colour = "purple") +
       geom_segment(aes(x = t.l, xend = t.u, y = Ud, yend = Ud), bessel, colour = "purple", linetype = ifelse(bessel$Ud.hard, "longdash", "dotted")) +
-      geom_segment(aes(x = t.l, xend = t.u, y = Lu, yend = Lu), bessel, colour = "purple", linetype = ifelse(bessel$Ud.hard, "longdash", "dotted"))
+      geom_segment(aes(x = t.l, xend = t.u, y = Lu, yend = Lu), bessel, colour = "purple", linetype = ifelse(bessel$Lu.hard, "longdash", "dotted"))
   }
 
   if(nrow(localised.bb) > 0) {
