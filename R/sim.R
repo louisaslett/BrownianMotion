@@ -159,6 +159,26 @@ sim <- function(bm, t, refine = FALSE) {
         }
       }
     }
+    if(length(t.bbintersection) > 0) {
+      # Do simulation conditional on intersection layers
+      t.bbintersection <- sapply(t.bbintersection,
+                                 function(t) {
+                                   c(l = tail(which(bm$t<t), 1), r = head(which(bm$t>t), 1), q = t)
+                                 })
+      for(l in unique(t.bbintersection[1,])) {
+        i <- which(t.bbintersection[1,]==l)
+        r <- t.bbintersection[2,i[1]]
+        for(qq in rev(t.bbintersection[3,i])) {
+          bm.res <- sim.condbbintersection_(bm, l, qq, r)
+          l <- l+1
+          r <- r+1
+          if(!isFALSE(refine)) {
+            refine.bbintersection_(bm, match(qq, bm$layers$t.u), refine)
+            refine.bbintersection_(bm, match(qq, bm$layers$t.l), refine)
+          }
+        }
+      }
+    }
     if(length(t.bmbb) > 0) {
       # Do standard Brownian bridges
       t.bmbb <- sapply(t.bmbb,

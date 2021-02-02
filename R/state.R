@@ -29,5 +29,42 @@ state <- function(bm, t = NULL) {
 
 state_ <- function(bm, t) {
   t_idx <- match(t, bm$t)
-  bm$W_t[t_idx]
+  return(bm$W_t[t_idx])
+
+  if(any(t >= bm$layers$t.l & t <= bm$layers$t.u)) {
+    l <- which(t >= bm$layers$t.l & t <= bm$layers)
+    if(bm$layers$type[l] == "localised-bb") {
+      ss <- bm$layers$t.l[l]
+      tt <- bm$layers$t.u[l]
+      x <- bm$bb.local$x[l]
+      y <- bm$bb.local$y[l]
+      l <- which(t >= bm$bb.local$t.l & t <= bm$bb.local)
+      list(t = t,
+           W_t = bm$W_t[t_idx],
+           in.layer = "localised",
+           t.l = bm$bb.local$t.l[l],
+           t.u = bm$bb.local$t.u[l],
+           Ld = bm$bb.local$Ld[l] + new.bm$t[i]/(t-s)*((y-x)-W_T) + x,
+           Uu = bm$bb.local$Uu[l],
+           Lu = bm$bb.local$Lu[l],
+           Ud = bm$bb.local$Ud[l],
+           Lu.hard = bm$bb.local$Lu.hard[l],
+           Ud.hard = bm$bb.local$Ud.hard[l])
+    } else {
+      list(t = t,
+           W_t = bm$W_t[t_idx],
+           in.layer = bm$layers$type[l],
+           t.l = bm$layers$t.l[l],
+           t.u = bm$layers$t.u[l],
+           Ld = bm$layers$Ld[l],
+           Uu = bm$layers$Uu[l],
+           Lu = bm$layers$Lu[l],
+           Ud = bm$layers$Ud[l],
+           Lu.hard = bm$layers$Lu.hard[l],
+           Ud.hard = bm$layers$Ud.hard[l])
+    }
+  } else {
+    list(t = t,
+         W_t = bm$W_t[t_idx])
+  }
 }

@@ -13,6 +13,10 @@ refine <- function(bm, s, t, mult = 1) {
       refine.intersection_(bm, l, mult)
     } else if(bm$layers$type[l] == "localised") {
       refine.local_(bm, l, mult)
+    } else if(bm$layers$type[l] == "intersection-bb") {
+      refine.bbintersection_(bm, l, mult)
+    } else if(bm$layers$type[l] == "localised-bb") {
+      refine.bblocal_(bm, l, mult)
     } else {
       warning("Cannot refine layer on interval [{bm$layers$t.l[l]},{bm$layers$t.u[l]}] of type {bm$layers$type[l]}.\n")
     }
@@ -77,6 +81,39 @@ refine.intersection_ <- function(bm, lyr.idx, mult) {
   bm$layers[lyr.idx,"Lu"] <- Lu
   bm$layers[lyr.idx,"Ud"] <- Ul
   bm$layers[lyr.idx,"Uu"] <- Uu
+
+  bm
+}
+
+refine.bbintersection_ <- function(bm, lyr.idx, mult) {
+  bblyr.idx <- which(bm$bb.local$layers$t.l == bm$layers$t.l[lyr.idx] &
+                       bm$bb.local$layers$t.u == bm$layers$t.u[lyr.idx])
+
+  if(bm$bb.local$layers$type[bblyr.idx] != "intersection")
+    stop("Auxilliary and main path layer mismatch detected.")
+
+  refine.intersection_(bm$bb.local, bblyr.idx, mult)
+
+  s_idx <- match(bm$layers$t.l[lyr.idx], bm$t)
+  t_idx <- match(bm$layers$t.u[lyr.idx], bm$t)
+  bb.s_idx <- match(bm$layers$t.l[lyr.idx], bm$bb.local$t)
+  bb.t_idx <- match(bm$layers$t.u[lyr.idx], bm$bb.local$t)
+
+  Bs <- bm$W_t[s_idx]
+  Bt <- bm$W_t[t_idx]
+  Ws <- bm$bb.local$W_t[bb.s_idx]
+  Wt <- bm$bb.local$W_t[bb.t_idx]
+
+  # bm$layers[lyr.idx,"Ld"] <- Bs + bm$bb.local$layers[bblyr.idx,"Ld"] - Ws
+  # bm$layers[lyr.idx,"Lu"] <- Bs + bm$bb.local$layers[bblyr.idx,"Ld"] - Ws + ((Bt-Bs)-(Wt-Ws))
+  # bm$layers[lyr.idx,"Ud"] <- Bs + bm$bb.local$layers[bblyr.idx,"Uu"] - Ws
+  # bm$layers[lyr.idx,"Uu"] <- Bs + bm$bb.local$layers[bblyr.idx,"Uu"] - Ws + ((Bt-Bs)-(Wt-Ws))
+  bm$layers[lyr.idx,"Ld"] <- Bs - Ws
+  bm$layers[lyr.idx,"Lu"] <- NA
+  bm$layers[lyr.idx,"Ud"] <- NA
+  bm$layers[lyr.idx,"Uu"] <- Bs - Ws + ((Bt-Bs)-(Wt-Ws))
+  bm$layers[lyr.idx,"Lu.hard"] <- bm$bb.local$layers[bblyr.idx,"Lu.hard"]
+  bm$layers[lyr.idx,"Ud.hard"] <- bm$bb.local$layers[bblyr.idx,"Ud.hard"]
 
   bm
 }
@@ -174,6 +211,39 @@ refine.local_ <- function(bm, lyr.idx, mult) {
   bm$layers[lyr.idx,"Lu"] <- Lu
   bm$layers[lyr.idx,"Ud"] <- Ul
   bm$layers[lyr.idx,"Uu"] <- Uu
+
+  bm
+}
+
+refine.bblocal_ <- function(bm, lyr.idx, mult) {
+  bblyr.idx <- which(bm$bb.local$layers$t.l == bm$layers$t.l[lyr.idx] &
+                       bm$bb.local$layers$t.u == bm$layers$t.u[lyr.idx])
+
+  if(bm$bb.local$layers$type[bblyr.idx] != "localised")
+    stop("Auxilliary and main path layer mismatch detected.")
+
+  refine.local_(bm$bb.local, bblyr.idx, mult)
+
+  s_idx <- match(bm$layers$t.l[lyr.idx], bm$t)
+  t_idx <- match(bm$layers$t.u[lyr.idx], bm$t)
+  bb.s_idx <- match(bm$layers$t.l[lyr.idx], bm$bb.local$t)
+  bb.t_idx <- match(bm$layers$t.u[lyr.idx], bm$bb.local$t)
+
+  Bs <- bm$W_t[s_idx]
+  Bt <- bm$W_t[t_idx]
+  Ws <- bm$bb.local$W_t[bb.s_idx]
+  Wt <- bm$bb.local$W_t[bb.t_idx]
+
+  # bm$layers[lyr.idx,"Ld"] <- Bs + bm$bb.local$layers[bblyr.idx,"Ld"] - Ws
+  # bm$layers[lyr.idx,"Lu"] <- Bs + bm$bb.local$layers[bblyr.idx,"Ld"] - Ws + ((Bt-Bs)-(Wt-Ws))
+  # bm$layers[lyr.idx,"Ud"] <- Bs + bm$bb.local$layers[bblyr.idx,"Uu"] - Ws
+  # bm$layers[lyr.idx,"Uu"] <- Bs + bm$bb.local$layers[bblyr.idx,"Uu"] - Ws + ((Bt-Bs)-(Wt-Ws))
+  bm$layers[lyr.idx,"Ld"] <- Bs - Ws
+  bm$layers[lyr.idx,"Lu"] <- NA
+  bm$layers[lyr.idx,"Ud"] <- NA
+  bm$layers[lyr.idx,"Uu"] <- Bs - Ws + ((Bt-Bs)-(Wt-Ws))
+  bm$layers[lyr.idx,"Lu.hard"] <- bm$bb.local$layers[bblyr.idx,"Lu.hard"]
+  bm$layers[lyr.idx,"Ud.hard"] <- bm$bb.local$layers[bblyr.idx,"Ud.hard"]
 
   bm
 }

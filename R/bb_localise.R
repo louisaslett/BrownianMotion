@@ -132,10 +132,14 @@ bb.localise_ <- function(bm, s, t, mult) {
                            type = "localised-bb",
                            t.l = new.bm$layers$t.l[i],
                            t.u = new.bm$layers$t.u[i],
-                           Ld = B.last + new.bm$layers$Ld[i] - W.last,
-                           Uu = B.last + new.bm$layers$Uu[i] - W.last + ((trans.B_t[i]-B.last)-(new.bm$W_t[i]-W.last)),
-                           Lu = B.last + new.bm$layers$Ld[i] - W.last + ((trans.B_t[i]-B.last)-(new.bm$W_t[i]-W.last)),
-                           Ud = B.last + new.bm$layers$Uu[i] - W.last,
+                           # Ld = B.last + new.bm$layers$Ld[i] - W.last,
+                           # Uu = B.last + new.bm$layers$Uu[i] - W.last + ((trans.B_t[i]-B.last)-(new.bm$W_t[i]-W.last)),
+                           # Lu = B.last + new.bm$layers$Ld[i] - W.last + ((trans.B_t[i]-B.last)-(new.bm$W_t[i]-W.last)),
+                           # Ud = B.last + new.bm$layers$Uu[i] - W.last,
+                           Ld = B.last - W.last,
+                           Uu = B.last - W.last + ((trans.B_t[i]-B.last)-(new.bm$W_t[i]-W.last)),
+                           Lu = NA,
+                           Ud = NA,
                            Lu.hard = new.bm$layers$Lu.hard[i], #ifelse(head(c(0, x.new), -1) > x.new, TRUE, FALSE)
                            Ud.hard = new.bm$layers$Ud.hard[i])
 
@@ -151,10 +155,14 @@ bb.localise_ <- function(bm, s, t, mult) {
                        type = "intersection-bb",
                        t.l = new.bm$layers$t.l[i+1],
                        t.u = new.bm$layers$t.u[i+1],
-                       Ld = B.last + new.bm$layers$Ld[i+1] - W.last,
-                       Uu = B.last + new.bm$layers$Uu[i+1] - W.last + ((y-B.last)-(W.end-W.last)),
-                       Lu = B.last + new.bm$layers$Ld[i+1] - W.last + ((y-B.last)-(W.end-W.last)),
-                       Ud = B.last + new.bm$layers$Uu[i+1] - W.last,
+                       # Ld = B.last + new.bm$layers$Ld[i+1] - W.last,
+                       # Uu = B.last + new.bm$layers$Uu[i+1] - W.last + ((y-B.last)-(W.end-W.last)),
+                       # Lu = B.last + new.bm$layers$Ld[i+1] - W.last + ((y-B.last)-(W.end-W.last)),
+                       # Ud = B.last + new.bm$layers$Uu[i+1] - W.last,
+                       Ld = B.last - W.last,
+                       Uu = B.last - W.last + ((y-B.last)-(W.end-W.last)),
+                       Lu = NA,
+                       Ud = NA,
                        Lu.hard = new.bm$layers$Lu.hard[i+1], #ifelse(head(c(0, x.new), -1) > x.new, TRUE, FALSE)
                        Ud.hard = new.bm$layers$Ud.hard[i+1])
   bm$W_t <- c(bm$W_t[bm$t<=s],

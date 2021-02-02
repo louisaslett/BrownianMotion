@@ -1,4 +1,4 @@
-#' Simulate Brownian motion conditional on Brownian bridge localised layer
+#' Simulate Brownian motion conditional on Brownian bridge intersection layer
 #'
 #' Simulates Brownian motion
 #'
@@ -11,7 +11,7 @@
 #'   dplyr (and other) style pipes.
 #'
 #' @export
-sim.condbblocal <- function(bm, s, t, q = NULL, q.grid = NULL) {
+sim.condbbintersection <- function(bm, s, t, q = NULL, q.grid = NULL) {
   # Arg types & combos
   if(!("BrownianMotion" %in% class(bm))) {
     stop("bm argument must be a BrownianMotion object.")
@@ -39,9 +39,9 @@ sim.condbblocal <- function(bm, s, t, q = NULL, q.grid = NULL) {
   if(!(t %in% bm$t)) {
     stop("t not found in bm path.")
   }
-  localised.bb <- bm$layers[bm$layers$type == "localised-bb",]
+  intersection.bb <- bm$layers[bm$layers$type == "intersection-bb",]
   if(!(t %in% localised.bb$t.u)) {
-    stop("t is not the time of a realised maximum/minimum in a localised-bb layer.  At present this package only supports conditional bridge simulation where the right-end conditioning time is a maximum or minimum.")
+    stop("t is not the time of a realised maximum/minimum in a intersection-bb layer.")
   }
   # Do we then need to check that s is the start of this same localised layer?
   # Actually this is taken care of by the following which allows no intermediate obs
@@ -65,7 +65,7 @@ sim.condbblocal <- function(bm, s, t, q = NULL, q.grid = NULL) {
   q <- setdiff(q, bm$t)
 
   for(qq in q) {
-    bm.res <- sim.condbblocal_(bm, s_idx, qq, t_idx)
+    bm.res <- sim.condbbintersection_(bm, s_idx, qq, t_idx)
     s_idx <- s_idx+1
     t_idx <- t_idx+1
   }
@@ -74,7 +74,7 @@ sim.condbblocal <- function(bm, s, t, q = NULL, q.grid = NULL) {
   invisible(bm.res)
 }
 
-sim.condbblocal_ <- function(bm, s_idx, q, t_idx) {
+sim.condbbintersection_ <- function(bm, s_idx, q, t_idx) {
   bb.s_idx <- match(bm$t[s_idx], bm$bb.local$t)
   bb.t_idx <- match(bm$t[t_idx], bm$bb.local$t)
 
@@ -85,7 +85,7 @@ sim.condbblocal_ <- function(bm, s_idx, q, t_idx) {
   s <- bm$t[s_idx]
   t <- bm$t[t_idx]
 
-  sim.condlocal_(bm$bb.local, bb.s_idx, q, bb.t_idx)
+  sim.condintersection_(bm$bb.local, bb.s_idx, q, bb.t_idx)
   Wq <- bm$bb.local$W_t[bb.s_idx+1]
   Bq <- Bs + (Wq-Ws) + (q-s)/(t-s)*((Bt-Bs)-(Wt-Ws))
 
@@ -113,7 +113,7 @@ sim.condbblocal_ <- function(bm, s_idx, q, t_idx) {
                        Lu.hard = bm$bb.local$layers$Lu.hard[i], #ifelse(head(c(0, x.new), -1) > x.new, TRUE, FALSE)
                        Ud.hard = bm$bb.local$layers$Ud.hard[i])
   bm$layers <- add_row(bm$layers,
-                       type = "localised-bb",
+                       type = "intersection-bb",
                        t.l = bm$bb.local$layers$t.l[i+1],
                        t.u = bm$bb.local$layers$t.u[i+1],
                        # Ld = Bq + bm$bb.local$layers$Ld[i+1] - Wq,
