@@ -41,9 +41,9 @@ sim.condbblocal <- function(bm, s, t, q = NULL, q.grid = NULL) {
   }
   localised.bb <- bm$layers[bm$layers$type == "localised-bb",]
   if(!(t %in% localised.bb$t.u)) {
-    stop("t is not the time of a realised maximum/minimum in a localised-bb layer.  At present this package only supports conditional bridge simulation where the right-end conditioning time is a maximum or minimum.")
+    stop("t is not the end time of a localised-bb layer.")
   }
-  # Do we then need to check that s is the start of this same localised layer?
+  # NOTE: Do we then need to check that s is the start of this same localised layer? NO ...
   # Actually this is taken care of by the following which allows no intermediate obs
   s_idx <- match(s, bm$t)
   t_idx <- match(t, bm$t)
@@ -85,7 +85,14 @@ sim.condbblocal_ <- function(bm, s_idx, q, t_idx) {
   s <- bm$t[s_idx]
   t <- bm$t[t_idx]
 
-  sim.condlocal_(bm$bb.local, bb.s_idx, q, bb.t_idx)
+  cur.layer <- which(bm$layers$t.l == s & bm$layers$t.u == t)
+  soft <- any(!bm$layers[cur.layer, c("Lu.hard","Ud.hard")])
+
+  if(soft) {
+    sim.condlocalsoft_(bm$bb.local, bb.s_idx, q, bb.t_idx)
+  } else {
+    sim.condlocal_(bm$bb.local, bb.s_idx, q, bb.t_idx)
+  }
   Wq <- bm$bb.local$W_t[bb.s_idx+1]
   Bq <- Bs + (Wq-Ws) + (q-s)/(t-s)*((Bt-Bs)-(Wt-Ws))
 
@@ -96,7 +103,6 @@ sim.condbblocal_ <- function(bm, s_idx, q, t_idx) {
               Bq,
               bm$W_t[t_idx:length(bm$W_t)])
 
-  cur.layer <- which(bm$layers$t.l == s & bm$layers$t.u == t)
   i <- nrow(bm$bb.local$layers)-1
   bm$layers <- add_row(bm$layers,
                        type = "intersection-bb",

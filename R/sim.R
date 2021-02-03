@@ -81,17 +81,23 @@ sim <- function(bm, t, refine = FALSE) {
         i <- which(t.local[1,]==l)
         r <- t.local[2,i[1]]
         if(any(!bm$layers[match(bm$t[r], bm$layers$t.u),c("Lu.hard","Ud.hard")])) {
-          warning(glue("Cannot currently simulate conditional on soft localised layer (at time {t.local[3,i[1]]}), skipping ...\n"))
-          next
+          soft <- TRUE
+        } else {
+          soft <- FALSE
         }
         for(qq in rev(t.local[3,i])) {
-          bm.res <- sim.condlocal_(bm, l, qq, r)
+          if(soft) {
+            sim.condlocalsoft_(bm, l, qq, r)
+          } else {
+            sim.condlocal_(bm, l, qq, r)
+          }
           l <- l+1
           r <- r+1
           if(!isFALSE(refine)) {
             refine.intersection_(bm, match(qq, bm$layers$t.u), refine)
             refine.local_(bm, match(qq, bm$layers$t.l), refine)
           }
+          soft <- any(!tail(bm$layers)[,c("Lu.hard","Ud.hard")])
         }
       }
     }
@@ -144,10 +150,12 @@ sim <- function(bm, t, refine = FALSE) {
       for(l in unique(t.bblocal[1,])) {
         i <- which(t.bblocal[1,]==l)
         r <- t.bblocal[2,i[1]]
-        if(any(!bm$layers[match(bm$t[r], bm$layers$t.u),c("Lu.hard","Ud.hard")])) {
-          warning(glue("Cannot currently simulate conditional on soft localised layer (at time {t.bblocal[3,i[1]]}), skipping ...\n"))
-          next
-        }
+        # Following not needed since internally it dispatches based on hard/soft to aux path
+        # if(any(!bm$layers[match(bm$t[r], bm$layers$t.u),c("Lu.hard","Ud.hard")])) {
+        #   soft <- TRUE
+        # } else {
+        #   soft <- FALSE
+        # }
         for(qq in rev(t.bblocal[3,i])) {
           bm.res <- sim.condbblocal_(bm, l, qq, r)
           l <- l+1
