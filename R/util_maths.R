@@ -218,3 +218,19 @@ eadelC_ <- function(mt, s, t, x, y, m, u) {
   }
 }
 
+###############
+
+eaminmax_ <- function(s,t,x,y,Ll,Lu,Ul,Uu){
+  if(rbinom(1,1,0.5)==1){minI<-1}else{minI<--1; x<--x;y<--y;Ll<--Uu;Lu<--Ul}
+  u1<-runif(1,exp(-2*(Ll-x)*(Ll-y)/(t-s)),exp(-2*(Lu-x)*(Lu-y)/(t-s))); u2<-runif(1,0,1); m<-x-0.5*(sqrt((y-x)^2-2*(t-s)*log(u1))-(y-x))
+  c1 <- (y-m)^2/(2*(t-s)); c2 <- (m-x)^2/(2*(t-s)); I1<-rinvgauss(1,sqrt(c1/c2),2*c1);I2<-1/rinvgauss(1,sqrt(c2/c1),2*c2);V<-if(runif(1,0,1)<=(1/(1+sqrt(c1/c2)))){I1}else{I2}; tau <- (s*V+t)/(1+V)
+  if(minI==-1){m<--m};list(m=m,tau=tau,minI=minI)}
+
+eabesmid_ <- function(q,s,tau,t,x,m,y,minI){
+  if(minI==-1){x<--x;y<--y;m<--m} # Reflection
+  bI<-0;if(q==s){bI<-1;w<-x};if(q==tau){bI<-1;w<-m};if(q==t){bI<-1;w<-y} # Boundary
+  t<-t-s;tau<-tau-s;q<-q-s # Rescale time
+  if(bI==0){if(q<tau){Ra1<-sqrt(tau);Ra2<-(x-m)*(tau-q)/((tau)^(3/2));Ra3<-(tau-q)/(tau)}else{Ra1<-sqrt(t-tau);Ra2<-(y-m)*(q-tau)/((t-tau)^(3/2));Ra3<-(q-tau)/(t-tau)};BB3<-rnorm(3,0,sqrt(Ra3*(1-Ra3)));w<-m+Ra1*sqrt((Ra2+BB3[1])^2+(BB3[2])^2+(BB3[3])^2)}
+  list(w=minI*w)}
+
+matsort_ <- function(mat,n) {mat[rank(mat[,n]),]<- mat[c(1:nrow(mat)),];return(mat)}
