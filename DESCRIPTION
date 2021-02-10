@@ -12,6 +12,7 @@ Description: An implementation of algorithms for simulation of (multivariate)
 License: GPL-2
 Imports: glue,
   Rmpfr,
+  statmod,
   tibble
 Encoding: UTF-8
 LazyData: true
