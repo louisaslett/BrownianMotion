@@ -13,13 +13,39 @@ refine <- function(bm, s, t, mult = 1) {
       refine.intersection_(bm, l, mult)
     } else if(bm$layers$type[l] == "localised") {
       refine.local_(bm, l, mult)
+    } else if(bm$layers$type[l] == "bessel") {
+      refine.bessel_(bm, l, mult)
     } else if(bm$layers$type[l] == "intersection-bb") {
       refine.bbintersection_(bm, l, mult)
     } else if(bm$layers$type[l] == "localised-bb") {
       refine.bblocal_(bm, l, mult)
+    } else if(bm$layers$type[l] == "bessel-bb") {
+      refine.bbbessel_(bm, l, mult)
     } else {
       warning("Cannot refine layer on interval [{bm$layers$t.l[l]},{bm$layers$t.u[l]}] of type {bm$layers$type[l]}.\n")
     }
+  }
+
+  invisible(bm)
+}
+
+refine_ <- function(bm, lyr.idx, mult) {
+  if(bm$layers$type[lyr.idx] == "intersection") {
+    refine.intersection_(bm, lyr.idx, mult)
+  } else if(bm$layers$type[lyr.idx] == "localised") {
+    refine.local_(bm, lyr.idx, mult)
+  } else if(bm$layers$type[lyr.idx] == "bessel") {
+    # refine.bessel_(bm, lyr.idx, mult)
+    warning("Not yet implemented refine.bessel_")
+  } else if(bm$layers$type[lyr.idx] == "intersection-bb") {
+    refine.bbintersection_(bm, lyr.idx, mult)
+  } else if(bm$layers$type[lyr.idx] == "localised-bb") {
+    refine.bblocal_(bm, lyr.idx, mult)
+  } else if(bm$layers$type[lyr.idx] == "bessel-bb") {
+    # refine.bbbessel_(bm, lyr.idx, mult)
+    warning("Not yet implemented refine.bbbessel_")
+  } else {
+    warning("Cannot refine layer on interval [{bm$layers$t.l[lyr.idx]},{bm$layers$t.u[lyr.idx]}] of type {bm$layers$type[lyr.idx]}.\n")
   }
 
   invisible(bm)

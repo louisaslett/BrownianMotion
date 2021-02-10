@@ -25,6 +25,7 @@ plot.BrownianMotion <- function(x, y, ...) {
   bessel <- bm$layers[bm$layers$type == "bessel",]
   localised.bb <- bm$layers[bm$layers$type == "localised-bb",]
   intersection.bb <- bm$layers[bm$layers$type == "intersection-bb",]
+  bessel.bb <- bm$layers[bm$layers$type == "bessel-bb",]
 
   if(is.null(opts[["hide.user"]]) || !opts[["hide.user"]]) {
     if(nrow(bm$user.layers) > 0) {
@@ -86,6 +87,21 @@ plot.BrownianMotion <- function(x, y, ...) {
       geom_segment(aes(x = t.l, xend = t.u, y = Lu.bb+Ld, yend = Lu.bb+Uu), intersection.bb, colour = "blue", linetype = ifelse(intersection.bb$Lu.hard, "longdash", "dotted")) +
       geom_segment(aes(x = t.l, xend = t.u, y = pmin(Ld.bb+Ld,Ld.bb+Uu), yend = pmin(Ld.bb+Ld,Ld.bb+Uu)), intersection.bb, colour = "blue", alpha = 0.75) +
       geom_segment(aes(x = t.l, xend = t.u, y = pmax(Uu.bb+Ld,Uu.bb+Uu), yend = pmax(Uu.bb+Ld,Uu.bb+Uu)), intersection.bb, colour = "blue", alpha = 0.75)
+  }
+
+  if(nrow(bessel.bb) > 0) {
+    bessel.bb <- dplyr::left_join(bessel.bb,
+                                  bm$bb.local$layers,
+                                  by = c("t.l", "t.u"),
+                                  suffix = c("",".bb"))
+
+    p <- p +
+      geom_segment(aes(x = t.l, xend = t.u, y = Ld.bb+Ld, yend = Ld.bb+Uu), bessel.bb, colour = "purple") +
+      geom_segment(aes(x = t.l, xend = t.u, y = Uu.bb+Ld, yend = Uu.bb+Uu), bessel.bb, colour = "purple") +
+      geom_segment(aes(x = t.l, xend = t.u, y = Ud.bb+Ld, yend = Ud.bb+Uu), bessel.bb, colour = "purple", linetype = ifelse(bessel.bb$Ud.hard, "longdash", "dotted")) +
+      geom_segment(aes(x = t.l, xend = t.u, y = Lu.bb+Ld, yend = Lu.bb+Uu), bessel.bb, colour = "purple", linetype = ifelse(bessel.bb$Lu.hard, "longdash", "dotted")) +
+      geom_segment(aes(x = t.l, xend = t.u, y = pmin(Ld.bb+Ld,Ld.bb+Uu), yend = pmin(Ld.bb+Ld,Ld.bb+Uu)), bessel.bb, colour = "purple", alpha = 0.75) +
+      geom_segment(aes(x = t.l, xend = t.u, y = pmax(Uu.bb+Ld,Uu.bb+Uu), yend = pmax(Uu.bb+Ld,Uu.bb+Uu)), bessel.bb, colour = "purple", alpha = 0.75)
   }
 
   if(!is.null(opts[["t.lim"]])) {

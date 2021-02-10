@@ -4,7 +4,7 @@
 \alias{sim}
 \title{Simulate Brownian motion at a target time}
 \usage{
-sim(bm, t, refine = FALSE)
+sim(bm, t, refine = FALSE, prefer = "intersection")
 }
 \arguments{
 \item{bm}{a Brownian motion object from which simulation should continue.
