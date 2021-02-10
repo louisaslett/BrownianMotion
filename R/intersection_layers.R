@@ -50,7 +50,7 @@ intersection.layers <- function(bm, s, t, mult = 1) {
     }
   }
   all.pairs.noL <- all.pairs.noL[incl,,drop = FALSE]
-  cat("No layer:"); print(all.pairs.noL)
+  # cat("No layer:"); print(all.pairs.noL)
   # Bessel layer
   mid <- (all.pairs.BL[,2]+all.pairs.BL[,1])/2
   incl <- rep(FALSE, nrow(all.pairs.BL))
@@ -60,7 +60,7 @@ intersection.layers <- function(bm, s, t, mult = 1) {
     }
   }
   all.pairs.BL <- all.pairs.BL[incl,,drop = FALSE]
-  cat("Bessel layer:"); print(all.pairs.BL)
+  # cat("Bessel layer:"); print(all.pairs.BL)
 
   if(nrow(all.pairs.noL) == 0 && nrow(all.pairs.BL) == 0) {
     stop("No intervals in the skeleton between s and t found that have a Bessel or no layer specification.")
