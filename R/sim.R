@@ -8,14 +8,15 @@
 #'   Note the object is updated in place.
 #' @param t a vector of times to simulate at.
 #' @param refine whether to automatically refine layers where the simulated
-#'   time results in bisection of an existing layer.  Defaults to \code{FALSE}.
+#'   time results in bisection of an existing layer.  Defaults to \code{1}, but
+#'   can be disabled with FALSE.
 #'
 #' @return the Brownian motion object which was passed in argument \code{bm} is
 #'   updated in place and returned, enabling chaining of commands with
 #'   dplyr (and other) style pipes.
 #'
 #' @export
-sim <- function(bm, t, refine = FALSE, prefer = "bessel") {
+sim <- function(bm, t, refine = 1, prefer = "bessel") {
   if(!("BrownianMotion" %in% class(bm))) {
     stop("bm argument must be a BrownianMotion object.")
   }

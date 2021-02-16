@@ -5,7 +5,7 @@ Version: 0.1.0
 Authors@R: c(person("Louis", "Aslett", role = c("aut", "cre"),
                     email = "louis.aslett@durham.ac.uk"),
              person("Murray", "Pollock", role = "aut",
-                    email = "m.pollock@warwick.ac.uk")) 
+                    email = "murray.pollock@gmail.com")) 
 Description: An implementation of algorithms for simulation of (multivariate)
   Brownian motion trajectories, including simple unconditional simulation,
   Brownian bridges, as well as layered and localised Brownian motion simulators.
@@ -13,7 +13,9 @@ License: GPL-2
 Imports: glue,
   Rmpfr,
   statmod,
-  tibble
+  tibble,
+  dplyr
+Depends: ggplot2
 Encoding: UTF-8
 LazyData: true
 RoxygenNote: 7.1.1
