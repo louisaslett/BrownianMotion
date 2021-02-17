@@ -10,12 +10,13 @@ Description: An implementation of algorithms for simulation of (multivariate)
   Brownian motion trajectories, including simple unconditional simulation,
   Brownian bridges, as well as layered and localised Brownian motion simulators.
 License: GPL-2
+Depends: R (>= 4.0.1),
+  ggplot2
 Imports: glue,
   Rmpfr,
   statmod,
   tibble,
   dplyr
-Depends: ggplot2
 Encoding: UTF-8
 LazyData: true
 RoxygenNote: 7.1.1
