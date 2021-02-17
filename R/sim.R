@@ -46,6 +46,7 @@ sim <- function(bm, t, refine = 1, prefer = "bessel") {
   t.bessel <- c()
   t.bblocal <- c()
   t.bbintersection <- c()
+  t.bbbessel <- c()
 
   # Do forward sims
   if(length(t.bmfwd) > 0) {
