@@ -4,7 +4,7 @@
 \alias{bb.localise}
 \title{Create localised layer information around a Brownian bridge}
 \usage{
-bb.localise(bm, s, t, mult = 1)
+bb.localise(bm, s, t, refine = bm$refine, mult = bm$mult, prefer = bm$prefer)
 }
 \arguments{
 \item{s}{start time}

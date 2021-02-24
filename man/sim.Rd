@@ -4,7 +4,7 @@
 \alias{sim}
 \title{Simulate Brownian motion at a target time}
 \usage{
-sim(bm, t, refine = 1, prefer = "bessel")
+sim(bm, t, refine = bm$refine, mult = bm$mult, prefer = bm$prefer)
 }
 \arguments{
 \item{bm}{a Brownian motion object from which simulation should continue.
@@ -13,8 +13,17 @@ Note the object is updated in place.}
 \item{t}{a vector of times to simulate at.}
 
 \item{refine}{whether to automatically refine layers where the simulated
-time results in bisection of an existing layer.  Defaults to \code{1}, but
-can be disabled with FALSE.}
+time results in bisection of an existing layer.  Defaults to the option
+specified at the time of creation of \code{bm}.}
+
+\item{mult}{the mult parameter to be passed through to any layer operations
+including for the level of refinement if \code{refine=TRUE}.   Defaults to the option
+specified at the time of creation of \code{bm}.}
+
+\item{prefer}{indicate the preferred layer type which should arise after
+conditional simulation bisects an existing layer (this will be respected
+where possible, but it not always achievable).    Defaults to the option
+specified at the time of creation of \code{bm}.}
 }
 \value{
 the Brownian motion object which was passed in argument \code{bm} is

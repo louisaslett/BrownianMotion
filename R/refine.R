@@ -1,6 +1,5 @@
 #' Refine an intersection layer
 #'
-#' @param
 #'
 #'
 #' @export

@@ -5,9 +5,9 @@
 #'
 #' @param t the starting time of the Brownian motion.  Defaults to 0.
 #' @param W_t the starting location of the Brownian motion at time t.  Defaults to 0.
-#' @param refine
-#' @param mult
-#' @param prefer
+#' @param refine refine is
+#' @param mult mult is
+#' @param prefer prefer is
 #'
 #' @export
 create.bm <- function(t = 0, W_t = 0, refine = TRUE, mult = 1, prefer = "bessel") {

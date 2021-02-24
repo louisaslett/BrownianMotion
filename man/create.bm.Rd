@@ -4,10 +4,18 @@
 \alias{create.bm}
 \title{Create a Brownian motion object}
 \usage{
-create.bm(W_0 = 0)
+create.bm(t = 0, W_t = 0, refine = TRUE, mult = 1, prefer = "bessel")
 }
 \arguments{
-\item{W_0}{the starting location of the Brownian motion at time 0.}
+\item{t}{the starting time of the Brownian motion.  Defaults to 0.}
+
+\item{W_t}{the starting location of the Brownian motion at time t.  Defaults to 0.}
+
+\item{refine}{refine is}
+
+\item{mult}{mult is}
+
+\item{prefer}{prefer is}
 }
 \description{
 Creates an R environment to contain the trajectories and layer information of

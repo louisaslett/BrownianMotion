@@ -4,7 +4,14 @@
 \alias{intersection.layers}
 \title{Simulate an intersection layer}
 \usage{
-intersection.layers(bm, s, t, mult = 1)
+intersection.layers(
+  bm,
+  s,
+  t,
+  refine = bm$refine,
+  mult = bm$mult,
+  prefer = bm$prefer
+)
 }
 \description{
 Simulate an intersection layer

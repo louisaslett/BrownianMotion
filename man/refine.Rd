@@ -4,7 +4,7 @@
 \alias{refine}
 \title{Refine an intersection layer}
 \usage{
-refine(bm, s, t, mult = 1)
+refine(bm, s, t, mult = bm$mult)
 }
 \description{
 Refine an intersection layer
