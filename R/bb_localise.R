@@ -6,7 +6,7 @@
 #' The function will create localised layers across all currently layer-free Brownian bridges between times s and t
 #'
 #' @export
-bb.localise <- function(bm, s, t, mult = 1) {
+bb.localise <- function(bm, s, t, refine = bm$refine, mult = bm$mult, prefer = bm$prefer) {
   # Arg types & combos
   if(!("BrownianMotion" %in% class(bm))) {
     stop("bm argument must be a BrownianMotion object.")
@@ -28,7 +28,7 @@ bb.localise <- function(bm, s, t, mult = 1) {
   # It t is currently beyond the end of the simulated path then first extend the path to create a bridgeable endpoint
   if(t > max(bm$t)) {
     # Maybe do first passage instead until past t and then simulate at t?
-    sim(bm, t)
+    sim(bm, t, refine, mult, prefer)
   }
   # Get all observed times between limits
   tt <- bm$t[bm$t>=s & bm$t<=t]
@@ -41,7 +41,7 @@ bb.localise <- function(bm, s, t, mult = 1) {
   for(i in 1:(length(tt)-1)) {
     # Only add if the interval is not in a layer
     mid <- mean(tt[i:(i+1)])
-    if(!any(mid >= bm$layers$t.l & mid <= bm$layers$t.u)) {
+    if(is.null(get.lyr_(bm, mid)$idx)) {
       all.s <- c(all.s, tt[i])
       all.t <- c(all.t, tt[i+1])
     }
@@ -49,20 +49,24 @@ bb.localise <- function(bm, s, t, mult = 1) {
 
   # Now perform localisation to all un-layered Brownian bridges we've discovered
   for(i in 1:length(all.s)) {
-    bb.localise_(bm, all.s[i], all.t[i], mult)
+    bb.localise_(bm, all.s[i], all.t[i], refine, mult, prefer)
   }
 
   invisible(bm)
 }
 
-bb.localise_ <- function(bm, s, t, mult) {
+bb.localise_ <- function(bm, s, t, refine, mult, prefer) {
   theta <- mult*sqrt(t-s)
 
   x <- bm$W_t[match(s, bm$t)]
   y <- bm$W_t[match(t, bm$t)]
 
   # Force points in auxiliary path
-  new.bm <- create.bm()
+  new.bm <- create.bm(bm$t[1],
+                      bm$W_t[1],
+                      refine,
+                      mult,
+                      prefer)
   new.bm$t <- c(s)
   new.bm$W_t <- c(0)
 
@@ -73,10 +77,11 @@ bb.localise_ <- function(bm, s, t, mult) {
   }
   if(!(t %in% new.bm$t)) {
     # t is not the end point, so conditionally simulate at t and then chop off the end
-    sim(new.bm, t)
+    sim(new.bm, t, refine, mult, prefer)
     new.bm$t <- head(new.bm$t, -1)
     new.bm$W_t <- head(new.bm$W_t, -1)
-    new.bm$layers <- new.bm$layers[-nrow(new.bm$layers),]
+    # Last layer is now starting at t, so remove it
+    rm.lyr_(new.bm, get.lyr_(new.bm, t)$idx)
   }
 
   # Copy the aux path into the master path bb localisation store

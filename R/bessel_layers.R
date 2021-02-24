@@ -18,7 +18,8 @@
 #' dplyr (and other) style pipes.
 #'
 #' @export
-bessel.layers <- function(bm, s, t, mult = 1) {
+bessel.layers <- function(bm, s, t, refine = bm$refine, mult = bm$mult, prefer = bm$prefer) {
+  ## NOTE TO LOUIS: This shares a lot of setup with Bessel Layers -- pull out into utility code (except the find Bessel layers part)
   if(!("BrownianMotion" %in% class(bm))) {
     stop("bm argument must be a BrownianMotion object.")
   }
@@ -35,18 +36,10 @@ bessel.layers <- function(bm, s, t, mult = 1) {
   # Are these endpoints part of the skeleton?
   # If not, and the point is beyond the end, simulate it.  Otherwise, error
   if(!(s %in% bm$t)) {
-    if(s > max(bm$t)) {
-      bm <- sim(bm, s)
-    } else {
-      stop("s is not a known time point in the supplied Brownian motion object.")
-    }
+    sim(bm, s, refine, mult, prefer)
   }
   if(!(t %in% bm$t)) {
-    if(t > max(bm$t)) {
-      bm <- sim(bm, t)
-    } else {
-      stop("t is not a known time point in the supplied Brownian motion object.")
-    }
+    sim(bm, t, refine, mult, prefer)
   }
 
   # Make sure no part of [s,t] interval lies inside any other layer
@@ -83,7 +76,7 @@ bessel.layers_ <- function(bm, s, t, mult) {
   res <- bessel.layers.sim_(bm, s, t, bm$W_t[match(s, bm$t)], bm$W_t[match(t, bm$t)], mult)
 
   bm$layers <- add_row(bm$layers,
-                       type = ifelse(res$act == 1, "intersection", "bessel"),
+                       type = "bessel",
                        t.l = s,
                        t.u = t,
                        Ld = res$xb - res$au,
@@ -96,7 +89,7 @@ bessel.layers_ <- function(bm, s, t, mult) {
   bm
 }
 
-bessel.layers.sim_ <- function(bm, s, t, x, y, mult = 1) {
+bessel.layers.sim_ <- function(bm, s, t, x, y, mult) {
   xb <- min(x,y)
   yb <- max(x,y)
   adf <- sqrt(t-s) * mult

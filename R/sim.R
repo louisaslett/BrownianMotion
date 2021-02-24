@@ -8,15 +8,22 @@
 #'   Note the object is updated in place.
 #' @param t a vector of times to simulate at.
 #' @param refine whether to automatically refine layers where the simulated
-#'   time results in bisection of an existing layer.  Defaults to \code{1}, but
-#'   can be disabled with FALSE.
+#'   time results in bisection of an existing layer.  Defaults to the option
+#'   specified at the time of creation of \code{bm}.
+#' @param mult the mult parameter to be passed through to any layer operations
+#'   including for the level of refinement if \code{refine=TRUE}.   Defaults to the option
+#'   specified at the time of creation of \code{bm}.
+#' @param prefer indicate the preferred layer type which should arise after
+#'   conditional simulation bisects an existing layer (this will be respected
+#'   where possible, but it not always achievable).    Defaults to the option
+#'   specified at the time of creation of \code{bm}.
 #'
 #' @return the Brownian motion object which was passed in argument \code{bm} is
 #'   updated in place and returned, enabling chaining of commands with
 #'   dplyr (and other) style pipes.
 #'
 #' @export
-sim <- function(bm, t, refine = 1, prefer = "bessel") {
+sim <- function(bm, t, refine = bm$refine, mult = bm$mult, prefer = bm$prefer) {
   if(!("BrownianMotion" %in% class(bm))) {
     stop("bm argument must be a BrownianMotion object.")
   }
@@ -26,11 +33,14 @@ sim <- function(bm, t, refine = 1, prefer = "bessel") {
   if(is.unsorted(t)) {
     t <- sort(t)
   }
-  if(!isFALSE(refine) && refine <= 0) {
-    stop("refine must be FALSE (to disable refinement), TRUE (to do automatic refinement), or a strictly positive value (to supply the mult parameter during refinement).")
+  if(length(refine) != 1 || !is.logical(refine)) {
+    stop("refine must be a scalar logical value")
   }
-  if(!(prefer %in% c("bessel", "intersection"))) {
-    stop("prefer argument must be one of 'bessel' or 'intersection'")
+  if(length(mult) != 1 || !is.numeric(mult) || mult <= 0) {
+    stop("mult must be a strictly positive scalar")
+  }
+  if(length(prefer) != 1 || !(prefer %in% c("bessel", "intersection"))) {
+    stop("prefer must be one of 'bessel' or 'intersection'")
   }
 
   # Eliminate times we know
@@ -116,8 +126,8 @@ sim <- function(bm, t, refine = 1, prefer = "bessel") {
           l <- l+1
           r <- r+1
           if(!isFALSE(refine)) {
-            refine_(bm, match(qq, bm$layers$t.u), refine)
-            refine_(bm, match(qq, bm$layers$t.l), refine)
+            refine_(bm, match(qq, bm$layers$t.u), mult)
+            refine_(bm, match(qq, bm$layers$t.l), mult)
           }
           soft <- any(!tail(bm$layers)[,c("Lu.hard","Ud.hard")])
         }
@@ -140,8 +150,8 @@ sim <- function(bm, t, refine = 1, prefer = "bessel") {
           l <- l+1
           r <- r+1
           if(!isFALSE(refine)) {
-            refine_(bm, match(qq, bm$layers$t.u), refine)
-            refine_(bm, match(qq, bm$layers$t.l), refine)
+            refine_(bm, match(qq, bm$layers$t.u), mult)
+            refine_(bm, match(qq, bm$layers$t.l), mult)
           }
         }
       }
@@ -160,8 +170,8 @@ sim <- function(bm, t, refine = 1, prefer = "bessel") {
           l <- l+1
           r <- r+1
           if(!isFALSE(refine)) {
-            refine_(bm, match(qq, bm$layers$t.u), refine)
-            refine_(bm, match(qq, bm$layers$t.l), refine)
+            refine_(bm, match(qq, bm$layers$t.u), mult)
+            refine_(bm, match(qq, bm$layers$t.l), mult)
           }
         }
       }
@@ -189,8 +199,8 @@ sim <- function(bm, t, refine = 1, prefer = "bessel") {
           l <- l+1
           r <- r+1
           if(!isFALSE(refine)) {
-            refine_(bm, match(qq, bm$layers$t.u), refine)
-            refine_(bm, match(qq, bm$layers$t.l), refine)
+            refine_(bm, match(qq, bm$layers$t.u), mult)
+            refine_(bm, match(qq, bm$layers$t.l), mult)
           }
         }
       }
@@ -212,8 +222,8 @@ sim <- function(bm, t, refine = 1, prefer = "bessel") {
           l <- l+1
           r <- r+1
           if(!isFALSE(refine)) {
-            refine_(bm, match(qq, bm$layers$t.u), refine)
-            refine_(bm, match(qq, bm$layers$t.l), refine)
+            refine_(bm, match(qq, bm$layers$t.u), mult)
+            refine_(bm, match(qq, bm$layers$t.l), mult)
           }
         }
       }
@@ -231,8 +241,8 @@ sim <- function(bm, t, refine = 1, prefer = "bessel") {
           l <- l+1
           r <- r+1
           if(!isFALSE(refine)) {
-            refine_(bm, match(qq, bm$layers$t.u), refine)
-            refine_(bm, match(qq, bm$layers$t.l), refine)
+            refine_(bm, match(qq, bm$layers$t.u), mult)
+            refine_(bm, match(qq, bm$layers$t.l), mult)
           }
         }
       }

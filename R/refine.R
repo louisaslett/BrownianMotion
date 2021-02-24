@@ -4,7 +4,7 @@
 #'
 #'
 #' @export
-refine <- function(bm, s, t, mult = 1) {
+refine <- function(bm, s, t, mult = bm$mult) {
   # TODO: tidy up and add error handling, this is a quick prototype
 
   lyrs <- which(bm$layers$t.u > s & bm$layers$t.l<t)

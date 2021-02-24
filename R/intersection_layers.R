@@ -3,7 +3,7 @@
 #'
 #'
 #' @export
-intersection.layers <- function(bm, s, t, mult = 1) {
+intersection.layers <- function(bm, s, t, refine = bm$refine, mult = bm$mult, prefer = bm$prefer) {
   ## NOTE TO LOUIS: This shares a lot of setup with Bessel Layers -- pull out into utility code (except the find Bessel layers part)
   if(!("BrownianMotion" %in% class(bm))) {
     stop("bm argument must be a BrownianMotion object.")
@@ -21,18 +21,10 @@ intersection.layers <- function(bm, s, t, mult = 1) {
   # Are these endpoints part of the skeleton?
   # If not, and the point is beyond the end, simulate it.  Otherwise, error
   if(!(s %in% bm$t)) {
-    if(s > max(bm$t)) {
-      bm <- sim(bm, s)
-    } else {
-      stop("s is not a known time point in the supplied Brownian motion object.")
-    }
+    sim(bm, s, refine, mult, prefer)
   }
   if(!(t %in% bm$t)) {
-    if(t > max(bm$t)) {
-      bm <- sim(bm, t)
-    } else {
-      stop("t is not a known time point in the supplied Brownian motion object.")
-    }
+    sim(bm, t, refine, mult, prefer)
   }
 
   # Find all intervals between s and t not currently inside any other layer or inside a Bessel layer

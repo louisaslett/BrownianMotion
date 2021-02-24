@@ -11,3 +11,14 @@ is.intscalar <- function(x) {
 is.realvector <- function(x) {
   is.atomic(x) && !is.character(x) && !is.raw(x) && !is.logical(x) && all(Im(x) == 0)
 }
+is.bm <- function(x) {
+  is.environment(x) && ("BrownianMotion" %in% class(bm))
+}
+is.timevector <- function(x) {
+  checkmate::test_numeric(x,
+                          lower = 0,
+                          finite = TRUE,
+                          any.missing = FALSE,
+                          min.len = 1,
+                          unique = TRUE)
+}
