@@ -234,3 +234,11 @@ eabesmid_ <- function(q,s,tau,t,x,m,y,minI){
   list(w=minI*w)}
 
 matsort_ <- function(mat,n) {mat[rank(mat[,n]),]<- mat[c(1:nrow(mat)),];return(mat)}
+
+eabesex_ <- function(sV,tV,xV,yV,m,B1,B2,minI){ # Vectors of equal length
+  if(minI==-1){xV<--xV;yV<--yV;m<--m;B1<--B1;B2<--B2}
+  u <- runif(1,0,1); mt<-3;  em<-matrix(0,length(sV),8); em[,1]<-sV; em[,2]<-tV; em[,3]<-xV; em[,4]<-yV
+  B1evI<-B2evI<-0; while(B1evI==0){for(i in 1:dim(em)[1]){em[i,5:6]<-eadelC_(mt,em[i,1],em[i,2],em[i,3],em[i,4],m,B1)};if(u<=prod(em[,5])){B1evI<-B2evI<-1;con1I<-1;con2I<-1;ex1I<-0;ex2I<-0}else{if(u>prod(em[,6])){B1evI<-1;con1I<-0;ex1I<-1}else{B1evI<-0;con1I<-0;ex1I<-0;mt<-mt+2}}}
+  while(B2evI==0){for(i in 1:dim(em)[1]){em[i,7:8]<-eadelC_(mt,em[i,1],em[i,2],em[i,3],em[i,4],m,B2)};if(u<=prod(em[,7])){B2evI<-1;con2I<-1;ex1I<-0}else{if(u>prod(em[,8])){B2evI<-1;con2I<-0;ex2I<-1}else{B2evI<-0;con2I<-0;ex2I<-0;mt<-mt+2}}}
+  if(minI==-1){em[,3]<--em[,3];em[,4]<--em[,4]}; accI<-0; if(con1I==1){accI<-1}else{if(con2I==1){if(rbinom(1,1,0.5)==1){accI<-1}}}
+  list(accI=accI,u=u,con1I=con1I,con2I=con2I,em=em)}

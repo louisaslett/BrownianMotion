@@ -139,100 +139,69 @@ sim.condbessel_ <- function(bm, s_idx, q, t_idx) {
 }
 
 sim.condbessel2_ <- function(q, s, t, x, y, Ll, Lu, Ul, Uu) {
-  # Repeat until acceptance
+  # Repeat until acceptance for the simulation of the mid-point
   repeat{
     # Simulate min/max for Bessel process
     mnmx <- eaminmax_(s,t,x,y,Ll,Lu,Ul,Uu); m<-mnmx$m; tau<-mnmx$tau; minI<-mnmx$minI
-    if(q < tau){int.type <- 2}else{int.type <- 1} # Type 1 corresponds to tau occurring prior to q, Type 2 corresponds to tau occurring after q
-
+    # Determine whether auxiliary minimum / maximum and corresponding boundaries
+    if(minI==1){B1<-Ul;B2<-Uu}else{B1<-Lu;B2<-Ll}
     # Make draw at q conditional on m
     dr <- eabesmid_(q,s,tau,t,x,m,y,minI)$w
+    # Determine accept reject
+    ar.prob <- eabesex_(c(s,q),c(q,t),c(x,dr),c(dr,y),m,B1,B2,minI)
+    if(ar.prob$accI==1){break}
+  }
+  # Modification of Ul / Lu fiven new intermediate point
+  nLuu.left <- min(x,dr)
+  nLuu.right <- min(dr,y)
+  nUll.left <- max(x,dr)
+  nUll.right <- max(dr,y)
+  nLu.left <- min(x,dr,Lu)
+  nLu.right <- min(dr,y,Lu)
+  nUl.left <- max(x,dr,Ul)
+  nUl.right <- max(dr,y,Ul)
 
-    # Realisation
-    tp.mat <- matsort_(cbind(c(s,t,tau,q),c(x,y,m,dr)),1)
+  # Determine left and right layers
+  u.bisect <- runif(1,0,1) # Uniform for embedded rejection sampler
+  m.counter <- 3 # Counter to detemine resolution of retrospective inversion sampler
 
-    ### Determine acceptance (and if so which layer) or rejection of the proposal
-    type.vec <- numeric(3) # Storage of the numeric types
-    u.ints <- runif(3,0,1) # Uniform RV's for intervals
-    if(minI==1){bdry.l <- Ul; bdry.u <- Uu}else{bdry.l <- Lu; bdry.u <- Ll} # Determination of boundaries for interval
-    m.counter <- rep(3,3) # Initialisation of the counter
-
-    ##### Resolve interval 1
-
-    repeat{
-      bounds.l.one <- eadelC_(m.counter[1],tp.mat[1,1],tp.mat[2,1],tp.mat[1,2],tp.mat[2,2],m,bdry.l)  # Determine crossing probability of bdry.l for the interval one
-      bounds.u.one <- eadelC_(m.counter[1],tp.mat[1,1],tp.mat[2,1],tp.mat[1,2],tp.mat[2,2],m,bdry.u)  # Determine crossing probability of bdry.u for the interval one
-
-      if(u.ints[1] <= bounds.l.one[1]){type.vec[1] <- 1; break} # Bounds for interval one have been sufficiently resolved
-      if(u.ints[1] >  bounds.u.one[2]){type.vec[1] <- 3; break} # Bounds for interval one have been sufficiently resolved
-      if(u.ints[1] > bounds.l.one[2] & u.ints[1] <= bounds.u.one[1]){type.vec[1] <- 2; break} # Bounds for interval one have been sufficiently resolved
-      m.counter[1] <- m.counter[1] + 2 # Otherwise index counter
-    }
-
-    ##### Resolve interval 2
-
-    repeat{
-      bounds.l.two <- eadelC_(m.counter[2],tp.mat[2,1],tp.mat[3,1],tp.mat[2,2],tp.mat[3,2],m,bdry.l)  # Determine crossing probability of bdry.l for the interval two
-      bounds.u.two <- eadelC_(m.counter[2],tp.mat[2,1],tp.mat[3,1],tp.mat[2,2],tp.mat[3,2],m,bdry.u)  # Determine crossing probability of bdry.u for the interval two
-
-      if(u.ints[2] <= bounds.l.two[1]){type.vec[2] <- 1; break} # Bounds for interval two have been sufficiently resolved
-      if(u.ints[2] >  bounds.u.two[2]){type.vec[2] <- 3; break} # Bounds for interval two have been sufficiently resolved
-      if(u.ints[2] > bounds.l.two[2] & u.ints[2] <= bounds.u.two[1]){type.vec[2] <- 2; break} # Bounds for interval two have been sufficiently resolved
-      m.counter[2] <- m.counter[2] + 2 # Otherwise index counter
-    }
-
-    ##### Resolve interval 3
-
-    repeat{
-      bounds.l.three <- eadelC_(m.counter[3],tp.mat[3,1],tp.mat[4,1],tp.mat[3,2],tp.mat[4,2],m,bdry.l)  # Determine crossing probability of bdry.l for the interval three
-      bounds.u.three <- eadelC_(m.counter[3],tp.mat[3,1],tp.mat[4,1],tp.mat[3,2],tp.mat[4,2],m,bdry.u)  # Determine crossing probability of bdry.u for the interval three
-
-      if(u.ints[3] <= bounds.l.three[1]){type.vec[3] <- 1; break} # Bounds for interval three have been sufficiently resolved
-      if(u.ints[3] >  bounds.u.three[2]){type.vec[3] <- 3; break} # Bounds for interval three have been sufficiently resolved
-      if(u.ints[3] > bounds.l.three[2] & u.ints[3] <= bounds.u.three[1]){type.vec[3] <- 2; break} # Bounds for interval three have been sufficiently resolved
-      m.counter[3] <- m.counter[3] + 2 # Otherwise index counter
-    }
-
-    #### Determine acceptance / rejection
-    if(max(type.vec)==1){accI <- 1}else{if(max(type.vec)==2){if(rbinom(1,1,0.5)==1){accI <- 1}else{accI <- 0}}else{accI <- 0}}
-
-    #### If accepted then break
-    if(accI == 1){break}
+  # Determine intervals: interval type 1
+  repeat{
+    p.int1 <- eabetaC(m.counter,s,q,x,dr,Ll,nLu.left,nUl.left,Uu)*eabetaC(m.counter,q,t,dr,y,Ll,nLu.right,nUl.right,Uu) # Case 1 probability
+    p.int2 <- eabetaC(m.counter,s,q,x,dr,nLu.left,nLuu.left,nUll.left,nUl.left)*eabetaC(m.counter,q,t,dr,y,Ll,nLu.right,nUl.right,Uu) # Case 2 probability
+    p.int3 <- eabetaC(m.counter,s,q,x,dr,Ll,nLu.left,nUl.left,Uu)*eabetaC(m.counter,q,t,dr,y,nLu.right,nLuu.right,nUll.right,nUl.right) # Case 3 probability
+    denom <- p.int1+p.int2+p.int3 # Dominating probabilities
+    if(u.bisect <= p.int1[1]/denom[1] | u.bisect > p.int1[2]/denom[1]){break} # If resolved sufficiently then break
+    m.counter <- m.counter + 2 # Else index counter
   }
 
-  ### Based on the appearance of the minimum / maximum determine laters for sq and qt
-
-  if(int.type == 1){
-    int.sq.type <- max(type.vec[1:2]); int.qt.type <- type.vec[3]
-  }else{
-    int.sq.type <- type.vec[1];int.qt.type <- max(type.vec[2:3])
+  # Determine intervals: interval type 2 / 3
+  repeat{
+    p.int1 <- eabetaC(m.counter,s,q,x,dr,Ll,nLu.left,nUl.left,Uu)*eabetaC(m.counter,q,t,dr,y,Ll,nLu.right,nUl.right,Uu) # Case 1 probability
+    p.int2 <- eabetaC(m.counter,s,q,x,dr,nLu.left,nLuu.left,nUll.left,nUl.left)*eabetaC(m.counter,q,t,dr,y,Ll,nLu.right,nUl.right,Uu) # Case 2 probability
+    p.int3 <- eabetaC(m.counter,s,q,x,dr,Ll,nLu.left,nUl.left,Uu)*eabetaC(m.counter,q,t,dr,y,nLu.right,nLuu.right,nUll.right,nUl.right) # Case 3 probability
+    denom <- p.int1+p.int2+p.int3 # Dominating probabilities
+    if(u.bisect <= (p.int1[1]+p.int2[1])/denom[1] | u.bisect > (p.int1[2]+p.int2[2])/denom[1]){break} # If resolved sufficiently then break
+    m.counter <- m.counter + 2 # Else index counter
   }
 
-  #### Determine Layers
-  if(minI == 1){ # Case where we have a minimum
-    if(int.sq.type == 1){ # If interval sq is type 1
-      layer.sq <- c(s,q,x,dr,Ll,min(Lu,x,dr),max(x,dr),bdry.l)
-    }else{
-      layer.sq <- c(s,q,x,dr,Ll,min(Lu,x,dr),max(x,dr,bdry.l),bdry.u)
-    }
-    if(int.qt.type == 1){ # If interval sq is type 1
-      layer.qt <- c(q,t,dr,y,Ll,min(Lu,dr,y),max(dr,y),bdry.l)
-    }else{
-      layer.qt <- c(q,t,dr,y,Ll,min(Lu,dr,y),max(dr,y,bdry.l),bdry.u)
-    }
-  }else{
-    if(int.sq.type == 1){ # If interval sq is type 1
-      layer.sq <- c(s,q,x,dr,bdry.l,min(x,dr),max(Ul,x,dr),Uu)
-    }else{
-      layer.sq <- c(s,q,x,dr,bdry.u,min(x,dr,bdry.l),max(Ul,x,dr),Uu)
-    }
-    if(int.qt.type == 1){ # If interval sq is type 1
-      layer.qt <- c(q,t,dr,y,bdry.l,min(dr,y),max(Ul,dr,y),Uu)
-    }else{
-      layer.qt <- c(q,t,dr,y,bdry.u,min(dr,y,bdry.l),max(Ul,dr,y),Uu)
-    }
+  # Cases and outputting layers
+  ## Case 1
+  if(u.bisect <= p.int1[1]/denom[1]){
+    layer.sq <- c(s,q,x,dr,Ll,nLu.left,nUl.left,Uu)
+    layer.qt <- c(q,t,dr,y,Ll,nLu.right,nUl.right,Uu)
+  }
+  ## Case 2
+  if(u.bisect > p.int1[1]/denom[1] & u.bisect <= (p.int1[2]+p.int2[2])/denom[1]){
+    layer.sq <- c(s,q,x,dr,nLu.left,nLuu.left,nUll.left,nUl.left)
+    layer.qt <- c(q,t,dr,y,Ll,nLu.right,nUl.right,Uu)
+  }
+  ## Case 3
+  if(u.bisect > (p.int1[2]+p.int2[2])/denom[1]){
+    layer.sq <- c(s,q,x,dr,Ll,nLu.left,nUl.left,Uu)
+    layer.qt <- c(q,t,dr,y,nLu.right,nLuu.right,nUll.right,nUl.right)
   }
 
   ### Output
-  list(w=dr, layer.sq=layer.sq, layer.sq.type="Bessel", layer.qt=layer.qt, layer.qt.type="Bessel", u.ints = u.ints, l.bds = rbind(bounds.l.one,bounds.l.two,bounds.l.three), u.bds = rbind(bounds.u.one,bounds.u.two,bounds.u.three),mnmx=mnmx,tp.mat=tp.mat)
+  list(w=dr, layer.sq=layer.sq, layer.sq.type="Bessel", layer.qt=layer.qt, layer.qt.type="Bessel", u.bisect = u.bisect)
 }
