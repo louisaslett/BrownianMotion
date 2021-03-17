@@ -449,14 +449,16 @@ sim.condintersection.simpt_ <- function(s, q, t, x, y, Ll, Lu, Ul, Uu) {
   Lp <- pnorm(nmat[,1], nmat[,5], sd = bbsd)
   Up <- pnorm(nmat[,2], nmat[,5], sd = bbsd)
   itwt <- nmat[,4]*(Up-Lp)
-  nmat <- cbind(esi, ea, eb, wt = nmat[,4], itwt = (itwt)/sum(itwt), L = nmat[,1], Lp, U = nmat[,2], Up, mmu = nmat[,5], B = nmat[,3])
+  # nmat <- cbind(esi, ea, eb, wt = nmat[,4], itwt = (itwt)/sum(itwt), L = nmat[,1], Lp, U = nmat[,2], Up, mmu = nmat[,5], B = nmat[,3])
+  # Debugging 10/3/2021
+  nmat <- cbind(esi, ea, eb, wt = nmat[,4], itwt = itwt, L = nmat[,1], Lp, U = nmat[,2], Up, mmu = nmat[,5], B = nmat[,3])
   pmat <- nmat[nmat[,1] == 1,]
   dind1 <- 0
   while(dind1 == 0) {
     dind2 <- 0
     cnt2I <- 0
     while(dind2 == 0) {
-      cnt2I <- cnt2I+1
+      cnt2I <- cnt2I+1; if(any(pmat[,5]<0)) browser()
       sp <- pmat[sample(1:(dim(pmat)[1]), 1, replace = TRUE, prob = pmat[,5]),]
       dr <- qnorm(runif(1, sp[7], sp[9]), sp[10], bbsd)
       pmt <- pmat[pmat[,11] == sp[11],]
