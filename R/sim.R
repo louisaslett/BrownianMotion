@@ -133,48 +133,53 @@ sim <- function(bm, t, refine = bm$refine, mult = bm$mult, prefer = bm$prefer) {
         }
       }
     }
-    if(length(t.intersection) > 0) {
+    while(length(t.intersection) > 0) {
       # Do simulation conditional on intersection layers
-      t.intersection <- sapply(t.intersection,
-                               function(t) {
-                                 c(l = tail(which(bm$t<t), 1), r = head(which(bm$t>t), 1), q = t)
-                               })
-      for(l in unique(t.intersection[1,])) {
-        i <- which(t.intersection[1,]==l)
-        r <- t.intersection[2,i[1]]
-        for(qq in rev(t.intersection[3,i])) {
-          sim.condintersection_(bm, l, qq, r)
-          if(prefer == "bessel") {
-            intersection.to.bessel_(bm, c(match(qq, bm$layers$t.u), match(qq, bm$layers$t.l)))
-          }
-          l <- l+1
-          r <- r+1
-          if(!isFALSE(refine)) {
-            refine_(bm, match(qq, bm$layers$t.u), mult)
-            refine_(bm, match(qq, bm$layers$t.l), mult)
-          }
-        }
+      lrq <- sapply(t.intersection,
+                    function(t) {
+                      c(l = tail(which(bm$t<t), 1), r = head(which(bm$t>t), 1), q = t)
+                    })
+      i <- which.min(abs(abs(lrq[3,]-bm$t[lrq[1,]])/(bm$t[lrq[2,]]-bm$t[lrq[1,]])-0.5))
+      l.idx <- lrq[1,i]
+      r.idx <- lrq[2,i]
+      q <- lrq[3,i]
+
+      print(glue("intersection sim at {q} in interval ({bm$t[l.idx]},{bm$t[r.idx]})"))
+
+      sim.condintersection_(bm, l.idx, q, r.idx)
+      if(prefer == "bessel") {
+        intersection.to.bessel_(bm, c(match(q, bm$layers$t.u), match(q, bm$layers$t.l)))
       }
+      if(!isFALSE(refine)) {
+        refine_(bm, match(q, bm$layers$t.u), mult)
+        refine_(bm, match(q, bm$layers$t.l), mult)
+      }
+
+      t.intersection <- t.intersection[-i]
     }
-    if(length(t.bessel) > 0) {
-      # Do simulation conditional on intersection layers
-      t.bessel <- sapply(t.bessel,
-                         function(t) {
-                           c(l = tail(which(bm$t<t), 1), r = head(which(bm$t>t), 1), q = t)
-                         })
-      for(l in unique(t.bessel[1,])) {
-        i <- which(t.bessel[1,]==l)
-        r <- t.bessel[2,i[1]]
-        for(qq in rev(t.bessel[3,i])) {
-          sim.condbessel_(bm, l, qq, r)
-          l <- l+1
-          r <- r+1
-          if(!isFALSE(refine)) {
-            refine_(bm, match(qq, bm$layers$t.u), mult)
-            refine_(bm, match(qq, bm$layers$t.l), mult)
-          }
-        }
+    while(length(t.bessel) > 0) {
+      # Do simulation conditional on bessel layers
+      lrq <- sapply(t.bessel,
+                    function(t) {
+                      c(l = tail(which(bm$t<t), 1), r = head(which(bm$t>t), 1), q = t)
+                    })
+      i <- which.min(abs(abs(lrq[3,]-bm$t[lrq[1,]])/(bm$t[lrq[2,]]-bm$t[lrq[1,]])-0.5))
+      l.idx <- lrq[1,i]
+      r.idx <- lrq[2,i]
+      q <- lrq[3,i]
+
+      print(glue("bessel sim at {q} in interval ({bm$t[l.idx]},{bm$t[r.idx]})"))
+
+      sim.condbessel_(bm, l.idx, q, r.idx)
+      if(prefer == "intersection") {
+        bessel.to.intersection_(bm, c(match(q, bm$layers$t.u), match(q, bm$layers$t.l)))
       }
+      if(!isFALSE(refine)) {
+        refine_(bm, match(q, bm$layers$t.u), mult)
+        refine_(bm, match(q, bm$layers$t.l), mult)
+      }
+
+      t.bessel <- t.bessel[-i]
     }
     if(length(t.bblocal) > 0) {
       # Do simulation conditional on bb-localised layers
@@ -205,47 +210,53 @@ sim <- function(bm, t, refine = bm$refine, mult = bm$mult, prefer = bm$prefer) {
         }
       }
     }
-    if(length(t.bbintersection) > 0) {
-      # Do simulation conditional on intersection layers
-      t.bbintersection <- sapply(t.bbintersection,
-                                 function(t) {
-                                   c(l = tail(which(bm$t<t), 1), r = head(which(bm$t>t), 1), q = t)
-                                 })
-      for(l in unique(t.bbintersection[1,])) {
-        i <- which(t.bbintersection[1,]==l)
-        r <- t.bbintersection[2,i[1]]
-        for(qq in rev(t.bbintersection[3,i])) {
-          sim.condbbintersection_(bm, l, qq, r)
-          if(prefer == "bessel") {
-            intersection.to.bessel_(bm, c(match(qq, bm$layers$t.u), match(qq, bm$layers$t.l)))
-          }
-          l <- l+1
-          r <- r+1
-          if(!isFALSE(refine)) {
-            refine_(bm, match(qq, bm$layers$t.u), mult)
-            refine_(bm, match(qq, bm$layers$t.l), mult)
-          }
-        }
+    while(length(t.bbintersection) > 0) {
+      # Do simulation conditional on BB intersection layers
+      lrq <- sapply(t.bbintersection,
+                    function(t) {
+                      c(l = tail(which(bm$t<t), 1), r = head(which(bm$t>t), 1), q = t)
+                    })
+      i <- which.min(abs(abs(lrq[3,]-bm$t[lrq[1,]])/(bm$t[lrq[2,]]-bm$t[lrq[1,]])-0.5))
+      l.idx <- lrq[1,i]
+      r.idx <- lrq[2,i]
+      q <- lrq[3,i]
+
+      print(glue("bb-intersection sim at {q} in interval ({bm$t[l.idx]},{bm$t[r.idx]})"))
+
+      sim.condbbintersection_(bm, l.idx, q, r.idx)
+      if(prefer == "bessel") {
+        intersection.to.bessel_(bm, c(match(q, bm$layers$t.u), match(q, bm$layers$t.l)))
       }
+      if(!isFALSE(refine)) {
+        refine_(bm, match(q, bm$layers$t.u), mult)
+        refine_(bm, match(q, bm$layers$t.l), mult)
+      }
+
+      t.bbintersection <- t.bbintersection[-i]
     }
-    if(length(t.bbbessel) > 0) {
-      t.bbbessel <- sapply(t.bbbessel,
-                           function(t) {
-                             c(l = tail(which(bm$t<t), 1), r = head(which(bm$t>t), 1), q = t)
-                           })
-      for(l in unique(t.bbbessel[1,])) {
-        i <- which(t.bbbessel[1,]==l)
-        r <- t.bbbessel[2,i[1]]
-        for(qq in rev(t.bbbessel[3,i])) {
-          sim.condbbbessel_(bm, l, qq, r)
-          l <- l+1
-          r <- r+1
-          if(!isFALSE(refine)) {
-            refine_(bm, match(qq, bm$layers$t.u), mult)
-            refine_(bm, match(qq, bm$layers$t.l), mult)
-          }
-        }
+    while(length(t.bbbessel) > 0) {
+      # Do simulation conditional on BB bessel layers
+      lrq <- sapply(t.bbbessel,
+                    function(t) {
+                      c(l = tail(which(bm$t<t), 1), r = head(which(bm$t>t), 1), q = t)
+                    })
+      i <- which.min(abs(abs(lrq[3,]-bm$t[lrq[1,]])/(bm$t[lrq[2,]]-bm$t[lrq[1,]])-0.5))
+      l.idx <- lrq[1,i]
+      r.idx <- lrq[2,i]
+      q <- lrq[3,i]
+
+      print(glue("bb-bessel sim at {q} in interval ({bm$t[l.idx]},{bm$t[r.idx]})"))
+
+      sim.condbbbessel_(bm, l.idx, q, r.idx)
+      if(prefer == "intersection") {
+        bessel.to.intersection_(bm, c(match(q, bm$layers$t.u), match(q, bm$layers$t.l)))
       }
+      if(!isFALSE(refine)) {
+        refine_(bm, match(q, bm$layers$t.u), mult)
+        refine_(bm, match(q, bm$layers$t.l), mult)
+      }
+
+      t.bbbessel <- t.bbbessel[-i]
     }
     if(length(t.bmbb) > 0) {
       # Do standard Brownian bridges
