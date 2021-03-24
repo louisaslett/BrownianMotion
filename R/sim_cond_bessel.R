@@ -171,7 +171,7 @@ sim.condbessel2_ <- function(q, s, t, x, y, Ll, Lu, Ul, Uu) {
     p.int2 <- eabetaC_(m.counter,s,q,x,dr,nLu.left,nLuu.left,nUll.left,nUl.left)*eabetaC_(m.counter,q,t,dr,y,Ll,nLu.right,nUl.right,Uu) # Case 2 probability
     p.int3 <- eabetaC_(m.counter,s,q,x,dr,Ll,nLu.left,nUl.left,Uu)*eabetaC_(m.counter,q,t,dr,y,nLu.right,nLuu.right,nUll.right,nUl.right) # Case 3 probability
     denom <- p.int1+p.int2+p.int3 # Dominating probabilities
-    if(u.bisect <= p.int1[1]/denom[1] | u.bisect > p.int1[2]/denom[1]){break} # If resolved sufficiently then break
+    if(u.bisect <= p.int1[1]/denom[2] | u.bisect > p.int1[2]/denom[1]){break} # If resolved sufficiently then break
     m.counter <- m.counter + 2 # Else index counter
   }
 
@@ -181,23 +181,23 @@ sim.condbessel2_ <- function(q, s, t, x, y, Ll, Lu, Ul, Uu) {
     p.int2 <- eabetaC_(m.counter,s,q,x,dr,nLu.left,nLuu.left,nUll.left,nUl.left)*eabetaC_(m.counter,q,t,dr,y,Ll,nLu.right,nUl.right,Uu) # Case 2 probability
     p.int3 <- eabetaC_(m.counter,s,q,x,dr,Ll,nLu.left,nUl.left,Uu)*eabetaC_(m.counter,q,t,dr,y,nLu.right,nLuu.right,nUll.right,nUl.right) # Case 3 probability
     denom <- p.int1+p.int2+p.int3 # Dominating probabilities
-    if(u.bisect <= (p.int1[1]+p.int2[1])/denom[1] | u.bisect > (p.int1[2]+p.int2[2])/denom[1]){break} # If resolved sufficiently then break
+    if(u.bisect <= (p.int1[1]+p.int2[1])/denom[2] | u.bisect > (p.int1[2]+p.int2[2])/denom[1]){break} # If resolved sufficiently then break
     m.counter <- m.counter + 2 # Else index counter
   }
 
   # Cases and outputting layers
   ## Case 1
-  if(u.bisect <= p.int1[1]/denom[1]){
+  if(u.bisect <= p.int1[1]/denom[2]){
     layer.sq <- c(s,q,x,dr,Ll,nLu.left,nUl.left,Uu)
     layer.qt <- c(q,t,dr,y,Ll,nLu.right,nUl.right,Uu)
   }
   ## Case 2
-  if(u.bisect > p.int1[1]/denom[1] & u.bisect <= (p.int1[2]+p.int2[2])/denom[1]){
+  if(u.bisect > p.int1[1]/denom[2] & u.bisect <= (p.int1[1]+p.int2[1])/denom[2]){
     layer.sq <- c(s,q,x,dr,nLu.left,nLuu.left,nUll.left,nUl.left)
     layer.qt <- c(q,t,dr,y,Ll,nLu.right,nUl.right,Uu)
   }
   ## Case 3
-  if(u.bisect > (p.int1[2]+p.int2[2])/denom[1]){
+  if(u.bisect > (p.int1[1]+p.int2[1])/denom[2]){
     layer.sq <- c(s,q,x,dr,Ll,nLu.left,nUl.left,Uu)
     layer.qt <- c(q,t,dr,y,nLu.right,nLuu.right,nUll.right,nUl.right)
   }
