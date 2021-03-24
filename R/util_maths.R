@@ -37,29 +37,6 @@ eazetaC_ <- function(m, s, t, x, y, L, U) {
 
 ##########
 
-eabe3C <- function(m, s, t, x, y, Ll, Lu, Ul, Uu) {
-  if(m >= mpfrthr) {
-    pbn <- m*mpfrpbn
-    s <- mpfr(s, precBits = pbn)
-    t <- mpfr(t, precBits = pbn)
-    x <- mpfr(x, precBits = pbn)
-    y <- mpfr(y, precBits = pbn)
-    Ll <- mpfr(Ll, precBits = pbn)
-    Lu <- mpfr(Lu, precBits = pbn)
-    Ul <- mpfr(Ul, precBits = pbn)
-    Uu <- mpfr(Uu, precBits = pbn)
-  }
-  z1 <- eaze3C(m,s,t,x,y,Ll,Uu)
-  z2 <- c(eaze3C(m,s,t,x,y,Lu,Uu)[2:3],
-          eaze3C(m+2,s,t,x,y,Lu,Uu)[2])
-  z3 <- c(eaze3C(m,s,t,x,y,Ll,Ul)[2:3],
-          eaze3C(m+2,s,t,x,y,Ll,Ul)[2])
-  z4 <- eaze3C(m,s,t,x,y,Lu,Ul)
-  c(s1 = as.numeric(-z1[1]+z2[1]+z3[1]-z4[1]),
-    s2 = as.numeric(-z1[2]+z2[2]+z3[2]-z4[2]),
-    s3 = as.numeric(-z1[3]+z2[3]+z3[3]-z4[3]))
-}
-
 eaze3C <- function(m, s, t, x, y, L, U) {
   if(max(x-U,y-U,L-x,L-y) >= 0) {
     s1 <- s2 <- s3 <- 1

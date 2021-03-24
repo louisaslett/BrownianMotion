@@ -65,11 +65,11 @@ refine.intersection_ <- function(bm, lyr.idx, mult) {
       mat <- matrix(c(Ll,Ls,Us,Uu,Ls,Lu,Us,Uu,Ll,Ls,Ul,Us,Ls,Lu,Ul,Us), 4, 4, byrow=TRUE)
       bbind <- deind <- 0
       bbct <- 1
-      m1 <- 3
+      m1 <- 5
       u1 <- runif(1, 0, 1)
       while(bbind == 0) {
         while(deind == 0) {
-          debd <- eabe3C(m1,s,t,x,y,Ll,Lu,Ul,Uu)[2:3]
+          debd <- eabetaC_(m1,s,t,x,y,Ll,Lu,Ul,Uu)[2:1]
           if(debd[2] <= 0) {
             m1 <- m1+2
           } else {

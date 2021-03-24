@@ -142,10 +142,10 @@ intersection.layers.sim_ <- function(bm, s, t, x, y, Ll, Lu, Ul, Uu, act) {
     Di <- 1
   } else {
     bbind <- deind <- 0
-    m2 <- m3 <- 3
+    m2 <- m3 <- 5
     u2 <- runif(1, 0, 1)
     while(deind == 0) {
-      debd <- eabe3C(m2, s, t, x, y, Ll, xb, yb, Uu)[2:3]
+      debd <- eabetaC_(m2, s, t, x, y, Ll, xb, yb, Uu)[2:1]
       if(debd[2] <= 0) {
         m2 <- m2+2
       } else {
@@ -173,7 +173,7 @@ intersection.layers.sim_ <- function(bm, s, t, x, y, Ll, Lu, Ul, Uu, act) {
         } else {
           m2 <- m2+2
           m3 <- m3+2
-          debd <- eabe3C(m2, s, t, x, y, Ll, xb, yb, Uu)[2:3]
+          debd <- eabetaC_(m2, s, t, x, y, Ll, xb, yb, Uu)[2:1]
         }
       }
     }
