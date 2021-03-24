@@ -1,5 +1,5 @@
 mpfrthr <- 100 # m threshold for high precision
-mpfrpbn <- 10
+mpfrpbn <- 5
 
 eagammaC_ <- function(m, s, t, x, y, L, U) {
   if(m >= mpfrthr) {
@@ -51,7 +51,7 @@ eaze3C <- function(m, s, t, x, y, L, U) {
     s1 <- s2+exp(P*((m+1)/2)^2*D^2-P*((m+1)/2)*D*z)+exp(P*((m+1)/2)^2*D^2+P*((m+1)/2)*D*z)
     s3 <- s2+exp(P*(D*((m+3)/2)+L-x)*(D*((m+3)/2)+L-y))+exp(P*(D*((m+3)/2)-U+x)*(D*((m+3)/2)-U+y))
   }
-  c(s1=s1,s2=s2,s3=s3)
+  c(s1=s1,s2=s2,s3=s3) # s1 / s3 upper bounds, s2 lower bound
 }
 
 # eabetaC_old		<- function(m,s,t,x,y,Ll,Lu,Ul,Uu) {
@@ -74,49 +74,6 @@ eaze3C <- function(m, s, t, x, y, L, U) {
 # }
 
 
-eabetaC_ <- function(m,s,t,x,y,Ll,Lu,Ul,Uu) {
-  j <- 2:((m+1)/2) # Evaluated from second term in infinite sum to account for cancellation of terms in the first term
-  P <- -2/(t-s)
-  z <- y-x
-  Dlu <- Uu-Ll
-  D1lu <- Dlu*j+Ll
-  D2lu <- Dlu*j-Uu
-  Dll <- Ul-Ll
-  D1ll <- Dll*j+Ll
-  D2ll <- Dll*j-Ul
-  Duu <- Uu-Lu
-  D1uu <- Duu*j+Lu
-  D2uu <- Duu*j-Uu
-  Dul <- Ul-Lu
-  D1ul <- Dul*j+Lu
-  D2ul <- Dul*j-Ul
-
-  # miss <-
-  #   + (exp(P*(Uu-x)*(Uu-y)) + exp(P*(-Ll+x)*(-Ll+y))) -
-  #   (exp(P*(Uu-x)*(Uu-y)) + exp(P*(-Lu+x)*(-Lu+y))) -
-  #   (exp(P*(Ul-x)*(Ul-y)) + exp(P*(-Ll+x)*(-Ll+y))) +
-  #   (exp(P*(Ul-x)*(Ul-y)) + exp(P*(-Lu+x)*(-Lu+y)))
-
-  s1 <-
-    + (exp(P*Dlu^2-P*Dlu*z) + exp(P*Dlu^2+P*Dlu*z)) - # Remainder of z1 after cancellation
-    (exp(P*Dll^2-P*Dll*z) + exp(P*Dll^2+P*Dll*z)) -  # Remainder of z2 after cancellation
-    (exp(P*Duu^2-P*Duu*z) + exp(P*Duu^2+P*Duu*z)) +  # Remainder of z3 after cancellation
-    (exp(P*Dul^2-P*Dul*z) + exp(P*Dul^2+P*Dul*z)) -  # Remainder of z4 after cancellation
-    sum(exp(P*(D1lu-x)*(D1lu-y)) + exp(P*(D2lu+x)*(D2lu+y)) - exp(P*j^2*Dlu^2-P*j*Dlu*z) - exp(P*j^2*Dlu^2+P*j*Dlu*z)) + # Remaining terms of z1 *A
-    sum(exp(P*(D1ll-x)*(D1ll-y)) + exp(P*(D2ll+x)*(D2ll+y)) - exp(P*j^2*Dll^2-P*j*Dll*z) - exp(P*j^2*Dll^2+P*j*Dll*z)) + # Remaining terms of z2 *C
-    sum(exp(P*(D1uu-x)*(D1uu-y)) + exp(P*(D2uu+x)*(D2uu+y)) - exp(P*j^2*Duu^2-P*j*Duu*z) - exp(P*j^2*Duu^2+P*j*Duu*z)) - # Remaining terms of z3 *D
-    sum(exp(P*(D1ul-x)*(D1ul-y)) + exp(P*(D2ul+x)*(D2ul+y)) - exp(P*j^2*Dul^2-P*j*Dul*z) - exp(P*j^2*Dul^2+P*j*Dul*z)) - # Remaining terms of z4 *B
-    (exp(P*((m+1)/2)^2*Dlu^2-P*((m+1)/2)*Dlu*z) + exp(P*((m+1)/2)^2*Dlu^2+P*((m+1)/2)*Dlu*z)) - # We want a lower bound on z1 so removing the final terns from *A
-    (exp(P*((m+1)/2)^2*Dul^2-P*((m+1)/2)*Dul*z) + exp(P*((m+1)/2)^2*Dul^2+P*((m+1)/2)*Dul*z)) # We want a lower bound on z4 so removing the final terns from *B
-
-  s2 <- s1 +
-    (exp(P*((m+1)/2)^2*Dlu^2-P*((m+1)/2)*Dlu*z) + exp(P*((m+1)/2)^2*Dlu^2+P*((m+1)/2)*Dlu*z)) + # Now a upper bound on z1 by re-introducing removed terms from *A
-    (exp(P*((m+1)/2)^2*Dul^2-P*((m+1)/2)*Dul*z) + exp(P*((m+1)/2)^2*Dul^2+P*((m+1)/2)*Dul*z)) + # Now a upper bound on z4 by re-introducing removed terms from *B
-    (exp(P*(Dll*((m+3)/2)+Ll-x)*(Dll*((m+3)/2)+Ll-y)) + exp(P*(Dll*((m+3)/2)-Ul+x)*(Dll*((m+3)/2)-Ul+y))) + # Now an upper bound for z2 at next integer evaluation following the form of *C
-    (exp(P*(Duu*((m+3)/2)+Lu-x)*(Duu*((m+3)/2)+Lu-y)) + exp(P*(Duu*((m+3)/2)-Uu+x)*(Duu*((m+3)/2)-Uu+y))) # Now an upper bound for z3 at next integer evaluation following the form of *D
-
-  c(s1=s1, s2=s2) # s1 is the lower bound, s2 is the upper bound
-}
 
 
 ##########
@@ -126,10 +83,6 @@ earhoC		<- function(m,s,q,t,x,w,y,Ll,Lu,Ul,Uu){if(m>=mpfrthr){pbn<-m*mpfrpbn;s<-
 
 ##########
 
-easiga <- function(P,z,A,L) { P*(A*(A+2*L-z)+L*(L-z)) }
-easigb <- function(P,z,A,L) { P*(z-A-L) }
-eaphia <- function(P,z,A,si) { P*(A^2-si*A*z) }
-eaphib <- function(P,z,A,si) { P*si*A }
 earh3C <- function(m,s,q,t,x,w,y,Ll,Lu,Ul,Uu){if(m>=mpfrthr){pbn<-m*mpfrpbn;s<-mpfr(s,precBits=pbn);q<-mpfr(q,precBits=pbn);t<-mpfr(t,precBits=pbn);x<-mpfr(x,precBits=pbn);w<-mpfr(w,precBits=pbn);y<-mpfr(y,precBits=pbn);Ll<-mpfr(Ll,precBits=pbn);Lu<-mpfr(Lu,precBits=pbn);Ul<-mpfr(Ul,precBits=pbn);Uu<-mpfr(Uu,precBits=pbn)}; z1L<-eaze4C(m,s,q,x,w,Ll,Uu); z1R<-eaze4C(m,q,t,w,y,Ll,Uu); z2L<-eaze4C(m,s,q,x,w,Lu,Uu); z2R<-eaze4C(m,q,t,w,y,Lu,Uu); z3L<-eaze4C(m,s,q,x,w,Ll,Ul); z3R<-eaze4C(m,q,t,w,y,Ll,Ul); z4L<-eaze4C(m,s,q,x,w,Lu,Ul); z4R<-eaze4C(m,q,t,w,y,Lu,Ul); c(s1=as.numeric(-z1L[2]-z1R[2]+z1L[1]*z1R[1]+z2L[1]+z2R[1]-z2L[2]*z2R[2]+z3L[1]+z3R[1]-z3L[2]*z3R[2]-z4L[2]-z4R[2]+z4L[1]*z4R[1]),s2=as.numeric(-z1L[3]-z1R[3]+z1L[2]*z1R[2]+z2L[2]+z2R[2]-z2L[3]*z2R[3]+z3L[2]+z3R[2]-z3L[3]*z3R[3]-z4L[3]-z4R[3]+z4L[2]*z4R[2]),s3=as.numeric(-z1L[4]-z1R[4]+z1L[3]*z1R[3]+z2L[3]+z2R[3]-z2L[4]*z2R[4]+z3L[3]+z3R[3]-z3L[4]*z3R[4]-z4L[4]-z4R[4]+z4L[3]*z4R[3]))}
 eaze4C		<- function(m,s,t,x,y,L,U){if(max(x-U,y-U,L-x,L-y)>=0){s1<-1;s2<-1;s3<-1;s4<-1}else{j<-1:((m+1)/2);P<--2/(t-s);D<-U-L;D1<-D*j+L;D2<-D*j-U;z<-y-x;s2<-sum(exp(P*(D1-x)*(D1-y))+exp(P*(D2+x)*(D2+y))-exp(P*j^2*D^2-P*j*D*z)-exp(P*j^2*D^2+P*j*D*z));s1<-s2+exp(P*((m+1)/2)^2*D^2-P*((m+1)/2)*D*z)+exp(P*((m+1)/2)^2*D^2+P*((m+1)/2)*D*z);s3<-s2+exp(P*(D*((m+3)/2)+L-x)*(D*((m+3)/2)+L-y))+exp(P*(D*((m+3)/2)-U+x)*(D*((m+3)/2)-U+y));s4<-s3-exp(P*((m+3)/2)^2*D^2-P*((m+3)/2)*D*z)-exp(P*((m+3)/2)^2*D^2+P*((m+3)/2)*D*z)};c(s1=s1,s2=s2,s3=s3,s4=s4)}
 
