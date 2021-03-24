@@ -271,11 +271,9 @@ eadelC_ <- function(mt, s, t, x, y, m, u) {
     y <- mpfr(y, precBits = pbn)
     m <- mpfr(m, precBits = pbn)
     u <- mpfr(u, precBits = pbn)
-    c(s1 = eadelR_(mt, s, t, x, y, m, u),
-      s2 = eadelR_(mt+1, s, t, x, y, m, u))
-  } else {
-    scale:::eadel_pair_cpp(mt,s,t,x,y,m,u)
   }
+  c(s1 = eadelR_(mt, s, t, x, y, m, u),
+    s2 = eadelR_(mt+1, s, t, x, y, m, u))
 }
 
 ###############
