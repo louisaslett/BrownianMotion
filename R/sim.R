@@ -144,7 +144,7 @@ sim <- function(bm, t, refine = bm$refine, mult = bm$mult, prefer = bm$prefer) {
       r.idx <- lrq[2,i]
       q <- lrq[3,i]
 
-      print(glue("intersection sim at {q} in interval ({bm$t[l.idx]},{bm$t[r.idx]})"))
+      # print(glue("intersection sim at {q} in interval ({bm$t[l.idx]},{bm$t[r.idx]})"))
 
       sim.condintersection_(bm, l.idx, q, r.idx)
       if(prefer == "bessel") {
@@ -168,7 +168,7 @@ sim <- function(bm, t, refine = bm$refine, mult = bm$mult, prefer = bm$prefer) {
       r.idx <- lrq[2,i]
       q <- lrq[3,i]
 
-      print(glue("bessel sim at {q} in interval ({bm$t[l.idx]},{bm$t[r.idx]})"))
+      # print(glue("bessel sim at {q} in interval ({bm$t[l.idx]},{bm$t[r.idx]})"))
 
       sim.condbessel_(bm, l.idx, q, r.idx)
       if(prefer == "intersection") {
@@ -221,7 +221,7 @@ sim <- function(bm, t, refine = bm$refine, mult = bm$mult, prefer = bm$prefer) {
       r.idx <- lrq[2,i]
       q <- lrq[3,i]
 
-      print(glue("bb-intersection sim at {q} in interval ({bm$t[l.idx]},{bm$t[r.idx]})"))
+      # print(glue("bb-intersection sim at {q} in interval ({bm$t[l.idx]},{bm$t[r.idx]})"))
 
       sim.condbbintersection_(bm, l.idx, q, r.idx)
       if(prefer == "bessel") {
@@ -245,7 +245,7 @@ sim <- function(bm, t, refine = bm$refine, mult = bm$mult, prefer = bm$prefer) {
       r.idx <- lrq[2,i]
       q <- lrq[3,i]
 
-      print(glue("bb-bessel sim at {q} in interval ({bm$t[l.idx]},{bm$t[r.idx]})"))
+      # print(glue("bb-bessel sim at {q} in interval ({bm$t[l.idx]},{bm$t[r.idx]})"))
 
       sim.condbbbessel_(bm, l.idx, q, r.idx)
       if(prefer == "intersection") {
