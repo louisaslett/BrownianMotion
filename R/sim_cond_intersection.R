@@ -540,7 +540,7 @@ sim.condintersection.simlyr_ <- function(s, q, t, x, w, y, Ll, Lu, Ul, Uu) {
   u1 <- runif(1, 0, 1)
   while(bbrind == 0) {
     while(deind==0) {
-      debd <- earhoC(m1,s,q,t,x,w,y,Ll,Lu,Ul,Uu)
+      debd <- earhoC_(m1,s,q,t,x,w,y,Ll,Lu,Ul,Uu)
       if(debd[2] <= 0) {
         m1 <- m1+2
       } else {

@@ -37,22 +37,6 @@ eazetaC_ <- function(m, s, t, x, y, L, U) {
 
 ##########
 
-eaze3C <- function(m, s, t, x, y, L, U) {
-  if(max(x-U,y-U,L-x,L-y) >= 0) {
-    s1 <- s2 <- s3 <- 1
-  } else {
-    j <- 1:((m+1)/2)
-    P <- -2/(t-s)
-    D <- U-L
-    D1 <- D*j+L
-    D2 <- D*j-U
-    z <- y-x
-    s2 <- sum(exp(P*(D1-x)*(D1-y))+exp(P*(D2+x)*(D2+y))-exp(P*j^2*D^2-P*j*D*z)-exp(P*j^2*D^2+P*j*D*z))
-    s1 <- s2+exp(P*((m+1)/2)^2*D^2-P*((m+1)/2)*D*z)+exp(P*((m+1)/2)^2*D^2+P*((m+1)/2)*D*z)
-    s3 <- s2+exp(P*(D*((m+3)/2)+L-x)*(D*((m+3)/2)+L-y))+exp(P*(D*((m+3)/2)-U+x)*(D*((m+3)/2)-U+y))
-  }
-  c(s1=s1,s2=s2,s3=s3) # s1 / s3 upper bounds, s2 lower bound
-}
 
 # eabetaC_old		<- function(m,s,t,x,y,Ll,Lu,Ul,Uu) {
 #   if(m>=mpfrthr) {
@@ -78,7 +62,27 @@ eaze3C <- function(m, s, t, x, y, L, U) {
 
 ##########
 
-earhoC		<- function(m,s,q,t,x,w,y,Ll,Lu,Ul,Uu){if(m>=mpfrthr){pbn<-m*mpfrpbn;s<-mpfr(s,precBits=pbn);q<-mpfr(q,precBits=pbn);t<-mpfr(t,precBits=pbn);x<-mpfr(x,precBits=pbn);w<-mpfr(w,precBits=pbn);y<-mpfr(y,precBits=pbn);Ll<-mpfr(Ll,precBits=pbn);Lu<-mpfr(Lu,precBits=pbn);Ul<-mpfr(Ul,precBits=pbn);Uu<-mpfr(Uu,precBits=pbn)}; z1L<-eaze3C(m,s,q,x,w,Ll,Uu); z1R<-eaze3C(m,q,t,w,y,Ll,Uu); z2L<-eaze3C(m,s,q,x,w,Lu,Uu); z2R<-eaze3C(m,q,t,w,y,Lu,Uu); z3L<-eaze3C(m,s,q,x,w,Ll,Ul); z3R<-eaze3C(m,q,t,w,y,Ll,Ul); z4L<-eaze3C(m,s,q,x,w,Lu,Ul); z4R<-eaze3C(m,q,t,w,y,Lu,Ul);c(s1=as.numeric(-z1L[2]-z1R[2]+z1L[1]*z1R[1]+z2L[1]+z2R[1]-z2L[2]*z2R[2]+z3L[1]+z3R[1]-z3L[2]*z3R[2]-z4L[2]-z4R[2]+z4L[1]*z4R[1]),s2=as.numeric(-z1L[3]-z1R[3]+z1L[2]*z1R[2]+z2L[2]+z2R[2]-z2L[3]*z2R[3]+z3L[2]+z3R[2]-z3L[3]*z3R[3]-z4L[3]-z4R[3]+z4L[2]*z4R[2]))}
+earhoC_ <- function(m,s,q,t,x,w,y,Ll,Lu,Ul,Uu) {
+  beta.l.p0 <- eabetaC_(m,s,q,x,w,Ll,Lu,Ul,Uu)
+  beta.l.p2 <- eabetaC_(m+2,s,q,x,w,Ll,Lu,Ul,Uu)
+  beta.r.p0 <- eabetaC_(m,q,t,w,y,Ll,Lu,Ul,Uu)
+  beta.r.p2 <- eabetaC_(m+2,q,t,w,y,Ll,Lu,Ul,Uu)
+
+  z1L.n <- c(beta.l.p0[3],beta.l.p0[4],beta.l.p2[3],beta.l.p2[4])
+  z1R.n <- c(beta.r.p0[3],beta.r.p0[4],beta.r.p2[3],beta.r.p2[4])
+  z3L.n <- c(beta.l.p0[5],beta.l.p0[6],beta.l.p2[5],beta.l.p2[6])
+  z3R.n <- c(beta.r.p0[5],beta.r.p0[6],beta.r.p2[5],beta.r.p2[6])
+  z2L.n <- c(beta.l.p0[7],beta.l.p0[8],beta.l.p2[7],beta.l.p2[8])
+  z2R.n <- c(beta.r.p0[7],beta.r.p0[8],beta.r.p2[7],beta.r.p2[8])
+  z4L.n <- c(beta.l.p0[9],beta.l.p0[10],beta.l.p2[9],beta.l.p2[10])
+  z4R.n <- c(beta.r.p0[9],beta.r.p0[10],beta.r.p2[9],beta.r.p2[10])
+
+  # s2.new2 <- beta.l.p0[1] + beta.r.p0[1] + z1L.n[2]*z1R.n[2] - z2L.n[1]*z2R.n[1] - z3L.n[1]*z3R.n[1] +z4L.n[2]*z4R.n[2] # Note, perhaps worth modifying the upper bound to remove the double function calls to beta.
+
+  # s2 lower, s1 upper
+  c(s1=as.numeric(beta.l.p0[2] + beta.r.p0[2] + z1L.n[1]*z1R.n[1] - z2L.n[2]*z2R.n[2] - z3L.n[2]*z3R.n[2] +z4L.n[1]*z4R.n[1]),
+    s2=as.numeric(beta.l.p2[1] + beta.r.p2[1] + z1L.n[2]*z1R.n[2] - z2L.n[3]*z2R.n[3] - z3L.n[3]*z3R.n[3] +z4L.n[2]*z4R.n[2]))
+}
 
 
 ##########
