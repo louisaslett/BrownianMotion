@@ -153,7 +153,7 @@ intersection.layers.sim_ <- function(bm, s, t, x, y, Ll, Lu, Ul, Uu, act) {
       }
     }
     while(bbind == 0) {
-      nubd <- eabetaC_(m3, s, t, x, y, Ll, Lu, Ul, Uu)
+      nubd <- eabetaC_(m3, s, t, x, y, Ll, Lu, Ul, Uu)[1:2]
       if(u2 <= (nubd[1]/debd[1])) {
         bbind <- 1
         Di <- 1

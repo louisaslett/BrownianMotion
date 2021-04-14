@@ -35,32 +35,37 @@ eabetaC_ <- function(m,s,t,x,y,Ll,Lu,Ul,Uu) {
   D1ul <- Dul*j+Lu
   D2ul <- Dul*j-Ul
 
-  # miss <-
-  #   + (exp(P*(Uu-x)*(Uu-y)) + exp(P*(-Ll+x)*(-Ll+y))) -
-  #   (exp(P*(Uu-x)*(Uu-y)) + exp(P*(-Lu+x)*(-Lu+y))) -
-  #   (exp(P*(Ul-x)*(Ul-y)) + exp(P*(-Ll+x)*(-Ll+y))) +
-  #   (exp(P*(Ul-x)*(Ul-y)) + exp(P*(-Lu+x)*(-Lu+y)))
+  s1res <- (exp(P*(Uu-x)*(Uu-y)) + exp(P*(-Ll+x)*(-Ll+y)))
+  s2res <- - (exp(P*(Ul-x)*(Ul-y)) + exp(P*(-Ll+x)*(-Ll+y)))
+  s3res <- - (exp(P*(Uu-x)*(Uu-y)) + exp(P*(-Lu+x)*(-Lu+y)))
+  s4res <- (exp(P*(Ul-x)*(Ul-y)) + exp(P*(-Lu+x)*(-Lu+y)))
 
-  s1 <-
-    + (exp(P*Dlu^2-P*Dlu*z) + exp(P*Dlu^2+P*Dlu*z)) - # Remainder of z1 after cancellation
-    (exp(P*Dll^2-P*Dll*z) + exp(P*Dll^2+P*Dll*z)) -  # Remainder of z2 after cancellation
-    (exp(P*Duu^2-P*Duu*z) + exp(P*Duu^2+P*Duu*z)) +  # Remainder of z3 after cancellation
-    (exp(P*Dul^2-P*Dul*z) + exp(P*Dul^2+P*Dul*z)) -  # Remainder of z4 after cancellation
-    sum(exp(P*(D1lu-x)*(D1lu-y)) + exp(P*(D2lu+x)*(D2lu+y)) - exp(P*j^2*Dlu^2-P*j*Dlu*z) - exp(P*j^2*Dlu^2+P*j*Dlu*z)) + # Remaining terms of z1 *A
-    sum(exp(P*(D1ll-x)*(D1ll-y)) + exp(P*(D2ll+x)*(D2ll+y)) - exp(P*j^2*Dll^2-P*j*Dll*z) - exp(P*j^2*Dll^2+P*j*Dll*z)) + # Remaining terms of z2 *C
-    sum(exp(P*(D1uu-x)*(D1uu-y)) + exp(P*(D2uu+x)*(D2uu+y)) - exp(P*j^2*Duu^2-P*j*Duu*z) - exp(P*j^2*Duu^2+P*j*Duu*z)) - # Remaining terms of z3 *D
-    sum(exp(P*(D1ul-x)*(D1ul-y)) + exp(P*(D2ul+x)*(D2ul+y)) - exp(P*j^2*Dul^2-P*j*Dul*z) - exp(P*j^2*Dul^2+P*j*Dul*z)) - # Remaining terms of z4 *B
-    (exp(P*((m+1)/2)^2*Dlu^2-P*((m+1)/2)*Dlu*z) + exp(P*((m+1)/2)^2*Dlu^2+P*((m+1)/2)*Dlu*z)) - # We want a lower bound on z1 so removing the final terns from *A
-    (exp(P*((m+1)/2)^2*Dul^2-P*((m+1)/2)*Dul*z) + exp(P*((m+1)/2)^2*Dul^2+P*((m+1)/2)*Dul*z)) # We want a lower bound on z4 so removing the final terns from *B
+  # miss <-   s1res + s2res + s3res + s4res
 
-  s2 <- s1 +
-    (exp(P*((m+1)/2)^2*Dlu^2-P*((m+1)/2)*Dlu*z) + exp(P*((m+1)/2)^2*Dlu^2+P*((m+1)/2)*Dlu*z)) + # Now a upper bound on z1 by re-introducing removed terms from *A
-    (exp(P*((m+1)/2)^2*Dul^2-P*((m+1)/2)*Dul*z) + exp(P*((m+1)/2)^2*Dul^2+P*((m+1)/2)*Dul*z)) + # Now a upper bound on z4 by re-introducing removed terms from *B
-    (exp(P*(Dll*((m+3)/2)+Ll-x)*(Dll*((m+3)/2)+Ll-y)) + exp(P*(Dll*((m+3)/2)-Ul+x)*(Dll*((m+3)/2)-Ul+y))) + # Now an upper bound for z2 at next integer evaluation following the form of *C
-    (exp(P*(Duu*((m+3)/2)+Lu-x)*(Duu*((m+3)/2)+Lu-y)) + exp(P*(Duu*((m+3)/2)-Uu+x)*(Duu*((m+3)/2)-Uu+y))) # Now an upper bound for z3 at next integer evaluation following the form of *D
+  s1p1 <- + (exp(P*Dlu^2-P*Dlu*z) + exp(P*Dlu^2+P*Dlu*z)) - sum(exp(P*(D1lu-x)*(D1lu-y)) + exp(P*(D2lu+x)*(D2lu+y)) - exp(P*j^2*Dlu^2-P*j*Dlu*z) - exp(P*j^2*Dlu^2+P*j*Dlu*z)) - (exp(P*((m+1)/2)^2*Dlu^2-P*((m+1)/2)*Dlu*z) + exp(P*((m+1)/2)^2*Dlu^2+P*((m+1)/2)*Dlu*z))
+  s1p2 <- - (exp(P*Dll^2-P*Dll*z) + exp(P*Dll^2+P*Dll*z)) + sum(exp(P*(D1ll-x)*(D1ll-y)) + exp(P*(D2ll+x)*(D2ll+y)) - exp(P*j^2*Dll^2-P*j*Dll*z) - exp(P*j^2*Dll^2+P*j*Dll*z))
+  s1p3 <- - (exp(P*Duu^2-P*Duu*z) + exp(P*Duu^2+P*Duu*z)) + sum(exp(P*(D1uu-x)*(D1uu-y)) + exp(P*(D2uu+x)*(D2uu+y)) - exp(P*j^2*Duu^2-P*j*Duu*z) - exp(P*j^2*Duu^2+P*j*Duu*z))
+  s1p4 <- + (exp(P*Dul^2-P*Dul*z) + exp(P*Dul^2+P*Dul*z)) - sum(exp(P*(D1ul-x)*(D1ul-y)) + exp(P*(D2ul+x)*(D2ul+y)) - exp(P*j^2*Dul^2-P*j*Dul*z) - exp(P*j^2*Dul^2+P*j*Dul*z)) - (exp(P*((m+1)/2)^2*Dul^2-P*((m+1)/2)*Dul*z) + exp(P*((m+1)/2)^2*Dul^2+P*((m+1)/2)*Dul*z))
 
-  c(s1=s1, s2=s2) # s1 is the lower bound, s2 is the upper bound
+  s2p1 <- s1p1 + (exp(P*((m+1)/2)^2*Dlu^2-P*((m+1)/2)*Dlu*z) + exp(P*((m+1)/2)^2*Dlu^2+P*((m+1)/2)*Dlu*z))
+  s2p2 <- s1p2 + (exp(P*(Dll*((m+3)/2)+Ll-x)*(Dll*((m+3)/2)+Ll-y)) + exp(P*(Dll*((m+3)/2)-Ul+x)*(Dll*((m+3)/2)-Ul+y)))
+  s2p3 <- s1p3 + (exp(P*(Duu*((m+3)/2)+Lu-x)*(Duu*((m+3)/2)+Lu-y)) + exp(P*(Duu*((m+3)/2)-Uu+x)*(Duu*((m+3)/2)-Uu+y)))
+  s2p4 <- s1p4 + (exp(P*((m+1)/2)^2*Dul^2-P*((m+1)/2)*Dul*z) + exp(P*((m+1)/2)^2*Dul^2+P*((m+1)/2)*Dul*z))
+
+  s1z1 <- s1res - s1p1
+  s1z2 <- - (s2res - s2p2)
+  s1z3 <- - (s3res - s2p3)
+  s1z4 <- s4res - s1p4
+
+  s2z1 <- s1res - s2p1
+  s2z2 <- - (s2res - s1p2)
+  s2z3 <- - (s3res - s1p3)
+  s2z4 <- s4res - s2p4
+
+  s1 <- s1p1 + s1p2 + s1p3 + s1p4
+  s2 <- s2p1 + s2p2 + s2p3 + s2p4
+
+  c(s1=s1, s2=s2, s1z1=s1z1, s2z1=s2z1, s1z2=s1z2, s2z2=s2z2, s1z3=s1z3, s2z3=s2z3, s1z4=s1z4, s2z4=s2z4) # s1 is the lower bound, s2 is the upper bound
 }
-
 
 

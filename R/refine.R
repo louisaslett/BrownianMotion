@@ -78,7 +78,7 @@ refine.intersection_ <- function(bm, lyr.idx, mult) {
         }
         be <- matrix(0, bbct, 2)
         for(i in 1:bbct) {
-          be[i,] <- eabetaC_(m1,s,t,x,y,mat[i,1],mat[i,2],mat[i,3],mat[i,4])
+          be[i,] <- eabetaC_(m1,s,t,x,y,mat[i,1],mat[i,2],mat[i,3],mat[i,4])[1:2]
         }
         bd <- c(sum(be[,1])/debd[1],sum(be[,2])/debd[2])
         if(u1 <= bd[1]) {

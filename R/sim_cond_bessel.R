@@ -178,8 +178,8 @@ sim.condbessel2_ <- function(q, s, t, x, y, Ll, Lu, Ul, Uu) {
 
     # Determine intervals
     repeat{
-      p.int1 <- eabetaC_(m.counter,q,t,dr,y,Ll,nLu.right,nUl.right,Uu) # Case 1 probability
-      p.int3 <- eabetaC_(m.counter,q,t,dr,y,nLu.right,nLuu.right,nUll.right,nUl.right) # Case 3 probability
+      p.int1 <- eabetaC_(m.counter,q,t,dr,y,Ll,nLu.right,nUl.right,Uu)[1:2] # Case 1 probability
+      p.int3 <- eabetaC_(m.counter,q,t,dr,y,nLu.right,nLuu.right,nUll.right,nUl.right)[1:2] # Case 3 probability
       denom <- p.int1+p.int3 # Dominating probabilities
       if(u.bisect <= p.int1[1]/denom[2] | u.bisect > p.int1[2]/denom[1]){break} # If resolved sufficiently then break
       m.counter <- m.counter + 2 # Else index counter
@@ -202,8 +202,8 @@ sim.condbessel2_ <- function(q, s, t, x, y, Ll, Lu, Ul, Uu) {
 
     # Determine intervals
     repeat{
-      p.int1 <- eabetaC_(m.counter,s,q,x,dr,Ll,nLu.left,nUl.left,Uu) # Case 1 probability
-      p.int2 <- eabetaC_(m.counter,s,q,x,dr,nLu.left,nLuu.left,nUll.left,nUl.left) # Case 2 probability
+      p.int1 <- eabetaC_(m.counter,s,q,x,dr,Ll,nLu.left,nUl.left,Uu)[1:2] # Case 1 probability
+      p.int2 <- eabetaC_(m.counter,s,q,x,dr,nLu.left,nLuu.left,nUll.left,nUl.left)[1:2] # Case 2 probability
       denom <- p.int1+p.int2 # Dominating probabilities
       if(u.bisect <= p.int1[1]/denom[2] | u.bisect > p.int1[2]/denom[1]){break} # If resolved sufficiently then break
       m.counter <- m.counter + 2 # Else index counter
@@ -226,9 +226,9 @@ sim.condbessel2_ <- function(q, s, t, x, y, Ll, Lu, Ul, Uu) {
 
     # Determine intervals: interval type 1
     repeat{
-      p.int1 <- eabetaC_(m.counter,s,q,x,dr,Ll,nLu.left,nUl.left,Uu)*eabetaC_(m.counter,q,t,dr,y,Ll,nLu.right,nUl.right,Uu) # Case 1 probability
-      p.int2 <- eabetaC_(m.counter,s,q,x,dr,nLu.left,nLuu.left,nUll.left,nUl.left)*eabetaC_(m.counter,q,t,dr,y,Ll,nLu.right,nUl.right,Uu) # Case 2 probability
-      p.int3 <- eabetaC_(m.counter,s,q,x,dr,Ll,nLu.left,nUl.left,Uu)*eabetaC_(m.counter,q,t,dr,y,nLu.right,nLuu.right,nUll.right,nUl.right) # Case 3 probability
+      p.int1 <- eabetaC_(m.counter,s,q,x,dr,Ll,nLu.left,nUl.left,Uu)[1:2]*eabetaC_(m.counter,q,t,dr,y,Ll,nLu.right,nUl.right,Uu)[1:2] # Case 1 probability
+      p.int2 <- eabetaC_(m.counter,s,q,x,dr,nLu.left,nLuu.left,nUll.left,nUl.left)[1:2]*eabetaC_(m.counter,q,t,dr,y,Ll,nLu.right,nUl.right,Uu)[1:2] # Case 2 probability
+      p.int3 <- eabetaC_(m.counter,s,q,x,dr,Ll,nLu.left,nUl.left,Uu)[1:2]*eabetaC_(m.counter,q,t,dr,y,nLu.right,nLuu.right,nUll.right,nUl.right)[1:2] # Case 3 probability
       denom <- p.int1+p.int2+p.int3 # Dominating probabilities
       if(u.bisect <= p.int1[1]/denom[2] | u.bisect > p.int1[2]/denom[1]){break} # If resolved sufficiently then break
       m.counter <- m.counter + 2 # Else index counter
@@ -236,9 +236,9 @@ sim.condbessel2_ <- function(q, s, t, x, y, Ll, Lu, Ul, Uu) {
 
     # Determine intervals: interval type 2 / 3
     repeat{
-      p.int1 <- eabetaC_(m.counter,s,q,x,dr,Ll,nLu.left,nUl.left,Uu)*eabetaC_(m.counter,q,t,dr,y,Ll,nLu.right,nUl.right,Uu) # Case 1 probability
-      p.int2 <- eabetaC_(m.counter,s,q,x,dr,nLu.left,nLuu.left,nUll.left,nUl.left)*eabetaC_(m.counter,q,t,dr,y,Ll,nLu.right,nUl.right,Uu) # Case 2 probability
-      p.int3 <- eabetaC_(m.counter,s,q,x,dr,Ll,nLu.left,nUl.left,Uu)*eabetaC_(m.counter,q,t,dr,y,nLu.right,nLuu.right,nUll.right,nUl.right) # Case 3 probability
+      p.int1 <- eabetaC_(m.counter,s,q,x,dr,Ll,nLu.left,nUl.left,Uu)[1:2]*eabetaC_(m.counter,q,t,dr,y,Ll,nLu.right,nUl.right,Uu)[1:2] # Case 1 probability
+      p.int2 <- eabetaC_(m.counter,s,q,x,dr,nLu.left,nLuu.left,nUll.left,nUl.left)[1:2]*eabetaC_(m.counter,q,t,dr,y,Ll,nLu.right,nUl.right,Uu)[1:2] # Case 2 probability
+      p.int3 <- eabetaC_(m.counter,s,q,x,dr,Ll,nLu.left,nUl.left,Uu)[1:2]*eabetaC_(m.counter,q,t,dr,y,nLu.right,nLuu.right,nUll.right,nUl.right)[1:2] # Case 3 probability
       denom <- p.int1+p.int2+p.int3 # Dominating probabilities
       if(u.bisect <= (p.int1[1]+p.int2[1])/denom[2] | u.bisect > (p.int1[2]+p.int2[2])/denom[1]){break} # If resolved sufficiently then break
       m.counter <- m.counter + 2 # Else index counter

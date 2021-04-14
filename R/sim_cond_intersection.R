@@ -549,8 +549,8 @@ sim.condintersection.simlyr_ <- function(s, q, t, x, w, y, Ll, Lu, Ul, Uu) {
     }
     bebe <- matrix(0, bbrct, 4)
     for(i in 1:bbrct) {
-      bebe[i,1:2] <- eabetaC_(m1,s,q,x,w,LRmat[i,1],LRmat[i,2],LRmat[i,3],LRmat[i,4])
-      bebe[i,3:4] <- eabetaC_(m1,q,t,w,y,LRmat[i,5],LRmat[i,6],LRmat[i,7],LRmat[i,8])
+      bebe[i,1:2] <- eabetaC_(m1,s,q,x,w,LRmat[i,1],LRmat[i,2],LRmat[i,3],LRmat[i,4])[1:2]
+      bebe[i,3:4] <- eabetaC_(m1,q,t,w,y,LRmat[i,5],LRmat[i,6],LRmat[i,7],LRmat[i,8])[1:2]
     }
     bd <- c(sum(bebe[,1]*bebe[,3])/debd[1], sum(bebe[,2]*bebe[,4])/debd[2])
     if(u1 <= bd[1]) {
