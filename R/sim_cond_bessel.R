@@ -161,47 +161,106 @@ sim.condbessel2_ <- function(q, s, t, x, y, Ll, Lu, Ul, Uu) {
   nUl.left <- max(x,dr,Ul)
   nUl.right <- max(dr,y,Ul)
 
-  # Determine left and right layers
-  u.bisect <- runif(1,0,1) # Uniform for embedded rejection sampler
-  m.counter <- 3 # Counter to detemine resolution of retrospective inversion sampler
+  # Check whether the layers co-incide with the end points
 
-  # Determine intervals: interval type 1
-  repeat{
-    p.int1 <- eabetaC_(m.counter,s,q,x,dr,Ll,nLu.left,nUl.left,Uu)*eabetaC_(m.counter,q,t,dr,y,Ll,nLu.right,nUl.right,Uu) # Case 1 probability
-    p.int2 <- eabetaC_(m.counter,s,q,x,dr,nLu.left,nLuu.left,nUll.left,nUl.left)*eabetaC_(m.counter,q,t,dr,y,Ll,nLu.right,nUl.right,Uu) # Case 2 probability
-    p.int3 <- eabetaC_(m.counter,s,q,x,dr,Ll,nLu.left,nUl.left,Uu)*eabetaC_(m.counter,q,t,dr,y,nLu.right,nLuu.right,nUll.right,nUl.right) # Case 3 probability
-    denom <- p.int1+p.int2+p.int3 # Dominating probabilities
-    if(u.bisect <= p.int1[1]/denom[2] | u.bisect > p.int1[2]/denom[1]){break} # If resolved sufficiently then break
-    m.counter <- m.counter + 2 # Else index counter
-  }
+  left.coinc <- (x==nLu.left  | x==nUl.left  | dr==nLu.left  | dr==nUl.left)
+  right.coinc <- (y==nLu.right | y==nUl.right | dr==nLu.right | dr==nUl.right)
 
-  # Determine intervals: interval type 2 / 3
-  repeat{
-    p.int1 <- eabetaC_(m.counter,s,q,x,dr,Ll,nLu.left,nUl.left,Uu)*eabetaC_(m.counter,q,t,dr,y,Ll,nLu.right,nUl.right,Uu) # Case 1 probability
-    p.int2 <- eabetaC_(m.counter,s,q,x,dr,nLu.left,nLuu.left,nUll.left,nUl.left)*eabetaC_(m.counter,q,t,dr,y,Ll,nLu.right,nUl.right,Uu) # Case 2 probability
-    p.int3 <- eabetaC_(m.counter,s,q,x,dr,Ll,nLu.left,nUl.left,Uu)*eabetaC_(m.counter,q,t,dr,y,nLu.right,nLuu.right,nUll.right,nUl.right) # Case 3 probability
-    denom <- p.int1+p.int2+p.int3 # Dominating probabilities
-    if(u.bisect <= (p.int1[1]+p.int2[1])/denom[2] | u.bisect > (p.int1[2]+p.int2[2])/denom[1]){break} # If resolved sufficiently then break
-    m.counter <- m.counter + 2 # Else index counter
-  }
 
-  # Cases and outputting layers
-  ## Case 1
-  if(u.bisect <= p.int1[1]/denom[2]){
+  if(left.coinc && right.coinc) { # Case where neither end- or mid-points co-incide with the layer
+    # Case 1
     layer.sq <- c(s,q,x,dr,Ll,nLu.left,nUl.left,Uu)
     layer.qt <- c(q,t,dr,y,Ll,nLu.right,nUl.right,Uu)
-  }
-  ## Case 2
-  if(u.bisect > p.int1[1]/denom[2] & u.bisect <= (p.int1[1]+p.int2[1])/denom[2]){
-    layer.sq <- c(s,q,x,dr,nLu.left,nLuu.left,nUll.left,nUl.left)
-    layer.qt <- c(q,t,dr,y,Ll,nLu.right,nUl.right,Uu)
-  }
-  ## Case 3
-  if(u.bisect > (p.int1[1]+p.int2[1])/denom[2]){
-    layer.sq <- c(s,q,x,dr,Ll,nLu.left,nUl.left,Uu)
-    layer.qt <- c(q,t,dr,y,nLu.right,nLuu.right,nUll.right,nUl.right)
-  }
+  } else if(left.coinc && !right.coinc) { # Case where left end- or mid-points co-incide with the layer
+    # Bisection variables
+    u.bisect <- runif(1,0,1) # Uniform for embedded rejection sampler
+    m.counter <- 3 # Counter to detemine resolution of retrospective inversion sample
 
+    # Determine intervals
+    repeat{
+      p.int1 <- eabetaC_(m.counter,q,t,dr,y,Ll,nLu.right,nUl.right,Uu) # Case 1 probability
+      p.int3 <- eabetaC_(m.counter,q,t,dr,y,nLu.right,nLuu.right,nUll.right,nUl.right) # Case 3 probability
+      denom <- p.int1+p.int3 # Dominating probabilities
+      if(u.bisect <= p.int1[1]/denom[2] | u.bisect > p.int1[2]/denom[1]){break} # If resolved sufficiently then break
+      m.counter <- m.counter + 2 # Else index counter
+    }
+    # Cases and outputting layers
+    ## Case 1
+    if(u.bisect <= p.int1[1]/denom[2]){
+      layer.sq <- c(s,q,x,dr,Ll,nLu.left,nUl.left,Uu)
+      layer.qt <- c(q,t,dr,y,Ll,nLu.right,nUl.right,Uu)
+    }
+    ## Case 3
+    if(u.bisect > p.int1[1]/denom[2]){
+      layer.sq <- c(s,q,x,dr,Ll,nLu.left,nUl.left,Uu)
+      layer.qt <- c(q,t,dr,y,nLu.right,nLuu.right,nUll.right,nUl.right)
+    }
+  } else if(!left.coinc && right.coinc) { # Case where right end- or mid-points co-incide with the layer
+    # Bisection variables
+    u.bisect <- runif(1,0,1) # Uniform for embedded rejection sampler
+    m.counter <- 3 # Counter to detemine resolution of retrospective inversion sample
+
+    # Determine intervals
+    repeat{
+      p.int1 <- eabetaC_(m.counter,s,q,x,dr,Ll,nLu.left,nUl.left,Uu) # Case 1 probability
+      p.int2 <- eabetaC_(m.counter,s,q,x,dr,nLu.left,nLuu.left,nUll.left,nUl.left) # Case 2 probability
+      denom <- p.int1+p.int2 # Dominating probabilities
+      if(u.bisect <= p.int1[1]/denom[2] | u.bisect > p.int1[2]/denom[1]){break} # If resolved sufficiently then break
+      m.counter <- m.counter + 2 # Else index counter
+    }
+    # Cases and outputting layers
+    ## Case 1
+    if(u.bisect <= p.int1[1]/denom[2]){
+      layer.sq <- c(s,q,x,dr,Ll,nLu.left,nUl.left,Uu)
+      layer.qt <- c(q,t,dr,y,Ll,nLu.right,nUl.right,Uu)
+    }
+    ## Case 2
+    if(u.bisect > p.int1[1]/denom[2]){
+      layer.sq <- c(s,q,x,dr,nLu.left,nLuu.left,nUll.left,nUl.left)
+      layer.qt <- c(q,t,dr,y,Ll,nLu.right,nUl.right,Uu)
+    }
+  } else if(!left.coinc && !right.coinc) { # Case where end- or mid-points co-incide with the layer
+    # Determine left and right layers
+    u.bisect <- runif(1,0,1) # Uniform for embedded rejection sampler
+    m.counter <- 3 # Counter to detemine resolution of retrospective inversion sampler
+
+    # Determine intervals: interval type 1
+    repeat{
+      p.int1 <- eabetaC_(m.counter,s,q,x,dr,Ll,nLu.left,nUl.left,Uu)*eabetaC_(m.counter,q,t,dr,y,Ll,nLu.right,nUl.right,Uu) # Case 1 probability
+      p.int2 <- eabetaC_(m.counter,s,q,x,dr,nLu.left,nLuu.left,nUll.left,nUl.left)*eabetaC_(m.counter,q,t,dr,y,Ll,nLu.right,nUl.right,Uu) # Case 2 probability
+      p.int3 <- eabetaC_(m.counter,s,q,x,dr,Ll,nLu.left,nUl.left,Uu)*eabetaC_(m.counter,q,t,dr,y,nLu.right,nLuu.right,nUll.right,nUl.right) # Case 3 probability
+      denom <- p.int1+p.int2+p.int3 # Dominating probabilities
+      if(u.bisect <= p.int1[1]/denom[2] | u.bisect > p.int1[2]/denom[1]){break} # If resolved sufficiently then break
+      m.counter <- m.counter + 2 # Else index counter
+    }
+
+    # Determine intervals: interval type 2 / 3
+    repeat{
+      p.int1 <- eabetaC_(m.counter,s,q,x,dr,Ll,nLu.left,nUl.left,Uu)*eabetaC_(m.counter,q,t,dr,y,Ll,nLu.right,nUl.right,Uu) # Case 1 probability
+      p.int2 <- eabetaC_(m.counter,s,q,x,dr,nLu.left,nLuu.left,nUll.left,nUl.left)*eabetaC_(m.counter,q,t,dr,y,Ll,nLu.right,nUl.right,Uu) # Case 2 probability
+      p.int3 <- eabetaC_(m.counter,s,q,x,dr,Ll,nLu.left,nUl.left,Uu)*eabetaC_(m.counter,q,t,dr,y,nLu.right,nLuu.right,nUll.right,nUl.right) # Case 3 probability
+      denom <- p.int1+p.int2+p.int3 # Dominating probabilities
+      if(u.bisect <= (p.int1[1]+p.int2[1])/denom[2] | u.bisect > (p.int1[2]+p.int2[2])/denom[1]){break} # If resolved sufficiently then break
+      m.counter <- m.counter + 2 # Else index counter
+    }
+
+    # Cases and outputting layers
+    ## Case 1
+    if(u.bisect <= p.int1[1]/denom[2]){
+      layer.sq <- c(s,q,x,dr,Ll,nLu.left,nUl.left,Uu)
+      layer.qt <- c(q,t,dr,y,Ll,nLu.right,nUl.right,Uu)
+    }
+    ## Case 2
+    if(u.bisect > p.int1[1]/denom[2] & u.bisect <= (p.int1[1]+p.int2[1])/denom[2]){
+      layer.sq <- c(s,q,x,dr,nLu.left,nLuu.left,nUll.left,nUl.left)
+      layer.qt <- c(q,t,dr,y,Ll,nLu.right,nUl.right,Uu)
+    }
+    ## Case 3
+    if(u.bisect > (p.int1[1]+p.int2[1])/denom[2]){
+      layer.sq <- c(s,q,x,dr,Ll,nLu.left,nUl.left,Uu)
+      layer.qt <- c(q,t,dr,y,nLu.right,nLuu.right,nUll.right,nUl.right)
+    }
+  }
   ### Output
-  list(w=dr, layer.sq=layer.sq, layer.sq.type="Bessel", layer.qt=layer.qt, layer.qt.type="Bessel", u.bisect = u.bisect)
+  list(w=dr, layer.sq=layer.sq, layer.sq.type="Bessel", layer.qt=layer.qt, layer.qt.type="Bessel")
 }
