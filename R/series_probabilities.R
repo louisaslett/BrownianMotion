@@ -14,7 +14,7 @@ eaphib <- function(P,z,A,si) {
   P*si*A
 }
 
-eabetaC_ <- function(m,s,t,x,y,Ll,Lu,Ul,Uu) {
+eabetaC_ <- function(m,s,t,x,y,Ll,Lu,Ul,Uu) { #Ensure the argument m is >>3
   if(Ll==Lu | Ul==Uu | min(x,y) < Lu | max(x,y) > Ul){
     return(c(s1=0,s2=0))
   }

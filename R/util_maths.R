@@ -80,8 +80,8 @@ earhoC_ <- function(m,s,q,t,x,w,y,Ll,Lu,Ul,Uu) {
   # s2.new2 <- beta.l.p0[1] + beta.r.p0[1] + z1L.n[2]*z1R.n[2] - z2L.n[1]*z2R.n[1] - z3L.n[1]*z3R.n[1] +z4L.n[2]*z4R.n[2] # Note, perhaps worth modifying the upper bound to remove the double function calls to beta.
 
   # s2 lower, s1 upper
-  c(s1=as.numeric(beta.l.p0[2] + beta.r.p0[2] + z1L.n[1]*z1R.n[1] - z2L.n[2]*z2R.n[2] - z3L.n[2]*z3R.n[2] +z4L.n[1]*z4R.n[1]),
-    s2=as.numeric(beta.l.p2[1] + beta.r.p2[1] + z1L.n[2]*z1R.n[2] - z2L.n[3]*z2R.n[3] - z3L.n[3]*z3R.n[3] +z4L.n[2]*z4R.n[2]))
+  c(s1=(beta.l.p0[2] + beta.r.p0[2] + z1L.n[1]*z1R.n[1] - z2L.n[2]*z2R.n[2] - z3L.n[2]*z3R.n[2] +z4L.n[1]*z4R.n[1]),
+    s2=(beta.l.p2[1] + beta.r.p2[1] + z1L.n[2]*z1R.n[2] - z2L.n[3]*z2R.n[3] - z3L.n[3]*z3R.n[3] +z4L.n[2]*z4R.n[2]))
 }
 
 
