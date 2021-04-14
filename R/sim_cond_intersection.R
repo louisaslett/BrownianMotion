@@ -341,7 +341,7 @@ sim.condintersection.simpt_ <- function(s, q, t, x, y, Ll, Lu, Ul, Uu) {
       nev <- 30+m
       dind2I <- 0
       while(dind2I == 0) {
-        cauc <- earh3C(nev, s, q, t, x, draw, y, Ll, Lu, Ul, Uu)*dnorm(draw, mean = upper$bbm, sd = upper$bbsd)
+        cauc <- earhoC_(nev, s, q, t, x, draw, y, Ll, Lu, Ul, Uu)*dnorm(draw, mean = upper$bbm, sd = upper$bbsd)
         if(u <= cauc[2]) {
           dind1I <- dind2I <- 1
         } else {
@@ -477,7 +477,7 @@ sim.condintersection.simpt_ <- function(s, q, t, x, y, Ll, Lu, Ul, Uu) {
       dind3 <- 0
       m <- 3
       while(dind3 == 0) {
-        cauc <- earh3C(m, s, q, t, x, dr, y, Ll, Lu, Ul, Uu)
+        cauc <- earhoC_(m, s, q, t, x, dr, y, Ll, Lu, Ul, Uu)
         if(u <= cauc[2]) {
           dind1 <- dind3 <- 1
         } else {
@@ -540,7 +540,7 @@ sim.condintersection.simlyr_ <- function(s, q, t, x, w, y, Ll, Lu, Ul, Uu) {
   u1 <- runif(1, 0, 1)
   while(bbrind == 0) {
     while(deind==0) {
-      debd <- earhoC_(m1,s,q,t,x,w,y,Ll,Lu,Ul,Uu)
+      debd <- earhoC_(m1,s,q,t,x,w,y,Ll,Lu,Ul,Uu)[1:2]
       if(debd[2] <= 0) {
         m1 <- m1+2
       } else {
