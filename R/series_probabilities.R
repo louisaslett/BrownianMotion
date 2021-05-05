@@ -15,9 +15,16 @@ eaphib <- function(P,z,A,si) {
 }
 
 eabetaC_ <- function(m,s,t,x,y,Ll,Lu,Ul,Uu) { #Ensure the argument m is >>3
-  if(Ll==Lu | Ul==Uu | min(x,y) < Lu | max(x,y) > Ul){
-    return(c(s1=0,s2=0))
-  }
+  # s1: [Ll,Uu]
+  s1mult <- if(x >= Ll & y >= Ll & x <= Uu & y <= Uu){1}else{0}
+  # s2: [Ll,Ul]
+  s2mult <- if(x >= Ll & y >= Ll & x <= Ul & y <= Ul){1}else{0}
+  # s3: [Lu,Uu]
+  s3mult <- if(x >= Lu & y >= Lu & x <= Uu & y <= Uu){1}else{0}
+  # s4: [Lu,Ul]
+  s4mult <- if(x >= Lu & y >= Lu & x <= Ul & y <= Ul){1}else{0}
+  # All s
+  smult <- if(Ll==Lu | Ul==Uu){0}else{s1mult*s2mult*s3mult*s4mult}
 
   j <- 2:((m+1)/2) # Evaluated from second term in infinite sum to account for cancellation of terms in the first term
   P <- -2/(t-s)
@@ -65,7 +72,7 @@ eabetaC_ <- function(m,s,t,x,y,Ll,Lu,Ul,Uu) { #Ensure the argument m is >>3
   s1 <- s1p1 + s1p2 + s1p3 + s1p4
   s2 <- s2p1 + s2p2 + s2p3 + s2p4
 
-  c(s1=s1, s2=s2, s1z1=s1z1, s2z1=s2z1, s1z2=s1z2, s2z2=s2z2, s1z3=s1z3, s2z3=s2z3, s1z4=s1z4, s2z4=s2z4) # s1 is the lower bound, s2 is the upper bound
+  c(s1=s1*smult, s2=s2*smult, s1z1=s1z1*s1mult+(1-s1mult), s2z1=s2z1*s1mult+(1-s1mult), s1z2=s1z2*s2mult+(1-s2mult), s2z2=s2z2*s2mult+(1-s2mult), s1z3=s1z3*s3mult+(1-s3mult), s2z3=s2z3*s3mult+(1-s3mult), s1z4=s1z4*s4mult+(1-s4mult), s2z4=s2z4*s4mult+(1-s4mult), mult=smult) # s1 is the lower bound, s2 is the upper bound
 }
 
 

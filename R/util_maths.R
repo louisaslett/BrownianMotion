@@ -63,11 +63,17 @@ eazetaC_ <- function(m, s, t, x, y, L, U) {
 ##########
 
 earhoC_ <- function(m,s,q,t,x,w,y,Ll,Lu,Ul,Uu) {
+  # Computation of beta probabilities
   beta.l.p0 <- eabetaC_(m,s,q,x,w,Ll,Lu,Ul,Uu)
   beta.l.p2 <- eabetaC_(m+2,s,q,x,w,Ll,Lu,Ul,Uu)
   beta.r.p0 <- eabetaC_(m,q,t,w,y,Ll,Lu,Ul,Uu)
   beta.r.p2 <- eabetaC_(m+2,q,t,w,y,Ll,Lu,Ul,Uu)
 
+  # Extraction of beta multipliers (determining whether we can do any cancellation in the computation of earhoC)
+  lmult <- beta.l.p0[11] # Multiplier for left hand interval
+  rmult <- beta.r.p0[11] # Multiplier for right hand interval
+
+  # Computation of zeta probabilities
   z1L.n <- c(beta.l.p0[3],beta.l.p0[4],beta.l.p2[3],beta.l.p2[4])
   z1R.n <- c(beta.r.p0[3],beta.r.p0[4],beta.r.p2[3],beta.r.p2[4])
   z3L.n <- c(beta.l.p0[5],beta.l.p0[6],beta.l.p2[5],beta.l.p2[6])
@@ -77,12 +83,27 @@ earhoC_ <- function(m,s,q,t,x,w,y,Ll,Lu,Ul,Uu) {
   z4L.n <- c(beta.l.p0[9],beta.l.p0[10],beta.l.p2[9],beta.l.p2[10])
   z4R.n <- c(beta.r.p0[9],beta.r.p0[10],beta.r.p2[9],beta.r.p2[10])
 
-  # s2.new2 <- beta.l.p0[1] + beta.r.p0[1] + z1L.n[2]*z1R.n[2] - z2L.n[1]*z2R.n[1] - z3L.n[1]*z3R.n[1] +z4L.n[2]*z4R.n[2] # Note, perhaps worth modifying the upper bound to remove the double function calls to beta.
+  # Note, the below demonstrates that everything does tie out and discrepancy observed in z3L.n[1] is due purely to
+  # the order of floating point operations for the call:
+  # BrownianMotion:::earhoC_(3.000000, 8.000000, 9.666667, 10.777778, 101.097699, 100.032623, 100.652062, 99.979665, 100.315863, 101.759915, 102.422131)
+
+  # s1.o <- -z1L.n[2]-z1R.n[2]+z1L.n[1]*z1R.n[1]+z2L.n[1]+z2R.n[1]-z2L.n[2]*z2R.n[2]+z3L.n[1]+z3R.n[1]-z3L.n[2]*z3R.n[2]-z4L.n[2]-z4R.n[2]+z4L.n[1]*z4R.n[1]
+  # s1.a2 <- (-z1L.n[2] +z2L.n[1]+z3L.n[1]-z4L.n[2]) + (-z1R.n[2]+z2R.n[1]+z3R.n[1]-z4R.n[2]) + (+z1L.n[1]*z1R.n[1]-z2L.n[2]*z2R.n[2]-z3L.n[2]*z3R.n[2]+z4L.n[1]*z4R.n[1])
+  # s1.a3 <- c(-z1L.n[2],-z1R.n[2],+z1L.n[1]*z1R.n[1],+z2L.n[1],+z2R.n[1],-z2L.n[2]*z2R.n[2],+z3L.n[1],+z3R.n[1],-z3L.n[2]*z3R.n[2],-z4L.n[2],-z4R.n[2],+z4L.n[1]*z4R.n[1])
+  # s1.a <- (-z1L.n[2] +z2L.n[1]+z3L.n[1]-z4L.n[2]) + (-z1R.n[2]+z2R.n[1]+z3R.n[1]-z4R.n[2]) + z1L.n[1]*z1R.n[1] - z2L.n[2]*z2R.n[2] - z3L.n[2]*z3R.n[2] + z4L.n[1]*z4R.n[1]
+  # s1.n <- ((lmult*beta.l.p0[2]) + (1-lmult)*(-z1L.n[2]+z2L.n[1]+z3L.n[1]-z4L.n[2])) + ((rmult*beta.r.p0[2]) +(1-rmult)*(-z1R.n[2]+z2R.n[1]+z3R.n[1]-z4R.n[2])) + z1L.n[1]*z1R.n[1] - z2L.n[2]*z2R.n[2] - z3L.n[2]*z3R.n[2] +z4L.n[1]*z4R.n[1]
+  # print(s1.o, digits = 22)
+  # print(s1.n2, digits = 22)
+  # print(s1.a2, digits = 22)
+  # print(s1.a, digits = 22)
+
+  # Computation of s1 / s2 / s3
+  s1 <- ((lmult*beta.l.p0[2]) + (1-lmult)*(-z1L.n[2]+z2L.n[1]+z3L.n[1]-z4L.n[2])) + ((rmult*beta.r.p0[2]) + (1-rmult)*(-z1R.n[2]+z2R.n[1]+z3R.n[1]-z4R.n[2])) + z1L.n[1]*z1R.n[1] - z2L.n[2]*z2R.n[2] - z3L.n[2]*z3R.n[2] +z4L.n[1]*z4R.n[1]
+  s2 <- ((lmult*beta.l.p2[1]) + (1-lmult)*(-z1L.n[3]+z2L.n[2]+z3L.n[2]-z4L.n[3])) + ((rmult*beta.r.p2[1]) + (1-rmult)*(-z1R.n[3]+z2R.n[2]+z3R.n[2]-z4R.n[3])) + z1L.n[2]*z1R.n[2] - z2L.n[3]*z2R.n[3] - z3L.n[3]*z3R.n[3] +z4L.n[2]*z4R.n[2]
+  s3 <- ((lmult*beta.l.p2[2]) + (1-lmult)*(-z1L.n[4]+z2L.n[3]+z3L.n[3]-z4L.n[4])) + ((rmult*beta.r.p2[2]) + (1-rmult)*(-z1R.n[4]+z2R.n[3]+z3R.n[3]-z4R.n[4])) + z1L.n[3]*z1R.n[3] - z2L.n[4]*z2R.n[4] - z3L.n[4]*z3R.n[4] +z4L.n[3]*z4R.n[3]
 
   # s2 lower, s1 upper
-  c(s1=(beta.l.p0[2] + beta.r.p0[2] + z1L.n[1]*z1R.n[1] - z2L.n[2]*z2R.n[2] - z3L.n[2]*z3R.n[2] +z4L.n[1]*z4R.n[1]),
-    s2=(beta.l.p2[1] + beta.r.p2[1] + z1L.n[2]*z1R.n[2] - z2L.n[3]*z2R.n[3] - z3L.n[3]*z3R.n[3] +z4L.n[2]*z4R.n[2]),
-    s3=(beta.l.p2[2] + beta.r.p2[2] + z1L.n[3]*z1R.n[3] - z2L.n[4]*z2R.n[4] - z3L.n[4]*z3R.n[4] +z4L.n[3]*z4R.n[3]))
+  c(s1=s1,s2=s2,s3=s3)
 }
 
 
