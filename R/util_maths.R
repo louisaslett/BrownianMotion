@@ -2,17 +2,8 @@ mpfrthr <- 100 # m threshold for high precision
 mpfrpbn <- 5
 
 eagammaC_ <- function(m, s, t, x, y, L, U) {
-  if(m >= mpfrthr) {
-    pbn <- m*mpfrpbn
-    s <- mpfr(s,precBits=pbn)
-    t <- mpfr(t,precBits=pbn)
-    x <- mpfr(x,precBits=pbn)
-    y <- mpfr(y,precBits=pbn)
-    L <- mpfr(L,precBits=pbn)
-    U <- mpfr(U,precBits=pbn)
-  }
   z <- eazetaC_(m,s,t,x,y,L,U)
-  c(s1 = as.numeric(1-z[1]), s2 = as.numeric(1-z[2])) # s1 is the lower bound, s2 is the upper bound
+  c(s1 = 1-z[1], s2 = 1-z[2]) # s1 is the lower bound, s2 is the upper bound
 }
 
 eazetaC_ <- function(m, s, t, x, y, L, U) {
@@ -214,15 +205,6 @@ eadelR_ <- function(n, s, t, x, y, m, u) {
 }
 
 eadelC_ <- function(mt, s, t, x, y, m, u) {
-  if(mt >= mpfrthr) {
-    pbn <- mt*mpfrpbn
-    s <- mpfr(s, precBits = pbn)
-    t <- mpfr(t, precBits = pbn)
-    x <- mpfr(x, precBits = pbn)
-    y <- mpfr(y, precBits = pbn)
-    m <- mpfr(m, precBits = pbn)
-    u <- mpfr(u, precBits = pbn)
-  }
   c(s1 = eadelR_(mt, s, t, x, y, m, u),
     s2 = eadelR_(mt+1, s, t, x, y, m, u))
 }
