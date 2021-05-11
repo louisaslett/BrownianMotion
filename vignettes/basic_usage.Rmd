@@ -3,7 +3,7 @@ title: "Basic usage of BrownianMotion package"
 output: rmarkdown::html_vignette
 bibliography: refs.bib
 vignette: >
-  %\VignetteIndexEntry{basic_usage}
+  %\VignetteIndexEntry{Basic usage of BrownianMotion package}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
