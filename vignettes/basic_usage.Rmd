@@ -1,0 +1,169 @@
+---
+title: "Basic usage of BrownianMotion package"
+output: rmarkdown::html_vignette
+bibliography: refs.bib
+vignette: >
+  %\VignetteIndexEntry{basic_usage}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+First load the package and the `magrittr` utility package, which provides the `%>%` pipe operator, allowing natural chaining of commands.  We also set the seed to ensure reproducibility of this vignette.
+
+```{r setup}
+library(BrownianMotion)
+library(magrittr)
+set.seed(212)
+```
+
+The first task is to create an object which will contain the Brownian motion path and layer information.  This is acomplished using the `create_bm()` function.  It is possible to call with all default options, but here for demonstration purposes we will force the path to start at $W_1 = 100$ (the default is $W_0 = 0$).
+
+```{r}
+bm <- create.bm(1, 100)
+```
+
+# Standard simulation
+
+## Unconditional simulation
+
+The simplest operation is unconditional simulation of the path at future times (beyond the existing path), $t>1$.  Although one could call the specialised function `sim.uncond()`, this is not necessary: there is a universal function, `sim()`, which automatically detects the correct kind of simulation to perform based on the current path and new times requested.  Thus, specifying times $t>1$ to `sim()` will result in unconditional simulation:
+
+```{r}
+bm %>% sim(2:4)
+```
+
+Note in the above:
+
+- we provide a vector of times, $t = (2,3,4)$ here, and these will be simulated in order forwards to ensure unconditional simulation sequentially;
+- the `bm` object is updated in place ... there is no need to assign the result back to bm (ie you do *not* need to do `bm <- bm %>% sim(2:4)`).
+
+At this point we can see a plot of our nascent path:
+
+```{r}
+plot(bm)
+```
+
+Here, black dots represent path observations and these are connected by grey lines.  Note grey lines do *not* represent the actual path.
+
+## Brownian bridge simulation
+
+The simplest step beyond unconditional simulation would be to simulate times which are intermediate to already observed time points, achieved using Brownian bridge simulation.  As before, although one could call the specialised function `sim.bb()`, this is not necessary as `sim()` will identify when points fall at a time requiring conditioning.  Note, these can be mixed with additional unconditioned times, for example:
+
+```{r}
+bm %>% sim(c(1.5, 2.5, 3.5, 4.5))
+plot(bm)
+```
+
+results in conditional simulation of $t=(1.5, 2.5, 3.5)$ and an extension of the path unconditionally to $t=4.5$.
+
+In particular, note that the first argument to sim can be a vector of times produced in any manner, say via `seq()` or even by random simulation of times:
+
+```{r}
+bm %>% sim(runif(5, 1, 4.5))
+plot(bm)
+```
+
+This will simulate at 5 times randomly chosen between the start and end times.  Note this highlights that the vector of times passed to `sim()` need not be sorted.
+
+## A peek under the hood
+
+At this point it is instructive to look at the stored path:
+
+- `$t` contains the times of observations, $t$;
+- `$W_t` contains the value of the path at those times, $W_t$.
+
+For ease of reading, the following example takes these two slots of the Brownian motion object and places them in a data frame, though this is not necessary:
+
+```{r}
+data.frame(t   = bm$t,
+           W_t = bm$W_t)
+```
+
+In this simple setting $t$ and $W_t$ comprise the *"path skeleton"*: they are a finite dimensional representation of the Brownian motion path, which can be used to reconstruct the path at any other time point of interest. 
+
+As an illustration of using this "under the hood" information, we can simulate an Exponential($\lambda = W_{4.5} / 10$) time past the end of the path, without having had to track in our code that $t=4.5$ is the end of the path what this current end time is:
+
+```{r}
+bm %>% sim(max(bm$t)+rexp(1, bm$W_t[which.max(bm$t)]/10))
+plot(bm)
+```
+
+# Layers, layers, everywhere!
+
+In many settings we want to simulate Brownian motion together with *"layer"* information. Layer information determines a compact (spatial) interval which constrains the path over a given time interval. This can be achieved using this package in three broad ways:
+
+- *Bessel*: This follows (broadly) the approach outlined in [@MCAP].
+- *Intersection*: This follows (broadly) the approach outlined in [@BERN], 
+- *Localised*: This follows (broadly) the approach outlined in [@DEV], following the implementation in [@SCALE]
+
+There are merits to using each of these approaches, and so the user has the flexibility (when possible) of specifying these.
+
+If a layer is simulated then this forms part of the *path skeleton*. Once a layer is simulated, then simulating further points of the path is more involved: again, these fall into the category of unconditional and conditional simulation. 
+
+## Bessel
+
+We begin by specifying that we want to simulate a Bessel layer over the interval $t=[6,8]$. Note that $t=6$ is beyond the existing terminal time of the path, and so the path must first be (unconditionally) simulated to this time: 
+
+```{r}
+bm %>% bessel.layers(6, 8)
+plot(bm)
+```
+
+Purple is used to illustrate a Bessel layer (which will be useful later when we consider simultaneously different layer types). The solid lines are the *layer* indicating the spatial interval which constrains the path (the path falls entirely between the upper and lower solid lines). The dashed lines indicate a spatial interval which *does not* constrain the path (the path at some point will fall out-with the interval). As the end-points of the interval co-incide with the dashed lines we further know that the path *will* fall at some point both above the upper dashed line *and* below the lower dashed line.
+
+Note we can now simulate at a time falling within this Bessel layer specification and the above constraints will be honoured and result in an updated layer specification.  This is achieved using the same `sim()` function used to date, which will automatically detect the surrounding layer information and conduct conditional Bessel layer simulation.  For example, simulating at $t=7$ gives:
+
+```{r}
+bm %>% sim(7)
+plot(bm)
+```
+
+In particular, note that the Bessel layer specification has now updated, resulting in the single layer becoming two Bessel layers either side of the newly simulated time.  In this case (though not always) this has resulted in two further variants of the Bessel layer. This is shown in the left hand interval by *two dotted* lines replacing the interior dashed lines of the earlier figure, and in the right hand interval by *one dotted, one dashed* lines replacing the interior dashed lines.
+
+The dotted line indicates a more nuanced layer information, where the layer does not coincide with the end-points for the interval, but again indicates a spatial interval which *does not* constrain the path (the path at some point fall out-with the interval). 
+
+More precisely, in the left hand interval with *two dotted* lines there are three possible cases for the (unrealised) path. In particular, either: 
+
+1. the path has a minimum which falls between the lower dotted and lower solid line, **and**, a maximum which falls between the upper dotted and upper solid line; or
+1. the path has a minimum which falls between the lower dotted and lower solid line, **and**, a maximum which falls between the maximum of the end-points of the path and the upper dotted line; or
+1. the path has a minimum which falls between the minimum of the end-points of the path and the lower dotted line, **and**, a maximum which falls between the upper dotted and upper solid line. 
+
+The right hand interval has both a dashed (lower) and dotted (upper) line. These follow the same convention as the two earlier examples. As one of the end-points co-incides with the dashed line (lower) we know the path at some point falls below this level. This eliminates the possibility of case 3 in the list above, leaving case 1 and 2. It is possible that the dashed and dotted lines were in the reverse order (dashed being the upper, and dotted being the lower), in which case we would either have case 1 or 3. 
+
+NOTE: add comment on possibility of doing `bessel.layers()` with start and end times that might not be beyond terminal time (either part or wholly within the sim'd path)
+NOTE: add discussion on refinement (maybe as a section of it's own since applies to other types too)
+
+
+## Localised
+
+### First passage times
+
+Rather than extend the simple path constructed thus far by specifying a time exactly, we can now invoke the first of a collection of layering types supported by the package: first passage time (which are the basis of the "localised layers" we introduce fully later).  Here, we consider the path initialiased at its current terminal value, and determine the first time it leaves a prescribed interval. The interval can be prescribed by the user in a number of different ways, by specifying among a choice of arguments:
+
+- `delta`: specifying a symmetric interval around the current terminal value;
+- `delta.l` and `delta.u`: specifying a asymmetric interval which is `delta.l` below and `delta.u` above the current terminal value;
+- `l` and `u`: specifying the lower and upper boundary values directly.
+
+```{r}
+bm %>% first.passage(delta = 1)
+plot(bm)
+```
+
+The green lines indicate the bounds specified by You, the user. The green line does not form part of the realised Brownian motion, and is used for visualisation. As such, it can be turned off using the `hide.user` argument in the plot command:  
+
+```{r}
+plot(bm, hide.user = TRUE)
+```
+
+Note that the green lines were overplotting solid red lines. Again, solid lines form part of the Brownian motion object and indicate the interval which constrains the path over the specified interval. We term this a *"localised layer"* as the end-point co-incides with layer. Red is used as the colour to plot such layer types. The dashed lines follow the earlier convention.
+
+
+
+# References
