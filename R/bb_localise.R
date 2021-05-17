@@ -157,7 +157,7 @@ bb.localise_ <- function(bm, s, t, refine, mult, prefer) {
   }
   # Final layer segment will be missing so add
   bm$layers <- add_row(bm$layers,
-                       type = "intersection-bb",
+                       type = paste0(new.bm$layers$type[i+1], "-bb"),
                        t.l = new.bm$layers$t.l[i+1],
                        t.u = new.bm$layers$t.u[i+1],
                        # Ld = B.last + new.bm$layers$Ld[i+1] - W.last,
