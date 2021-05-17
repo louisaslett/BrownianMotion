@@ -59,10 +59,6 @@ localise.layers <- function(bm, s, t, refine = bm$refine, mult = bm$mult, prefer
   all.pairs.noL <- all.pairs.noL[incl,,drop = FALSE]
   # cat("No layer:"); print(all.pairs.noL)
 
-  if(nrow(all.pairs.noL) == 0) {
-    stop("No intervals in the skeleton between s and t found that have no layer specification.")
-  }
-
   if(nrow(all.pairs.noL) > 0) {
     for(i in 1:nrow(all.pairs.noL)) {
       bb.localise_(bm, all.pairs.noL[i,1], all.pairs.noL[i,2], refine, mult, prefer)
