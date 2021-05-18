@@ -426,7 +426,40 @@ bm3 %>% sim(pi,prefer = TRUE)
 plot(bm3)
 ```
 
-Note that the intervals surrounding $t=\pi$ have now been refined. 
+Note that the intervals surrounding $t=\pi$ have now been refined.
+
+Now, in the case where we *are* refining by default (`refine = TRUE`), then we may want to alter the default layer size. This is done using the `mult` attribute, which was described earlier with Localised layers. Recall that by default when refining, the difference between the upper solid and upper dashed/dotted lines *AND* the difference between the lower solid and upper dashed/dotted lines is no greater than $\sqrt{t-s}$. The `mult` attribute multiplies this tolerance by a user-specified amount. By default, `mult = 1` and is specified at the creation of the path. For instance, consider a new path (`bm5`) together with Bessel layers in the interval $[0,10]$, but with the default layer size multiplied by $3$ :
+
+```{r}
+bm5 <- create.bm(mult=3)
+bm5 %>% bessel.layers(0, 10)
+plot(bm5)
+```
+
+The simulation of the path at additional points will inherit `mult=3`. For instance, contrast the following with `bm4` above: 
+
+```{r}
+bm5 %>% sim(seq(0,10,length=20))
+plot(bm5)
+```
+
+If we introduce an additional point (say at $t=pi$), but we want increased increased refinement (say of `mult=1`) this can be done by changing the default argument in any of the earlier functions as before. For instance: 
+
+```{r}
+bm5 %>% sim(pi,mult = 1)
+plot(bm5)
+```
+
+Note that the intervals surrounding $\pi$ are far more resolved. It is possible to set the layer size to some constant level (not dependent on the length of the interval) by specifying `mult` to be at a level the reciprocal of $\sqrt{t-s}$. This however is not recommended, as it can introduce numerical instability. 
+
+Finally, we may wish to refine the existing intervals without the introduction of additional points. This can be achieved using the `refine` function, which can *increase* the resolution on any (or all) intervals. For instance:
+
+```{r}
+bm5 %>% refine(5,10,mult = 0.25)
+plot(bm5)
+```
+
+The `mult = 0.25` argument has increased the resolution of existing layers in the interval $[5,10]$ by $3/0.25=12$x.
 
 # Publication Graphics
 
