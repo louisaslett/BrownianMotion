@@ -395,6 +395,38 @@ plot(bm2)
 
 # Refinement
 
+When simulating layers the package will by default control the size of the layer so it scales appropriately with the length of the interval being considered. In particular, by default, the package will attempt to ensure the difference between the upper solid and upper dashed/dotted lines *AND* the difference between the lower solid and upper dashed/dotted lines is no greater than $\sqrt{t-s}$ (where $s$ and $t$ are the left and right hand end-points of the interval respectively). This control on the layer size can be removed by changing the `refine=TRUE` attribute to `refine=FALSE` on creation of the path. Note that this is not recommended as it can introduce numerical instability, but to show its affect consider the following Bessel layer over the interval $[0,10]$: 
+
+```{r}
+bm3 <- create.bm(refine = FALSE)
+bm3 %>% bessel.layers(0, 10)
+plot(bm3)
+```
+
+Now, if we simulate a number of intermediary points (say a grid of $20$), then note that although we again have Bessel layers that the size of the Bessel layers is "stretched" when contrasted with earlier simulations: 
+
+```{r}
+bm3 %>% sim(seq(0,10,length=20))
+plot(bm3)
+```
+
+Contrast this with a similar path where we haven't set `refine=FALSE`:
+
+```{r}
+bm4 <- create.bm()
+bm4 %>% bessel.layers(0, 10)
+bm4 %>% sim(seq(0,10,length=20))
+plot(bm4)
+```
+
+Whether the package does refinement by default is inherited from the attribute when the path is created. We can either change this at some future point globally (for instance, `bm3$refine <- TRUE`), or alternatively specify within the other functionals in the same manner as the `prefer` attribute discussed earlier. For instance, consider the introduction of a single additional point at $t=\pi$:
+
+```{r}
+bm3 %>% sim(pi,prefer = TRUE)
+plot(bm3)
+```
+
+Note that the intervals surrounding $t=\pi$ have now been refined. 
 
 # Publication Graphics
 
