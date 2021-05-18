@@ -74,7 +74,7 @@ bm %>% sim(runif(5, 1, 4.5))
 plot(bm)
 ```
 
-This will simulate at 5 times randomly chosen between the start and end times.  Note this highlights that the vector of times passed to `sim()` need not be sorted.
+This will simulate at 5 times randomly chosen between the start and end times.  Note this highlights that the vector of times passed to `sim()` need not be sorted: (non-standard) sorting of required times is handled by the package to ensure robustness of functionals.
 
 ## A peek under the hood
 
@@ -218,6 +218,7 @@ Instead, we may wish to simulate localised layers over a specified interval (in 
 bm %>% localise.layers(25,28)
 plot(bm)
 ```
+
 Note that the resulting skeleton for the interval will comprise zero or more (red) localised layers, followed by a single (purple) Bessel layer: this because the end-point will no longer co-incide with the layer. By default `delta` is chosen to be $\sqrt{t-s}/2$, although this can be altered by the user using the argument `mult` which multiplies the default layer size. For instance, 
 
 ```{r}
@@ -239,7 +240,11 @@ We may wish to add a bridge analogue of a localised layer: ie a localised layer 
 bm %>% localise.layers(10,40)
 plot(bm)
 ```
+
 Note that the path has been extended (unconditionally) beyond $t=35$ as per above. For each interval within the current skeleton, which did not already have a layer, a localised layer has been introduced. The "bridge" localised layers are simulated by means of an appropriate scaling of unconditional Brownian motions, and so have a gradient of $(W_t-W_s)/(t-s)$. The interior dashed, dotted and solid lines, together with the associated Bessel layer all follow the earlier conventions (albeit now with a gradient). The outer horizontal solid lines are for the use of You (and don't form part of the skeleton) to easily indicate a spatial interval which constrains the path over a given (time) interval.  
+
+[NOTE:] Following this logic, we should be able to toggle off the outer solid lines by using `plot(bm, hide.user=TRUE)`
+
 
 ### (Another) peek under the hood
 
@@ -293,10 +298,10 @@ knitr::kable(bm$bb.local$layers)
 
 ## Intersection 
 
-Now suppose we want an Intersection layer over the interval $t=[10,12]$, this can be done by calling the function `intersection.layers()`. The structure of introducing Intersection layers follows that of Bessel layers. Note that $t=10$ is beyond the current terminal point of the path: 
+Now suppose we want an Intersection layer over the interval $t=[50,60]$, this can be done by calling the function `intersection.layers()`. The structure of introducing Intersection layers follows that of Bessel layers. Note that $t=50$ is beyond the current terminal point of the path: 
 
 ```{r}
-bm %>% intersection.layers(10,12)
+bm %>% intersection.layers(50,60)
 plot(bm)
 ```
 
@@ -305,12 +310,90 @@ Blue is used to illustrate an Intersection layer. Again, solid lines are the *la
 Intermediary points of the trajectory can be either simulated using the dedicated function `sim.condintersection()`, or (recommended) one can simply again use the `sim()` function. For instance, consider simulating the path at $t=11$: 
 
 ```{r}
-bm %>% sim(11)
+bm %>% sim(55)
 plot(bm)
 ```
-Note that unlike Bessel layers there are no variant layer types: "bisecting" an existing interval will result in two intersection layers with the same interpretation. 
 
+Note that on simulating an intermediary point(s) a number of Bessel (purple) or Intersection layers may arise. Intersection layers have the same interpretation as the parent Intersection layer, and Bessel layers are the same as in the earlier section. By default, the package will if possible attempt to "convert" Intersection layers to Bessel layers: we will address this default in the next subsection. Any further simulation will be handled appropriately for the given layer type by using the `sim()` function. 
 
+### (Yet Another) peek under the hood
+
+As demonstrated in the preivous section, by default the package has a preference for using Bessel layers over Intersection layers wherever possible. It is typical that the user will want to only consider one layer type, and the Bessel layer type has been selected as default as this is most likely to be the one practitioners will use. We do however want the flexibility to use multiple layer types or change the default to Intersection. 
+
+To do this we can change the default argument from `prefer = "bessel"` to `prefer = "intersection"` within the functions we have considered. For instance, we may consider a new path (`bm2`) initialised at $W_0=0$:
+
+```{r}
+bm2 <- create.bm(prefer = "intersection")
+```
+
+This has the consequence that any call to `sim()` (with no further argument as the preference is inherited from the creation of the path) will where possible convert Bessel layers to Intersection layers. Note that although it is only occasionally possible to convert Intersection layers to Bessel layers, it is always possible to change Bessel layers to Intersection layers. 
+
+For instance, suppose we simulate Bessel layers over $t\in[1,3]$: 
+
+```{r}
+bm2 %>% bessel.layers(1, 3)
+plot(bm2)
+```
+
+then if we want to simulate the path at $t=2$ and have resultant Bessel layers then this needs to be specified by the user as it defers from the default on the paths creation (`prefer = "intersection"`):
+
+```{r}
+bm2 %>% sim(2, prefer = "bessel")
+plot(bm2)
+```
+
+In particular, further simulation of the path at $t=1.5$ and $t=2.5$ results in both Bessel layers (in the interval $[1,2]$ and $[2,3]$ being converted to Intersection layers: 
+
+```{r}
+bm2 %>% sim(c(1.5,2.5))
+plot(bm2)
+```
+
+Note that we do not need to specify we have a preference for Intersection layers, as this preference is an attribute assigned to the path on its creation using `create.bm()`. In principle this could be changed for the path globally (for instance, `bm2$prefer <- "Bessel"`), but this is not necessary as we will outline below.
+
+It is not possible to convert from or to Localised layers from other layer types. However, once the path has been created with the attribute `prefer="Intersection"` then conditional simulation of localised layers will result in the appearance of Intersection layers (as opposed to Bessel layers). For instance, note that when simulating a Localised layer over the interval $t\in[4,5]$ that the final interval is an Intersection layer (and not a Bessel layer as before): 
+
+```{r}
+bm2 %>% localise.layers(4,5)
+plot(bm2)
+```
+
+The preference for Intersection layers inherited from the creation of the path can be changed when calling any of the other functions we have introduce. For instance, consider simulating localised layers (of the Bessel sort) in the interval $t\in[6,8]$: 
+
+```{r}
+bm2 %>% localise.layers(6,8,prefer="Bessel")
+plot(bm2)
+```
+
+and then the simulation of intermediary points in this interval: 
+
+```{r}
+bm2 %>% sim(c(6.5,7,7.5),prefer="Bessel")
+plot(bm2)
+```
+
+We can change the layer type (if possible) for every interval in the path by simply calling either `bessel.layers()` or `intersection.layers()` together with arguments for the end-points fo the path. For instance, suppose we now wanted Intersection layers: 
+
+```{r}
+bm2 %>% intersection.layers(0,8)
+plot(bm2)
+```
+
+results in any Bessel layers being converted to Intersection layers. Similary we could attempt to convert back to Bessel layers (although this may not always be possible for every interval): 
+
+```{r}
+bm2 %>% bessel.layers(0,8)
+plot(bm2)
+```
+
+Note that converting the layers from Intersection to Bessel or Bessel to Intersection does not change the preference when calling the `sim()` function. For instance: 
+
+```{r}
+bm2 %>% sim(3.75)
+plot(bm2)
+```
+
+# Refinement
 
 
 # Publication Graphics
