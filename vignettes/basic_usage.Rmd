@@ -212,17 +212,17 @@ Note conditional simulations within a localised layer can give rise to a change 
 
 Simulating localised layers by means first passage times can be advantageous in some settings, although the time the first passage occurs is random, and this randomness can introduce its own complications. 
 
-Instead, we may wish to simulate localised layers over a specified interval (in the same manner as we did for Bessel layers). For instance, suppose we want a localised layer in the interval $t\in[25,28]$ this can be achieved using the `localised.layers()` function: 
+Instead, we may wish to simulate localised layers over a specified interval (in the same manner as we did for Bessel layers). For instance, suppose we want a localised layer in the interval $t\in[23,29]$ this can be achieved using the `localised.layers()` function: 
 
 ```{r}
-bm %>% localise.layers(25,28)
+bm %>% localise.layers(23,29)
 plot(bm)
 ```
 
-Note that the resulting skeleton for the interval will comprise zero or more (red) localised layers, followed by a single (purple) Bessel layer: this because the end-point will no longer co-incide with the layer. By default `delta` is chosen to be $\sqrt{t-s}/2$, although this can be altered by the user using the argument `mult` which multiplies the default layer size. For instance, 
+Note that the resulting skeleton for the interval will comprise zero or more (red) localised layers, followed by a single (purple) Bessel layer: this because the end-point will no longer coincide with the layer. By default `delta` is chosen to be $\sqrt{t-s}/2$, although this can be altered by the user using the argument `mult` which multiplies the default layer size. For instance, 
 
 ```{r}
-bm %>% localise.layers(31,35,mult=2)
+bm %>% localise.layers(31,35,mult=1.5)
 plot(bm)
 ```
 
@@ -242,9 +242,6 @@ plot(bm)
 ```
 
 Note that the path has been extended (unconditionally) beyond $t=35$ as per above. For each interval within the current skeleton, which did not already have a layer, a localised layer has been introduced. The "bridge" localised layers are simulated by means of an appropriate scaling of unconditional Brownian motions, and so have a gradient of $(W_t-W_s)/(t-s)$. The interior dashed, dotted and solid lines, together with the associated Bessel layer all follow the earlier conventions (albeit now with a gradient). The outer horizontal solid lines are for the use of You (and don't form part of the skeleton) to easily indicate a spatial interval which constrains the path over a given (time) interval.  
-
-[NOTE:] Following this logic, we should be able to toggle off the outer solid lines by using `plot(bm, hide.user=TRUE)`
-
 
 ### (Another) peek under the hood
 
@@ -318,11 +315,12 @@ Note that on simulating an intermediary point(s) a number of Bessel (purple) or 
 
 ### (Yet Another) peek under the hood
 
-As demonstrated in the preivous section, by default the package has a preference for using Bessel layers over Intersection layers wherever possible. It is typical that the user will want to only consider one layer type, and the Bessel layer type has been selected as default as this is most likely to be the one practitioners will use. We do however want the flexibility to use multiple layer types or change the default to Intersection. 
+As demonstrated in the previous section, by default the package has a preference for using Bessel layers over Intersection layers wherever possible. It is typical that the user will want to only consider one layer type, and the Bessel layer type has been selected as default as this is most likely to be the one practitioners will use. We do however want the flexibility to use multiple layer types or change the default to Intersection. 
 
 To do this we can change the default argument from `prefer = "bessel"` to `prefer = "intersection"` within the functions we have considered. For instance, we may consider a new path (`bm2`) initialised at $W_0=0$:
 
 ```{r}
+set.seed(42)
 bm2 <- create.bm(prefer = "intersection")
 ```
 
@@ -335,23 +333,23 @@ bm2 %>% bessel.layers(1, 3)
 plot(bm2)
 ```
 
-then if we want to simulate the path at $t=2$ and have resultant Bessel layers then this needs to be specified by the user as it defers from the default on the paths creation (`prefer = "intersection"`):
+then if we want to simulate the path at $t=2$ and have resultant Bessel layers then this needs to be specified by the user as it differs from the default on the paths creation (`prefer = "intersection"`):
 
 ```{r}
 bm2 %>% sim(2, prefer = "bessel")
 plot(bm2)
 ```
 
-In particular, further simulation of the path at $t=1.5$ and $t=2.5$ results in both Bessel layers (in the interval $[1,2]$ and $[2,3]$ being converted to Intersection layers: 
+In particular, further simulation of the path at $t=1.25$ and $t=2.5$ results in both Bessel layers (in the interval $[1,2]$ and $[2,3]$ being converted to Intersection layers: 
 
 ```{r}
-bm2 %>% sim(c(1.5,2.5))
+bm2 %>% sim(c(1.25,2.5))
 plot(bm2)
 ```
 
-Note that we do not need to specify we have a preference for Intersection layers, as this preference is an attribute assigned to the path on its creation using `create.bm()`. In principle this could be changed for the path globally (for instance, `bm2$prefer <- "Bessel"`), but this is not necessary as we will outline below.
+Note that we do not need to specify we have a preference for Intersection layers, as this preference is an attribute assigned to the path on its creation using `create.bm()`. In principle this could be changed for the path globally (for instance, `bm2$prefer <- "bessel"`), but this is not necessary as we will outline below.
 
-It is not possible to convert from or to Localised layers from other layer types. However, once the path has been created with the attribute `prefer="Intersection"` then conditional simulation of localised layers will result in the appearance of Intersection layers (as opposed to Bessel layers). For instance, note that when simulating a Localised layer over the interval $t\in[4,5]$ that the final interval is an Intersection layer (and not a Bessel layer as before): 
+It is not possible to convert from or to Localised layers from other layer types. However, once the path has been created with the attribute `prefer="intersection"` then conditional simulation of localised layers will result in the appearance of Intersection layers (as opposed to Bessel layers). For instance, note that when simulating a Localised layer over the interval $t\in[4,5]$ that the final interval is an Intersection layer (and not a Bessel layer as before): 
 
 ```{r}
 bm2 %>% localise.layers(4,5)
@@ -361,14 +359,14 @@ plot(bm2)
 The preference for Intersection layers inherited from the creation of the path can be changed when calling any of the other functions we have introduce. For instance, consider simulating localised layers (of the Bessel sort) in the interval $t\in[6,8]$: 
 
 ```{r}
-bm2 %>% localise.layers(6,8,prefer="Bessel")
+bm2 %>% localise.layers(6,8,prefer="bessel")
 plot(bm2)
 ```
 
 and then the simulation of intermediary points in this interval: 
 
 ```{r}
-bm2 %>% sim(c(6.5,7,7.5),prefer="Bessel")
+bm2 %>% sim(c(6.5,7,7.5),prefer="bessel")
 plot(bm2)
 ```
 
@@ -379,7 +377,7 @@ bm2 %>% intersection.layers(0,8)
 plot(bm2)
 ```
 
-results in any Bessel layers being converted to Intersection layers. Similary we could attempt to convert back to Bessel layers (although this may not always be possible for every interval): 
+results in any Bessel layers being converted to Intersection layers. Similarly we could attempt to convert back to Bessel layers (although this may not always be possible for every interval): 
 
 ```{r}
 bm2 %>% bessel.layers(0,8)
@@ -398,6 +396,7 @@ plot(bm2)
 When simulating layers the package will by default control the size of the layer so it scales appropriately with the length of the interval being considered. In particular, by default, the package will attempt to ensure the difference between the upper solid and upper dashed/dotted lines *AND* the difference between the lower solid and upper dashed/dotted lines is no greater than $\sqrt{t-s}$ (where $s$ and $t$ are the left and right hand end-points of the interval respectively). This control on the layer size can be removed by changing the `refine=TRUE` attribute to `refine=FALSE` on creation of the path. Note that this is not recommended as it can introduce numerical instability, but to show its affect consider the following Bessel layer over the interval $[0,10]$: 
 
 ```{r}
+set.seed(42^2)
 bm3 <- create.bm(refine = FALSE)
 bm3 %>% bessel.layers(0, 10)
 plot(bm3)
@@ -406,7 +405,7 @@ plot(bm3)
 Now, if we simulate a number of intermediary points (say a grid of $20$), then note that although we again have Bessel layers that the size of the Bessel layers is "stretched" when contrasted with earlier simulations: 
 
 ```{r}
-bm3 %>% sim(seq(0,10,length=20))
+bm3 %>% sim(seq(0,10,by=0.5))
 plot(bm3)
 ```
 
@@ -415,18 +414,18 @@ Contrast this with a similar path where we haven't set `refine=FALSE`:
 ```{r}
 bm4 <- create.bm()
 bm4 %>% bessel.layers(0, 10)
-bm4 %>% sim(seq(0,10,length=20))
+bm4 %>% sim(seq(0,10,by=0.5))
 plot(bm4)
 ```
 
-Whether the package does refinement by default is inherited from the attribute when the path is created. We can either change this at some future point globally (for instance, `bm3$refine <- TRUE`), or alternatively specify within the other functionals in the same manner as the `prefer` attribute discussed earlier. For instance, consider the introduction of a single additional point at $t=\pi$:
+Whether the package does refinement by default is inherited from the attribute when the path is created. We can either change this at some future point globally (for instance, `bm3$refine <- TRUE`), or alternatively specify within the other functionals in the same manner as the `prefer` attribute discussed earlier. For instance, consider the introduction of mid-points to the existing path in the interval $[0,5]$:
 
 ```{r}
-bm3 %>% sim(pi,prefer = TRUE)
+bm3 %>% sim(seq(0,5,by=0.25),refine = TRUE)
 plot(bm3)
 ```
 
-Note that the intervals surrounding $t=\pi$ have now been refined.
+Note that the intervals in the first half of the path have been refined, but the second half of the path remains the same.
 
 Now, in the case where we *are* refining by default (`refine = TRUE`), then we may want to alter the default layer size. This is done using the `mult` attribute, which was described earlier with Localised layers. Recall that by default when refining, the difference between the upper solid and upper dashed/dotted lines *AND* the difference between the lower solid and upper dashed/dotted lines is no greater than $\sqrt{t-s}$. The `mult` attribute multiplies this tolerance by a user-specified amount. By default, `mult = 1` and is specified at the creation of the path. For instance, consider a new path (`bm5`) together with Bessel layers in the interval $[0,10]$, but with the default layer size multiplied by $3$ :
 
@@ -439,28 +438,30 @@ plot(bm5)
 The simulation of the path at additional points will inherit `mult=3`. For instance, contrast the following with `bm4` above: 
 
 ```{r}
-bm5 %>% sim(seq(0,10,length=20))
+bm5 %>% sim(seq(0,10,by=0.5))
 plot(bm5)
 ```
 
-If we introduce an additional point (say at $t=pi$), but we want increased increased refinement (say of `mult=1`) this can be done by changing the default argument in any of the earlier functions as before. For instance: 
+If we introduce an additional points (say mid-points to the existing path in the interval $[0,5]$), but we want increased increased refinement (say of `mult=1`) this can be done by changing the default argument in any of the earlier functions as before. For instance: 
 
 ```{r}
-bm5 %>% sim(pi,mult = 1)
+bm5 %>% sim(seq(0,5,by=0.25),mult = 1)
 plot(bm5)
 ```
 
-Note that the intervals surrounding $\pi$ are far more resolved. It is possible to set the layer size to some constant level (not dependent on the length of the interval) by specifying `mult` to be at a level the reciprocal of $\sqrt{t-s}$. This however is not recommended, as it can introduce numerical instability. 
+Note that the intervals in the first half of the path are far more resolved. It is possible to set the layer size to some constant level (not dependent on the length of the interval) by specifying `mult` to be at a level the reciprocal of $\sqrt{t-s}$. This however is not recommended, as it can introduce numerical instability. 
 
 Finally, we may wish to refine the existing intervals without the introduction of additional points. This can be achieved using the `refine` function, which can *increase* the resolution on any (or all) intervals. For instance:
 
 ```{r}
-bm5 %>% refine(5,10,mult = 0.25)
+bm5 %>% refine(5,10,mult = 1)
 plot(bm5)
 ```
 
-The `mult = 0.25` argument has increased the resolution of existing layers in the interval $[5,10]$ by $3/0.25=12$x.
+The `mult = 1` argument has increased the resolution of existing layers in the interval $[5,10]$ by $3\times$, and will be comparable to the first half of the path.
 
 # Publication Graphics
 
 # References
+
+
