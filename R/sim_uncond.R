@@ -28,6 +28,9 @@ sim.uncond <- function(bm, t, t.grid = NULL) {
   if(!is.null(t.grid) && !is.intscalar(t.grid)) {
     stop("t.grid must be either NULL or an integer number of grid points.")
   }
+  if(any(t < min(bm$t))) {
+    stop(paste0("cannot simulate path at times before the path was initialised (at time ", min(bm$t), ")"))
+  }
 
   # Arg combos
   if(is.realscalar(t) && !is.null(t.grid)) {

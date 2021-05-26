@@ -42,6 +42,9 @@ sim <- function(bm, t, refine = bm$refine, mult = bm$mult, prefer = bm$prefer) {
   if(length(prefer) != 1 || !(prefer %in% c("bessel", "intersection"))) {
     stop("prefer must be one of 'bessel' or 'intersection'")
   }
+  if(any(t < min(bm$t))) {
+    stop(paste0("cannot simulate path at times before the path was initialised (at time ", min(bm$t), ")"))
+  }
 
   # Eliminate times we know
   t <- setdiff(t, bm$t)
