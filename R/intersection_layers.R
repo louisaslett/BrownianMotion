@@ -54,10 +54,6 @@ intersection.layers <- function(bm, s, t, refine = bm$refine, mult = bm$mult, pr
   all.pairs.BL <- all.pairs.BL[incl,,drop = FALSE]
   # cat("Bessel layer:"); print(all.pairs.BL)
 
-  if(nrow(all.pairs.noL) == 0 && nrow(all.pairs.BL) == 0) {
-    stop("No intervals in the skeleton between s and t found that have a Bessel or no layer specification.")
-  }
-
   if(nrow(all.pairs.noL) > 0) {
     for(i in 1:nrow(all.pairs.noL)) {
       intersection.layers.BLIL_(bm, all.pairs.noL[i,1], all.pairs.noL[i,2], mult)

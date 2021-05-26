@@ -95,10 +95,6 @@ sim <- function(bm, t, refine = bm$refine, mult = bm$mult, prefer = bm$prefer) {
       t.bbbessel <- t.bmbb[colSums(matrix(apply(bm$layers[bm$layers$type == "bessel-bb",2:3], 1, function(y) { t.bmbb > y[1] & t.bmbb < y[2] }), ncol = length(t.bmbb), byrow = TRUE)) > 0]
       # Keep rest as standard Brownian bridges
       t.bmbb <- setdiff(t.bmbb, t.bbbessel)
-
-      if(prefer == "intersection" && (length(t.bessel) > 0 || length(t.bbbessel) > 0)) {
-        stop("Sanity check failure ... when prefer='intersection' there should be no remaining bessel layers!")
-      }
     }
     if(length(t.local) > 0) {
       # Do simulation conditional on localised layers

@@ -47,28 +47,45 @@ bessel.layers <- function(bm, s, t, refine = bm$refine, mult = bm$mult, prefer =
   #   stop("Cannot create bessel layer within another layer specification.")
   # }
 
-  # Find all intervals between s and t not currently inside any other layer
+  # Find all intervals between s and t not currently inside any other layer or inside an Intersection layer
   s.i <- which(s == bm$t)
   t.i <- which(t == bm$t)
-  all.pairs <- matrix(c(bm$t[s.i:(t.i-1)], bm$t[(s.i+1):t.i]), byrow = FALSE, ncol = 2)
-  mid <- (all.pairs[,2]+all.pairs[,1])/2
-  incl <- rep(TRUE, nrow(all.pairs))
+  all.pairs.noL <- matrix(c(bm$t[s.i:(t.i-1)], bm$t[(s.i+1):t.i]), byrow = FALSE, ncol = 2)
+  all.pairs.IL  <- matrix(c(bm$t[s.i:(t.i-1)], bm$t[(s.i+1):t.i]), byrow = FALSE, ncol = 2)
+  # No layer
+  mid <- (all.pairs.noL[,2]+all.pairs.noL[,1])/2
+  incl <- rep(TRUE, nrow(all.pairs.noL))
   for(i in 1:length(mid)) {
     if(any(mid[i] >= bm$layers$t.l & mid[i] <= bm$layers$t.u) ||
        any(mid[i] >= bm$user.layers$t.l & mid[i] <= bm$user.layers$t.u)) {
       incl[i] <- FALSE
     }
   }
-  all.pairs <- all.pairs[incl,,drop = FALSE]
+  all.pairs.noL <- all.pairs.noL[incl,,drop = FALSE]
+  # cat("No layer:"); print(all.pairs.noL)
+  # Intersection layer
+  mid <- (all.pairs.IL[,2]+all.pairs.IL[,1])/2
+  incl <- rep(FALSE, nrow(all.pairs.IL))
+  all.pairs.IL.lyr_idx <- c()
+  for(i in 1:length(mid)) {
+    if(any(mid[i] >= bm$layers$t.l & mid[i] <= bm$layers$t.u & bm$layers$type == "intersection")) {
+      incl[i] <- TRUE
+      all.pairs.IL.lyr_idx <- c(all.pairs.IL.lyr_idx, which(mid[i] >= bm$layers$t.l & mid[i] <= bm$layers$t.u & bm$layers$type == "intersection"))
+    }
+  }
+  all.pairs.IL <- all.pairs.IL[incl,,drop = FALSE]
+  # cat("Intersection layer:"); print(all.pairs.IL)
 
-  if(nrow(all.pairs) == 0) {
-    stop("No intervals in the skeleton between s and t found that do not have a layer specification already.")
+  if(nrow(all.pairs.noL) > 0) {
+    for(i in 1:nrow(all.pairs.noL)) {
+      bessel.layers_(bm, all.pairs.noL[i,1], all.pairs.noL[i,2], mult)
+    }
+  }
+  if(length(all.pairs.IL.lyr_idx) > 0) {
+    intersection.to.bessel_(bm, all.pairs.IL.lyr_idx)
   }
 
-  for(i in 1:nrow(all.pairs)) {
-    bessel.layers_(bm, all.pairs[i,1], all.pairs[i,2], mult)
-  }
-
+  bm$layers <- bm$layers[order(bm$layers$t.l),]
   invisible(bm)
 }
 
