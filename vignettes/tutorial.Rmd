@@ -1,5 +1,5 @@
 ---
-title: "Basic usage of BrownianMotion package"
+title: "Tutorial for BrownianMotion package"
 output:
   rmarkdown::html_vignette:
     fig_width: 7
@@ -7,7 +7,7 @@ output:
     toc: true
 bibliography: refs.bib
 vignette: >
-  %\VignetteIndexEntry{Basic usage of BrownianMotion package}
+  %\VignetteIndexEntry{Tutorial for BrownianMotion package}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
