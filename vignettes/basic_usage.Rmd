@@ -195,7 +195,7 @@ plot(bm)
 
 Note that if using the arguments `l` and `u` then the current terminal point must be contained within the interval, as otherwise it is not possible and results in an error: 
 
-```{r,error=TRUE}
+```{r,error=TRUE,purl=FALSE}
 bm %>% first.passage(l = 80, u=85)
 ```
 
