@@ -13,7 +13,7 @@ results in left truncation of the path up to `r`}
 \item{r}{right end of open interval to delete.  By default, `Inf` which
 results in right truncation of the path from `l`}
 
-\item{type}{one of `"all"`, `"layer"` or `"obs"` to specify whether to delete both path
+\item{type}{one of `"all"` or `"layer"` to specify whether to delete both path
 observations and layers, or just layers in the open interval `(l,r)`}
 }
 \description{
