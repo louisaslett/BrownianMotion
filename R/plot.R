@@ -114,7 +114,19 @@ plot.BrownianMotion <- function(x, y, ...) {
   }
 
   if(!is.null(opts[["t.lim"]])) {
-    print(p + xlim(opts[["t.lim"]]))
+    t.lim <- opts[["t.lim"]]
+
+    lyrs <- bm$layers[!(bm$layers$type %in% c("localised-bb","intersection-bb","bessel-bb")),]
+    bb.lyrs <- rbind(localised.bb, intersection.bb, bessel.bb)
+    bb.lyrs$min <- pmin(bb.lyrs$Ld.bb+bb.lyrs$Ld,bb.lyrs$Ld.bb+bb.lyrs$Uu)
+    bb.lyrs$max <- pmax(bb.lyrs$Uu.bb+bb.lyrs$Ld,bb.lyrs$Uu.bb+bb.lyrs$Uu)
+
+    ymin <- min(lyrs[lyrs$t.u>t.lim[1] & lyrs$t.l<t.lim[2],]$Ld,
+                bb.lyrs[bb.lyrs$t.u>t.lim[1] & bb.lyrs$t.l<t.lim[2],]$min)
+    ymax <- max(lyrs[lyrs$t.u>t.lim[1] & lyrs$t.l<t.lim[2],]$Uu,
+                bb.lyrs[bb.lyrs$t.u>t.lim[1] & bb.lyrs$t.l<t.lim[2],]$max)
+
+    print(p + coord_cartesian(xlim = opts[["t.lim"]], ylim = c(ymin,ymax)))
   } else {
     print(p)
   }
