@@ -46,7 +46,8 @@ first.passage <- function(bm, l = NULL, u = NULL, delta.l = NULL, delta.u = NULL
     stop("if delta.l or delta.u are specified, the other limit arguments must not be specified.")
   }
   if(is.null(l) && is.null(u) && is.null(delta.l) && is.null(delta.u) && is.null(delta)) {
-    stop("some limit arguments must be specified.")
+    # default to 1 if no limits specified
+    delta <- 1
   }
   # Convert every combination to an l&u pair
   x <- state(bm)
