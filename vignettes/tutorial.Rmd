@@ -460,6 +460,48 @@ plot(bm5)
 
 The `mult = 1` argument has increased the resolution of existing layers in the interval $[5,10]$ by $3\times$, and will be comparable to the first half of the path.
 
+# Deletion
+
+It is possible that You want to delete both the path observations and layers, or only the layers, of the skeleton over some specified interval. This can be achieved within the package by using the `delete.skeleton` command, and specifying an open interval which you wish to delete from the skeleton. The left and right hand ends of the open interval are specified using the arguments `l` and `r` respectively. For instance, considering `bm5`, we may wish to delete the entire skeleton in the interval $(2.5,5)$: 
+
+```{r}
+bm5 %>% delete.skeleton(l = 2.5, r = 5)
+plot(bm5)
+```
+By default the package will delete both path observations and layers within the open interval (by default the argument `type  = "all"`). However, deletion of only the layers (retaining the path observations) is possible by setting `type = "layer"`. For instance, considering deleting only the skeleton layers in the interval $(5,7.5)$:
+
+```{r}
+bm5 %>% delete.skeleton(l = 5, r = 7.5, type = "layer")
+plot(bm5)
+```
+
+Note that as a safety precaution, `l` and `r` *must* co-incide with time points within the skeleton. As a consequence, if You want to delete an interval which does not co-incide with time points within the skeleton then You must first introduce those points using the `sim` function. For instance, consider deleting the skeleton entirely in the interval $(2.0001,7.9999)$ (noting these times do not currently appear in the skeleton) then this can be achieved as follows: 
+
+```{r}
+bm5 %>% sim(c(2.0001,7.9999)) %>% delete.skeleton(l = 2.0001, r = 7.9999)
+plot(bm5)
+```
+
+In some scenarios we may wish to delete the path entirely to the left or right of some point. This is possible by not specifying the right or left point (respectively). For instance, suppose we wish to delete the skeleton entirely to the right of $t=2$ then: 
+
+```{r}
+bm5 %>% delete.skeleton(l = 2)
+plot(bm5)
+```
+
+Alternatively, deletion entirely to the left of $t=1$ is possible in a similar manner by not specifying the `l` argument: 
+
+```{r}
+bm5 %>% delete.skeleton(r = 1)
+plot(bm5)
+```
+
+Note that (as a fail-safe) it is not possible to delete the entire path by leaving *both* arguments un-specified. Intead You should do this by removing the `bm5` object from your workspace using the base R `rm` command. If you attempt to do this You will get an (informative) error: 
+
+```{r,error=TRUE,purl=FALSE}
+bm5 %>% delete.skeleton()
+```
+
 # Publication Graphics
 
 # References
