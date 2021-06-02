@@ -4,7 +4,7 @@
 #'     results in left truncation of the path up to `r`
 #' @param r right end of open interval to delete.  By default, `Inf` which
 #'     results in right truncation of the path from `l`
-#' @param type one of `"all"`, `"layer"` or `"obs"` to specify whether to delete both path
+#' @param type one of `"all"` or `"layer"` to specify whether to delete both path
 #'     observations and layers, or just layers in the open interval `(l,r)`
 #'
 #'
@@ -13,7 +13,7 @@ delete.skeleton <- function(bm, l = -Inf, r = Inf, type = "all") {
   if(!("BrownianMotion" %in% class(bm))) {
     stop("bm argument must be a BrownianMotion object.")
   }
-  if(length(type) != 1 || !(type %in% c("all", "layer", "obs"))) {
+  if(length(type) != 1 || !(type %in% c("all", "layer"))) {
     stop('type must be either "all" or "layer"')
   }
   if(!is.realscalar(l)) {
@@ -36,60 +36,59 @@ delete.skeleton <- function(bm, l = -Inf, r = Inf, type = "all") {
   }
 
   ### User layers (complex case) first ###
-  if(type != "obs") {
-    # i) layers fully contained are just removed
-    usr_idxs <- which(bm$user.layers$t.l>=l & bm$user.layers$t.u<=r)
-    if(length(usr_idxs) > 0) {
-      bm$user.layers <- bm$user.layers[-usr_idxs,]
-    }
-    # ii) layers straddling the left and right
-    usr_idxs <- which(bm$user.layers$t.l<l & bm$user.layers$t.u>r)
-    if(length(usr_idxs) > 1) stop("impossible case ii for user layer matching")
-    if(length(usr_idxs) == 1) {
-      new.lyr <- bm$user.layers[usr_idxs,,drop=FALSE]
-      new.lyr$t.l <- r
-      bm$user.layers[usr_idxs,]$t.u <- l
-      bm$user.layers <- rbind(bm$user.layers, new.lyr)
-    }
-    # iii) layers straddling the left only
-    usr_idxs <- which(bm$user.layers$t.l<l & bm$user.layers$t.u>l & bm$user.layers$t.u<=r)
-    if(length(usr_idxs) > 1) stop("impossible case iii for user layer matching")
-    if(length(usr_idxs) == 1) {
-      bm$user.layers[usr_idxs,]$t.u <- l
-    }
-    # iv) layers straddling the right only
-    usr_idxs <- which(bm$user.layers$t.l<r & bm$user.layers$t.u>r & bm$user.layers$t.l>=l)
-    if(length(usr_idxs) > 1) stop("impossible case iv for user layer matching")
-    if(length(usr_idxs) == 1) {
-      bm$user.layers[usr_idxs,]$t.l <- r
-    }
-
-    ### Standard layers ###
-    lyr_idxs <- which(bm$layers$t.l>=l & bm$layers$t.u<=r)
-    if(length(lyr_idxs) > 0) {
-      bm$layers <- bm$layers[-lyr_idxs,]
-    }
-
-    ### Aux layers ###
-    aux_lyr_idxs <- which(bm$bb.local$layers$t.l>=l & bm$bb.local$layers$t.u<=r)
-    if(length(aux_lyr_idxs) > 0) {
-      bm$bb.local$layers <- bm$bb.local$layers[-aux_lyr_idxs,]
-    }
+  # i) layers fully contained are just removed
+  usr_idxs <- which(bm$user.layers$t.l>=l & bm$user.layers$t.u<=r)
+  if(length(usr_idxs) > 0) {
+    bm$user.layers <- bm$user.layers[-usr_idxs,]
+  }
+  # ii) layers straddling the left and right
+  usr_idxs <- which(bm$user.layers$t.l<l & bm$user.layers$t.u>r)
+  if(length(usr_idxs) > 1) stop("impossible case ii for user layer matching")
+  if(length(usr_idxs) == 1) {
+    new.lyr <- bm$user.layers[usr_idxs,,drop=FALSE]
+    new.lyr$t.l <- r
+    bm$user.layers[usr_idxs,]$t.u <- l
+    bm$user.layers <- rbind(bm$user.layers, new.lyr)
+  }
+  # iii) layers straddling the left only
+  usr_idxs <- which(bm$user.layers$t.l<l & bm$user.layers$t.u>l & bm$user.layers$t.u<=r)
+  if(length(usr_idxs) > 1) stop("impossible case iii for user layer matching")
+  if(length(usr_idxs) == 1) {
+    bm$user.layers[usr_idxs,]$t.u <- l
+  }
+  # iv) layers straddling the right only
+  usr_idxs <- which(bm$user.layers$t.l<r & bm$user.layers$t.u>r & bm$user.layers$t.l>=l)
+  if(length(usr_idxs) > 1) stop("impossible case iv for user layer matching")
+  if(length(usr_idxs) == 1) {
+    bm$user.layers[usr_idxs,]$t.l <- r
   }
 
-  ### Path observations ###
-  if(type != "layer") {
-    obs_idxs <- which(bm$t>l & bm$t<r)
-    if(length(obs_idxs)>0) {
-      bm$t <- bm$t[-obs_idxs]
-      bm$W_t <- bm$W_t[-obs_idxs]
-    }
-    aux_obs_idxs <- which(bm$bb.local$t>l & bm$bb.local$t<r)
-    if(length(aux_obs_idxs)>0) {
-      bm$bb.local$t <- bm$bb.local$t[-aux_obs_idxs]
-      bm$bb.local$W_t <- bm$bb.local$W_t[-aux_obs_idxs]
-    }
+  ### Standard layers ###
+  lyr_idxs <- which(bm$layers$t.l>=l & bm$layers$t.u<=r)
+  if(length(lyr_idxs) > 0) {
+    bm$layers <- bm$layers[-lyr_idxs,]
   }
 
-  invisible(bm)
+  ### Aux layers ###
+  aux_lyr_idxs <- which(bm$bb.local$layers$t.l>=l & bm$bb.local$layers$t.u<=r)
+  if(length(aux_lyr_idxs) > 0) {
+    bm$bb.local$layers <- bm$bb.local$layers[-aux_lyr_idxs,]
+  }
+}
+
+### Path observations ###
+if(type == "all") {
+  obs_idxs <- which(bm$t>l & bm$t<r)
+  if(length(obs_idxs)>0) {
+    bm$t <- bm$t[-obs_idxs]
+    bm$W_t <- bm$W_t[-obs_idxs]
+  }
+  aux_obs_idxs <- which(bm$bb.local$t>l & bm$bb.local$t<r)
+  if(length(aux_obs_idxs)>0) {
+    bm$bb.local$t <- bm$bb.local$t[-aux_obs_idxs]
+    bm$bb.local$W_t <- bm$bb.local$W_t[-aux_obs_idxs]
+  }
+}
+
+invisible(bm)
 }
