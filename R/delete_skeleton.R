@@ -74,21 +74,20 @@ delete.skeleton <- function(bm, l = -Inf, r = Inf, type = "all") {
   if(length(aux_lyr_idxs) > 0) {
     bm$bb.local$layers <- bm$bb.local$layers[-aux_lyr_idxs,]
   }
-}
 
-### Path observations ###
-if(type == "all") {
-  obs_idxs <- which(bm$t>l & bm$t<r)
-  if(length(obs_idxs)>0) {
-    bm$t <- bm$t[-obs_idxs]
-    bm$W_t <- bm$W_t[-obs_idxs]
+  ### Path observations ###
+  if(type == "all") {
+    obs_idxs <- which(bm$t>l & bm$t<r)
+    if(length(obs_idxs)>0) {
+      bm$t <- bm$t[-obs_idxs]
+      bm$W_t <- bm$W_t[-obs_idxs]
+    }
+    aux_obs_idxs <- which(bm$bb.local$t>l & bm$bb.local$t<r)
+    if(length(aux_obs_idxs)>0) {
+      bm$bb.local$t <- bm$bb.local$t[-aux_obs_idxs]
+      bm$bb.local$W_t <- bm$bb.local$W_t[-aux_obs_idxs]
+    }
   }
-  aux_obs_idxs <- which(bm$bb.local$t>l & bm$bb.local$t<r)
-  if(length(aux_obs_idxs)>0) {
-    bm$bb.local$t <- bm$bb.local$t[-aux_obs_idxs]
-    bm$bb.local$W_t <- bm$bb.local$W_t[-aux_obs_idxs]
-  }
-}
 
-invisible(bm)
+  invisible(bm)
 }
