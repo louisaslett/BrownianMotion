@@ -148,6 +148,12 @@ bm %>% bessel.layers(5,9)
 plot(bm)
 ```
 
+Note that as the `bm` object becomes larger, calling the `plot` command can be less informative. You may instead wish to only `plot` a specific time interval for clarity. This is possible using the `t.lim` argument within the `plot` command. For instance, suppose you were interested only in visualising the interval $[5,7.5]$: 
+
+```{r}
+plot(bm, t.lim = c(5,7.5))
+```
+
 ## Localised
 
 ### First passage times
@@ -241,7 +247,17 @@ bm %>% localise.layers(10,40)
 plot(bm)
 ```
 
-Note that the path has been extended (unconditionally) beyond $t=35$ as per above. For each interval within the current skeleton, which did not already have a layer, a localised layer has been introduced. The "bridge" localised layers are simulated by means of an appropriate scaling of unconditional Brownian motions, and so have a gradient of $(W_t-W_s)/(t-s)$. The interior dashed, dotted and solid lines, together with the associated Bessel layer all follow the earlier conventions (albeit now with a gradient). The outer horizontal solid lines are for the use of You (and don't form part of the skeleton) to easily indicate a spatial interval which constrains the path over a given (time) interval.  
+Note that the path has been extended (unconditionally) beyond $t=35$ as per above. For each interval within the current skeleton, which did not already have a layer, a localised layer has been introduced. The "bridge" localised layers are simulated by means of an appropriate scaling of unconditional Brownian motions, and so have a gradient of $(W_t-W_s)/(t-s)$. The interior dashed, dotted and solid lines, together with the associated Bessel layer all follow the earlier conventions (albeit now with a gradient). The outer horizontal solid lines are for the use of You (and don't form part of the skeleton) to easily indicate a spatial interval which constrains the path over a given (time) interval. We can again more clearly see the localised bridge layers by specifying a shorter interval to plot the path (for instance $[27,33]$): 
+
+```{r}
+plot(bm, t.lim=c(27,33))
+```
+
+As the horizontal layers do not strictly form part of the path skeleton, these can be toggled off when plotting by again using the `hide.user` argument: 
+
+```{r}
+plot(bm, t.lim=c(27,33), hide.user = TRUE)
+```
 
 ### (Another) peek under the hood
 
