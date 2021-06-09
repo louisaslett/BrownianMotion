@@ -4,7 +4,15 @@
 \alias{bessel.layers}
 \title{Construct Bessel layers}
 \usage{
-bessel.layers(bm, s, t, refine = bm$refine, mult = bm$mult, prefer = bm$prefer)
+bessel.layers(
+  bm,
+  s,
+  t,
+  refine = bm$refine,
+  mult = bm$mult,
+  prefer = bm$prefer,
+  label = c(names(s), names(t))
+)
 }
 \arguments{
 \item{bm}{a Brownian motion object from which simulation should continue.

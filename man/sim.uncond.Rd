@@ -4,18 +4,13 @@
 \alias{sim.uncond}
 \title{Simulate Brownian motion unconditionally}
 \usage{
-sim.uncond(bm, t, t.grid = NULL)
+sim.uncond(bm, t, label = names(t))
 }
 \arguments{
 \item{bm}{a Brownian motion object from which simulation should continue.
 Note the object is updated in place.}
 
-\item{t}{either a vector of times to simulate at, or a single endpoint time
-if t.grid is supplied.}
-
-\item{t.grid}{by default this is NULL so that only the times supplied in
-\code{t} are simulated.  If a scalar integer is supplied then an evenly
-spaced grid of this many times will be simulated up to \code{t}.}
+\item{t}{a vector of times at which to simulate the path}
 }
 \value{
 the Brownian motion object which was passed in argument \code{bm} is

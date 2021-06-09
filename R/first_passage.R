@@ -31,7 +31,7 @@
 #' dplyr (and other) style pipes.
 #'
 #' @export
-first.passage <- function(bm, l = NULL, u = NULL, delta.l = NULL, delta.u = NULL, delta = NULL) {
+first.passage <- function(bm, l = NULL, u = NULL, delta.l = NULL, delta.u = NULL, delta = NULL, label = NULL) {
   if(!("BrownianMotion" %in% class(bm))) {
     stop("bm argument must be a BrownianMotion object.")
   }
@@ -49,6 +49,8 @@ first.passage <- function(bm, l = NULL, u = NULL, delta.l = NULL, delta.u = NULL
     # default to 1 if no limits specified
     delta <- 1
   }
+  assert.bmlabel(label, 1)
+
   # Convert every combination to an l&u pair
   x <- state(bm)
   if(!is.null(delta)) {
@@ -86,10 +88,10 @@ first.passage <- function(bm, l = NULL, u = NULL, delta.l = NULL, delta.u = NULL
     stop("u must be greater than the current endpoint state of the Brownian motion.")
   }
 
-  invisible(first.passage_(bm, l, u))
+  invisible(first.passage_(bm, l, u, label))
 }
 
-first.passage_ <- function(bm, l, u) {
+first.passage_ <- function(bm, l, u, label) {
   # Get current time/position
   t <- max(bm$t)
   x <- bm$W_t[match(t, bm$t)]
@@ -152,7 +154,7 @@ first.passage_ <- function(bm, l, u) {
   }
 
   # Now append the new sims to the BM object
-  bm$t <- c(bm$t, t.new)
+  bm$t <- c(bm$t, unname(t.new))
   bm$W_t <- c(bm$W_t, x.new+x)
   bm$layers <- add_row(bm$layers,
                        type = "localised",
@@ -170,6 +172,11 @@ first.passage_ <- function(bm, l, u) {
                             L = l+x,
                             U = u+x)
 
+  bm$labels[["fpt"]] <- c(bm$labels[["fpt"]], unname(t.new))
+  bm$labels[["internal"]] <- c(bm$labels[["internal"]], unname(t.new))
+  if(!is.null(label))
+    bm$labels[[label]] <- c(bm$labels[[label]], max(t.new))
+  bm$labels[["end"]] <- max(t.new)
   bm
 }
 

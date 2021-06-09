@@ -6,64 +6,58 @@
 #'
 #' @param bm a Brownian motion object from which simulation should continue.
 #'   Note the object is updated in place.
-#' @param t either a vector of times to simulate at, or a single endpoint time
-#'   if t.grid is supplied.
-#' @param t.grid by default this is NULL so that only the times supplied in
-#'   \code{t} are simulated.  If a scalar integer is supplied then an evenly
-#'   spaced grid of this many times will be simulated up to \code{t}.
+#' @param t  a vector of times at which to simulate the path
 #'
 #' @return the Brownian motion object which was passed in argument \code{bm} is
 #'   updated in place and returned, enabling chaining of commands with
 #'   dplyr (and other) style pipes.
 #'
 #' @export
-sim.uncond <- function(bm, t, t.grid = NULL) {
+sim.uncond <- function(bm, t, label = names(t)) {
   # Arg types
   if(!("BrownianMotion" %in% class(bm))) {
     stop("bm argument must be a BrownianMotion object.")
   }
-  if(!is.realscalar(t) && !is.realvector(t)) {
-    stop("t must be either a scalar or vector of times.")
-  }
-  if(!is.null(t.grid) && !is.intscalar(t.grid)) {
-    stop("t.grid must be either NULL or an integer number of grid points.")
-  }
+  assert.timevector(t)
   if(any(t < min(bm$t))) {
     stop(paste0("cannot simulate path at times before the path was initialised (at time ", min(bm$t), ")"))
   }
-
-  # Arg combos
-  if(is.realscalar(t) && !is.null(t.grid)) {
-    t <- seq(tail(bm$t, 1), t, length.out = t.grid+1)[-1]
+  if(any(t < max(bm$t))) {
+    stop(paste0("cannot unconditionally simulate path at times before the end of the path (at time ", max(bm$t), ")"))
   }
-  if(!is.realscalar(t) && !is.null(t.grid)) {
-    stop("t.grid argument can only be used when t is a scalar.")
-  }
-
-  # Sanity
-  if(any(tail(bm$t, 1) >= t)) {
-    stop("Brownian motion has already passed some of the target times.  Please use a Brownian Bridge to infill.")
-  }
+  assert.bmlabel(label, t)
 
   # Transformation
+  if(!is.null(label) && length(label) == 1) {
+    label <- rep(label, length(t))
+  }
   if(is.unsorted(t)) {
-    t <- sort(t)
+    o <- order(t)
+    label <- label[o]
+    t <- t[o]
   }
 
   # Eliminate times we know
   t <- setdiff(t, bm$t)
 
-  invisible(sim.uncond_(bm, t))
+  invisible(sim.uncond_(bm, t, label))
 }
 
 # Internal implementation of above callable without error checking
-sim.uncond_ <- function(bm, t) {
+sim.uncond_ <- function(bm, t, label) {
   t_delta <- c(t[1] - tail(bm$t, 1), diff(t))
-  bm$t <- c(bm$t, t)
+  bm$t <- c(bm$t, unname(t))
 
   W_delta <- rnorm(length(t_delta), sd = sqrt(t_delta))
   W_delta[1] <- W_delta[1] + tail(bm$W_t, 1)
   bm$W_t <- c(bm$W_t, cumsum(W_delta))
 
+  bm$labels[["user"]] <- c(bm$labels[["user"]], unname(t))
+  if(!is.null(label)) {
+    for(l in unique(label)) {
+      bm$labels[[l]] <- c(bm$labels[[l]], unname(t[label==l]))
+    }
+  }
+  bm$labels[["end"]] <- max(t)
   bm
 }

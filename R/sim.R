@@ -23,7 +23,7 @@
 #'   dplyr (and other) style pipes.
 #'
 #' @export
-sim <- function(bm, t, refine = bm$refine, mult = bm$mult, prefer = bm$prefer) {
+sim <- function(bm, t, refine = bm$refine, mult = bm$mult, prefer = bm$prefer, label = names(t)) {
   if(!("BrownianMotion" %in% class(bm))) {
     stop("bm argument must be a BrownianMotion object.")
   }
@@ -45,9 +45,14 @@ sim <- function(bm, t, refine = bm$refine, mult = bm$mult, prefer = bm$prefer) {
   if(any(t < min(bm$t))) {
     stop(paste0("cannot simulate path at times before the path was initialised (at time ", min(bm$t), ")"))
   }
+  assert.bmlabel(label, t)
+  if(!is.null(label) && length(label) == 1) {
+    label <- rep(label, length(t))
+  }
+  names(t) <- label
 
   # Eliminate times we know
-  t <- setdiff(t, bm$t)
+  t <- t[!(t %in% bm$t)]
 
   # Find times which are standard forward simulation at the end
   t.bmfwd <- t[which(t>tail(bm$t, 1))]
@@ -63,7 +68,7 @@ sim <- function(bm, t, refine = bm$refine, mult = bm$mult, prefer = bm$prefer) {
 
   # Do forward sims
   if(length(t.bmfwd) > 0) {
-    sim.uncond_(bm, t.bmfwd)
+    sim.uncond_(bm, t.bmfwd, names(t.bmfwd))
   }
   # Do BB sims
   if(length(t.bmbb) > 0) {

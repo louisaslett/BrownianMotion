@@ -87,7 +87,17 @@ delete.skeleton <- function(bm, l = -Inf, r = Inf, type = "all") {
       bm$bb.local$t <- bm$bb.local$t[-aux_obs_idxs]
       bm$bb.local$W_t <- bm$bb.local$W_t[-aux_obs_idxs]
     }
+    for(lbl in names(bm$labels)) {
+      lbl_idxs <- which(bm$labels[[lbl]]>l & bm$labels[[lbl]]<r)
+      if(length(lbl_idxs)>0) {
+        bm$labels[[lbl]] <- bm$labels[[lbl]][-lbl_idxs]
+        if(length(bm$labels[[lbl]])==0)
+          bm$labels[[lbl]] <- NULL
+      }
+    }
   }
 
+  bm$labels[["start"]] <- min(bm$t)
+  bm$labels[["end"]] <- max(bm$t)
   invisible(bm)
 }

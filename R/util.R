@@ -22,3 +22,30 @@ is.timevector <- function(x) {
                           min.len = 1,
                           unique = TRUE)
 }
+
+
+test.timevector <- function(x) {
+  checkmate::test_numeric(x,
+                          lower = 0,
+                          finite = TRUE,
+                          any.missing = FALSE,
+                          min.len = 1,
+                          unique = TRUE)
+}
+assert.timevector <- function(x) {
+  if(!test.timevector(x)) {
+    stop("invalid vector of times")
+  }
+}
+
+assert.bmlabel <- function(x, t) {
+  if(is.null(x)) {
+    return()
+  }
+  if(length(x)!=1 && length(x)!=length(t)) {
+    stop("label is incorrect length")
+  }
+  if(!checkmate::test_character(x)) {
+    stop("invalid labels provided")
+  }
+}

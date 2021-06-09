@@ -18,7 +18,7 @@
 #' dplyr (and other) style pipes.
 #'
 #' @export
-bessel.layers <- function(bm, s, t, refine = bm$refine, mult = bm$mult, prefer = bm$prefer) {
+bessel.layers <- function(bm, s, t, refine = bm$refine, mult = bm$mult, prefer = bm$prefer, label = c(names(s), names(t))) {
   ## NOTE TO LOUIS: This shares a lot of setup with Bessel Layers -- pull out into utility code (except the find Bessel layers part)
   if(!("BrownianMotion" %in% class(bm))) {
     stop("bm argument must be a BrownianMotion object.")
@@ -31,6 +31,11 @@ bessel.layers <- function(bm, s, t, refine = bm$refine, mult = bm$mult, prefer =
   }
   if(mult <= 0) {
     stop("mult must be strictly positive.")
+  }
+  assert.bmlabel(label, 1:2)
+  if(!is.null(label)) {
+    names(s) <- label[1]
+    names(t) <- label[2]
   }
 
   # Are these endpoints part of the skeleton?

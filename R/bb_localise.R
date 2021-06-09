@@ -78,10 +78,7 @@ bb.localise_ <- function(bm, s, t, refine, mult, prefer) {
   if(!(t %in% new.bm$t)) {
     # t is not the end point, so conditionally simulate at t and then chop off the end
     sim(new.bm, t, refine, mult, prefer)
-    new.bm$t <- head(new.bm$t, -1)
-    new.bm$W_t <- head(new.bm$W_t, -1)
-    # Last layer is now starting at t, so remove it
-    rm.lyr_(new.bm, get.lyr_(new.bm, t)$idx)
+    delete.skeleton(new.bm, l = t)
   }
 
   # Copy the aux path into the master path bb localisation store
@@ -177,6 +174,8 @@ bb.localise_ <- function(bm, s, t, refine, mult, prefer) {
             new.bm$t,
             bm$t[bm$t>=t])
   bm$layers <- bm$layers[order(bm$layers$t.l),]
+  bm$labels[['fpt']] <- c(bm$labels[['fpt']], new.bm$labels[['fpt']][new.bm$labels[['fpt']]>=s & new.bm$labels[['fpt']]<=t])
+  bm$labels[['internal']] <- c(bm$labels[['internal']], new.bm$labels[['internal']][new.bm$labels[['internal']]>=s & new.bm$labels[['internal']]<=t])
 
   rm(new.bm)
   invisible(bm)

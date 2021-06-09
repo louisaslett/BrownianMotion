@@ -1,5 +1,5 @@
 #' @export
-localise.layers <- function(bm, s, t, refine = bm$refine, mult = bm$mult, prefer = bm$prefer) {
+localise.layers <- function(bm, s, t, refine = bm$refine, mult = bm$mult, prefer = bm$prefer, label = c(names(s), names(t))) {
   ## NOTE TO LOUIS: This shares a lot of setup with Bessel Layers -- pull out into utility code (except the find Bessel layers part)
   if(!("BrownianMotion" %in% class(bm))) {
     stop("bm argument must be a BrownianMotion object.")
@@ -12,6 +12,11 @@ localise.layers <- function(bm, s, t, refine = bm$refine, mult = bm$mult, prefer
   }
   if(mult <= 0) {
     stop("mult must be strictly positive.")
+  }
+  assert.bmlabel(label, 1:2)
+  if(!is.null(label)) {
+    names(s) <- label[1]
+    names(t) <- label[2]
   }
 
   # Are these endpoints part of the skeleton?
@@ -35,10 +40,7 @@ localise.layers <- function(bm, s, t, refine = bm$refine, mult = bm$mult, prefer
       if(!(t %in% bm$t)) {
         # t is not the end point, so conditionally simulate at t and then chop off the end
         sim(bm, t, refine, mult, prefer)
-        bm$t <- head(bm$t, -1)
-        bm$W_t <- head(bm$W_t, -1)
-        # Last layer is now starting at t, so remove it
-        rm.lyr_(bm, get.lyr_(bm, t)$idx)
+        delete.skeleton(bm, l = t)
       }
     }
   }
@@ -66,5 +68,6 @@ localise.layers <- function(bm, s, t, refine = bm$refine, mult = bm$mult, prefer
   }
 
   bm$layers <- bm$layers[order(bm$layers$t.l),]
+
   invisible(bm)
 }

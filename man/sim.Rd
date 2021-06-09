@@ -4,7 +4,14 @@
 \alias{sim}
 \title{Simulate Brownian motion at a target time}
 \usage{
-sim(bm, t, refine = bm$refine, mult = bm$mult, prefer = bm$prefer)
+sim(
+  bm,
+  t,
+  refine = bm$refine,
+  mult = bm$mult,
+  prefer = bm$prefer,
+  label = names(t)
+)
 }
 \arguments{
 \item{bm}{a Brownian motion object from which simulation should continue.

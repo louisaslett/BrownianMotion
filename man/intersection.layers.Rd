@@ -10,7 +10,8 @@ intersection.layers(
   t,
   refine = bm$refine,
   mult = bm$mult,
-  prefer = bm$prefer
+  prefer = bm$prefer,
+  label = c(names(s), names(t))
 )
 }
 \description{

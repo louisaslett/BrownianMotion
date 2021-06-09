@@ -10,7 +10,8 @@ first.passage(
   u = NULL,
   delta.l = NULL,
   delta.u = NULL,
-  delta = NULL
+  delta = NULL,
+  label = NULL
 )
 }
 \arguments{
