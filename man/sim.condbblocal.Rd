@@ -4,7 +4,7 @@
 \alias{sim.condbblocal}
 \title{Simulate Brownian motion conditional on Brownian bridge localised layer}
 \usage{
-sim.condbblocal(bm, s, t, q = NULL, q.grid = NULL)
+sim.condbblocal(bm, s, t, q = NULL, q.grid = NULL, label = names(q))
 }
 \arguments{
 \item{bm}{a Brownian motion object from which simulation should continue.

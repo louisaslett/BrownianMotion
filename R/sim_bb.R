@@ -23,7 +23,7 @@
 #'   dplyr (and other) style pipes.
 #'
 #' @export
-sim.bb <- function(bm, s, t, q = NULL, q.grid = NULL) {
+sim.bb <- function(bm, s, t, q = NULL, q.grid = NULL, label = names(q)) {
   # Arg types & combos
   if(!("BrownianMotion" %in% class(bm))) {
     stop("bm argument must be a BrownianMotion object.")
@@ -64,9 +64,17 @@ sim.bb <- function(bm, s, t, q = NULL, q.grid = NULL) {
   if(any(q < s) || any(q > t)) {
     stop("All q must lie between s and t")
   }
-  if(is.unsorted(q)) {
-    q <- sort(q)
+  # Label checks now we have q
+  assert.bmlabel(label, q)
+  if(!is.null(label) && length(label) == 1) {
+    label <- rep(label, length(q))
   }
+  if(is.unsorted(q)) {
+    o <- order(q)
+    label <- label[o]
+    q <- q[o]
+  }
+  # Form sim vector
   q <- c(s, q, t)
 
   # Final check that the q values are not inside of a layer
@@ -74,10 +82,10 @@ sim.bb <- function(bm, s, t, q = NULL, q.grid = NULL) {
     stop("A standard Brownian Bridge cannot be simulated inside of a layer.")
   }
 
-  invisible(sim.bb_(bm, s_idx, q, t_idx))
+  invisible(sim.bb_(bm, s_idx, q, t_idx, label))
 }
 
-sim.bb_ <- function(bm, s_idx, q, t_idx) {
+sim.bb_ <- function(bm, s_idx, q, t_idx, label) {
   n <- length(q)
 
   W_t <- rep(0, n)
@@ -95,6 +103,9 @@ sim.bb_ <- function(bm, s_idx, q, t_idx) {
   bm$W_t <- c(bm$W_t[1:s_idx],
               head(tail(W_t, -1), -1),
               bm$W_t[t_idx:length(bm$W_t)])
+
+  add.labels_(bm, "user", q[2:(n-1)])
+  add.labels_(bm, label, q[2:(n-1)])
 
   bm
 }

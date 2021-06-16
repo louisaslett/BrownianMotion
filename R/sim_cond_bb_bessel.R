@@ -11,7 +11,7 @@
 #'   dplyr (and other) style pipes.
 #'
 #' @export
-sim.condbbbessel <- function(bm, s, t, q = NULL, q.grid = NULL) {
+sim.condbbbessel <- function(bm, s, t, q = NULL, q.grid = NULL, label = names(q)) {
   # Arg types & combos
   if(!("BrownianMotion" %in% class(bm))) {
     stop("bm argument must be a BrownianMotion object.")
@@ -58,14 +58,23 @@ sim.condbbbessel <- function(bm, s, t, q = NULL, q.grid = NULL) {
   if(any(q < s) || any(q > t)) {
     stop("All q must lie between s and t")
   }
+  # Label checks now we have q
+  assert.bmlabel(label, q)
+  if(!is.null(label) && length(label) == 1) {
+    label <- rep(label, length(q))
+  }
   if(is.unsorted(q)) {
-    q <- sort(q)
+    o <- order(q)
+    label <- label[o]
+    q <- q[o]
   }
   # Eliminate times we know
-  q <- setdiff(q, bm$t)
+  q2 <- setdiff(q, bm$t)
+  label <- label[q2 %in% q]
+  q <- q2
 
   for(qq in q) {
-    bm.res <- sim.condbbbessel_(bm, s_idx, qq, t_idx)
+    bm.res <- sim.condbbbessel_(bm, s_idx, qq, t_idx, label[qq==q])
     s_idx <- s_idx+1
     t_idx <- t_idx+1
   }
@@ -74,7 +83,7 @@ sim.condbbbessel <- function(bm, s, t, q = NULL, q.grid = NULL) {
   invisible(bm.res)
 }
 
-sim.condbbbessel_ <- function(bm, s_idx, q, t_idx) {
+sim.condbbbessel_ <- function(bm, s_idx, q, t_idx, label) {
   bb.s_idx <- match(bm$t[s_idx], bm$bb.local$t)
   bb.t_idx <- match(bm$t[t_idx], bm$bb.local$t)
 
@@ -85,7 +94,7 @@ sim.condbbbessel_ <- function(bm, s_idx, q, t_idx) {
   s <- bm$t[s_idx]
   t <- bm$t[t_idx]
 
-  sim.condbessel_(bm$bb.local, bb.s_idx, q, bb.t_idx)
+  sim.condbessel_(bm$bb.local, bb.s_idx, q, bb.t_idx, label)
   Wq <- bm$bb.local$W_t[bb.s_idx+1]
   Bq <- Bs + (Wq-Ws) + (q-s)/(t-s)*((Bt-Bs)-(Wt-Ws))
 
@@ -132,6 +141,9 @@ sim.condbbbessel_ <- function(bm, s_idx, q, t_idx) {
   # never called from the aux path's perspective ... our main path will be sorted
   # externally
   bm$bb.local$layers <- bm$bb.local$layers[order(bm$bb.local$layers$t.l),]
+
+  add.labels_(bm, "user", q)
+  add.labels_(bm, label, q)
 
   bm
 }

@@ -172,11 +172,11 @@ first.passage_ <- function(bm, l, u, label) {
                             L = l+x,
                             U = u+x)
 
-  bm$labels[["fpt"]] <- c(bm$labels[["fpt"]], unname(t.new))
-  bm$labels[["internal"]] <- c(bm$labels[["internal"]], unname(t.new))
-  if(!is.null(label))
-    bm$labels[[label]] <- c(bm$labels[[label]], max(t.new))
+  add.labels_(bm, "fpt", t.new)
+  add.labels_(bm, "internal", t.new)
+  add.labels_(bm, label, t.new)
   bm$labels[["end"]] <- max(t.new)
+
   bm
 }
 

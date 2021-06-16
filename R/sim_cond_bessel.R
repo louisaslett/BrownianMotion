@@ -4,7 +4,7 @@
 #' uses the conditional intersection layer sampling.
 #'
 #' @export
-sim.condbessel <- function(bm, s, t, q = NULL, q.grid = NULL) {
+sim.condbessel <- function(bm, s, t, q = NULL, q.grid = NULL, label = names(q)) {
   # Arg types & combos
   if(!("BrownianMotion" %in% class(bm))) {
     stop("bm argument must be a BrownianMotion object.")
@@ -51,14 +51,23 @@ sim.condbessel <- function(bm, s, t, q = NULL, q.grid = NULL) {
   if(any(q < s) || any(q > t)) {
     stop("All q must lie between s and t")
   }
+  # Label checks now we have q
+  assert.bmlabel(label, q)
+  if(!is.null(label) && length(label) == 1) {
+    label <- rep(label, length(q))
+  }
   if(is.unsorted(q)) {
-    q <- sort(q)
+    o <- order(q)
+    label <- label[o]
+    q <- q[o]
   }
   # Eliminate times we know
-  q <- setdiff(q, bm$t)
+  q2 <- setdiff(q, bm$t)
+  label <- label[q2 %in% q]
+  q <- q2
 
   for(qq in q) {
-    bm.res <- sim.condbessel_(bm, s_idx, qq, t_idx)
+    bm.res <- sim.condbessel_(bm, s_idx, qq, t_idx, label[qq==q])
     s_idx <- s_idx+1
     t_idx <- t_idx+1
   }
@@ -68,28 +77,28 @@ sim.condbessel <- function(bm, s, t, q = NULL, q.grid = NULL) {
 }
 
 # Old version converts to intersection and then simulates
-sim.condbesselOLD_ <- function(bm, s_idx, q, t_idx) {
-  s <- bm$t[s_idx]
-  t <- bm$t[t_idx]
+# sim.condbesselOLD_ <- function(bm, s_idx, q, t_idx) {
+#   s <- bm$t[s_idx]
+#   t <- bm$t[t_idx]
+#
+#   # Update layer info
+#   # We split the layer in two, adding left and right layers either side of the
+#   # newly simulated time, then remove the old layer
+#   cur.layer <- which(bm$layers$t.l == s & bm$layers$t.u == t)
+#
+#   if(bm$layers$type[cur.layer] == "bessel") {
+#     bm <- intersection.layers.IL_(bm, s, t, 1)
+#     bm <- sim.condintersection_(bm, s_idx, q, t_idx)
+#   } else if(bm$layers$type[cur.layer] == "intersection") {
+#     bm <- sim.condintersection_(bm, s_idx, q, t_idx)
+#   } else {
+#     stop("Error: must have bessel or intersection layer at this point.")
+#   }
+#
+#   bm
+# }
 
-  # Update layer info
-  # We split the layer in two, adding left and right layers either side of the
-  # newly simulated time, then remove the old layer
-  cur.layer <- which(bm$layers$t.l == s & bm$layers$t.u == t)
-
-  if(bm$layers$type[cur.layer] == "bessel") {
-    bm <- intersection.layers.IL_(bm, s, t, 1)
-    bm <- sim.condintersection_(bm, s_idx, q, t_idx)
-  } else if(bm$layers$type[cur.layer] == "intersection") {
-    bm <- sim.condintersection_(bm, s_idx, q, t_idx)
-  } else {
-    stop("Error: must have bessel or intersection layer at this point.")
-  }
-
-  bm
-}
-
-sim.condbessel_ <- function(bm, s_idx, q, t_idx) {
+sim.condbessel_ <- function(bm, s_idx, q, t_idx, label) {
 
   s <- bm$t[s_idx]
   t <- bm$t[t_idx]
@@ -134,6 +143,9 @@ sim.condbessel_ <- function(bm, s_idx, q, t_idx) {
                        Lu.hard = ifelse(res$layer.qt[6] == min(res$w,y), TRUE, FALSE),
                        Ud.hard = ifelse(res$layer.qt[7] == max(res$w,y), TRUE, FALSE))
   bm$layers <- bm$layers[-cur.layer,]
+
+  add.labels_(bm, "user", q)
+  add.labels_(bm, label, q)
 
   bm
 }

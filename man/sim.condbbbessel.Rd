@@ -4,7 +4,7 @@
 \alias{sim.condbbbessel}
 \title{Simulate Brownian motion conditional on Brownian bridge Bessel layer}
 \usage{
-sim.condbbbessel(bm, s, t, q = NULL, q.grid = NULL)
+sim.condbbbessel(bm, s, t, q = NULL, q.grid = NULL, label = names(q))
 }
 \arguments{
 \item{bm}{a Brownian motion object from which simulation should continue.

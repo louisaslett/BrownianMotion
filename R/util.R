@@ -49,3 +49,17 @@ assert.bmlabel <- function(x, t) {
     stop("invalid labels provided")
   }
 }
+
+add.labels_ <- function(bm, labels, t) {
+  if(is.null(labels)) {
+    return()
+  } else if(length(labels) == 1) {
+    bm$labels[[labels]] <- unique(c(bm$labels[[labels]], unname(t)))
+  } else if(length(labels) == length(t)) {
+    for(l in unique(labels)) {
+      bm$labels[[l]] <- unique(c(bm$labels[[l]], unname(t[labels==l])))
+    }
+  } else {
+    stop("invalid specification to add.labels_")
+  }
+}

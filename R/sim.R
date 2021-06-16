@@ -30,9 +30,6 @@ sim <- function(bm, t, refine = bm$refine, mult = bm$mult, prefer = bm$prefer, l
   if(!is.realvector(t)) {
     stop("t must be a vector of times.")
   }
-  if(is.unsorted(t)) {
-    t <- sort(t)
-  }
   if(length(refine) != 1 || !is.logical(refine)) {
     stop("refine must be a scalar logical value")
   }
@@ -50,9 +47,20 @@ sim <- function(bm, t, refine = bm$refine, mult = bm$mult, prefer = bm$prefer, l
     label <- rep(label, length(t))
   }
   names(t) <- label
+  if(is.unsorted(t)) {
+    o <- order(t)
+    label <- label[o]
+    t <- t[o]
+  }
 
   # Eliminate times we know
-  t <- t[!(t %in% bm$t)]
+  t2 <- setdiff(t, bm$t)
+  # Add labels to times we're eliminating
+  if(length(t2) != length(t)) {
+    add.labels_(bm, label[!(t %in% t2)], t[!(t %in% t2)])
+  }
+  label <- label[t %in% t2]
+  t <- t2
 
   # Find times which are standard forward simulation at the end
   t.bmfwd <- t[which(t>tail(bm$t, 1))]
@@ -120,9 +128,9 @@ sim <- function(bm, t, refine = bm$refine, mult = bm$mult, prefer = bm$prefer, l
         }
         for(qq in rev(t.local[3,i])) {
           if(soft) {
-            sim.condlocalsoft_(bm, l, qq, r)
+            sim.condlocalsoft_(bm, l, qq, r, label[t %in% qq])
           } else {
-            sim.condlocal_(bm, l, qq, r)
+            sim.condlocal_(bm, l, qq, r, label[t %in% qq])
           }
           if(prefer == "bessel") {
             intersection.to.bessel_(bm, match(qq, bm$layers$t.u))
@@ -150,7 +158,7 @@ sim <- function(bm, t, refine = bm$refine, mult = bm$mult, prefer = bm$prefer, l
 
       # print(glue("intersection sim at {q} in interval ({bm$t[l.idx]},{bm$t[r.idx]})"))
 
-      sim.condintersection_(bm, l.idx, q, r.idx)
+      sim.condintersection_(bm, l.idx, q, r.idx, label[t %in% q])
       if(prefer == "bessel") {
         intersection.to.bessel_(bm, c(match(q, bm$layers$t.u), match(q, bm$layers$t.l)))
       }
@@ -174,7 +182,7 @@ sim <- function(bm, t, refine = bm$refine, mult = bm$mult, prefer = bm$prefer, l
 
       # print(glue("bessel sim at {q} in interval ({bm$t[l.idx]},{bm$t[r.idx]})"))
 
-      sim.condbessel_(bm, l.idx, q, r.idx)
+      sim.condbessel_(bm, l.idx, q, r.idx, label[t %in% q])
       if(prefer == "intersection") {
         bessel.to.intersection_(bm, c(match(q, bm$layers$t.u), match(q, bm$layers$t.l)))
       }
@@ -201,7 +209,7 @@ sim <- function(bm, t, refine = bm$refine, mult = bm$mult, prefer = bm$prefer, l
         #   soft <- FALSE
         # }
         for(qq in rev(t.bblocal[3,i])) {
-          sim.condbblocal_(bm, l, qq, r)
+          sim.condbblocal_(bm, l, qq, r, label[t %in% qq])
           if(prefer == "bessel") {
             intersection.to.bessel_(bm, match(qq, bm$layers$t.u))
           }
@@ -227,7 +235,7 @@ sim <- function(bm, t, refine = bm$refine, mult = bm$mult, prefer = bm$prefer, l
 
       # print(glue("bb-intersection sim at {q} in interval ({bm$t[l.idx]},{bm$t[r.idx]})"))
 
-      sim.condbbintersection_(bm, l.idx, q, r.idx)
+      sim.condbbintersection_(bm, l.idx, q, r.idx, label[t %in% q])
       if(prefer == "bessel") {
         intersection.to.bessel_(bm, c(match(q, bm$layers$t.u), match(q, bm$layers$t.l)))
       }
@@ -251,7 +259,7 @@ sim <- function(bm, t, refine = bm$refine, mult = bm$mult, prefer = bm$prefer, l
 
       # print(glue("bb-bessel sim at {q} in interval ({bm$t[l.idx]},{bm$t[r.idx]})"))
 
-      sim.condbbbessel_(bm, l.idx, q, r.idx)
+      sim.condbbbessel_(bm, l.idx, q, r.idx, label[t %in% q])
       if(prefer == "intersection") {
         bessel.to.intersection_(bm, c(match(q, bm$layers$t.u), match(q, bm$layers$t.l)))
       }
@@ -271,7 +279,7 @@ sim <- function(bm, t, refine = bm$refine, mult = bm$mult, prefer = bm$prefer, l
       for(l in unique(t.bmbb[1,])) {
         i <- which(t.bmbb[1,]==l)
         r <- t.bmbb[2,i[1]]
-        sim.bb_(bm, l, c(bm$t[l], rev(t.bmbb[3,i]), bm$t[r]), r)
+        sim.bb_(bm, l, c(bm$t[l], rev(t.bmbb[3,i]), bm$t[r]), r, label[t %in% rev(t.bmbb[3,i])])
       }
     }
   }

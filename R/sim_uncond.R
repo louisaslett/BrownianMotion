@@ -52,12 +52,8 @@ sim.uncond_ <- function(bm, t, label) {
   W_delta[1] <- W_delta[1] + tail(bm$W_t, 1)
   bm$W_t <- c(bm$W_t, cumsum(W_delta))
 
-  bm$labels[["user"]] <- c(bm$labels[["user"]], unname(t))
-  if(!is.null(label)) {
-    for(l in unique(label)) {
-      bm$labels[[l]] <- c(bm$labels[[l]], unname(t[label==l]))
-    }
-  }
+  add.labels_(bm, "user", t)
+  add.labels_(bm, label, t)
   bm$labels[["end"]] <- max(t)
   bm
 }

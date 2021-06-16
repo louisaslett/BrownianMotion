@@ -4,7 +4,7 @@
 \alias{sim.condintersection}
 \title{Simulate Brownian motion conditional on intersection layer}
 \usage{
-sim.condintersection(bm, s, t, q = NULL, q.grid = NULL)
+sim.condintersection(bm, s, t, q = NULL, q.grid = NULL, label = names(q))
 }
 \description{
 Simulate Brownian motion conditional on intersection layer

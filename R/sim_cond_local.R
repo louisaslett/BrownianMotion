@@ -11,7 +11,7 @@
 #'   dplyr (and other) style pipes.
 #'
 #' @export
-sim.condlocal <- function(bm, s, t, q = NULL, q.grid = NULL) {
+sim.condlocal <- function(bm, s, t, q = NULL, q.grid = NULL, label = names(q)) {
   # Arg types & combos
   if(!("BrownianMotion" %in% class(bm))) {
     stop("bm argument must be a BrownianMotion object.")
@@ -58,19 +58,28 @@ sim.condlocal <- function(bm, s, t, q = NULL, q.grid = NULL) {
   if(any(q < s) || any(q > t)) {
     stop("All q must lie between s and t")
   }
+  # Label checks now we have q
+  assert.bmlabel(label, q)
+  if(!is.null(label) && length(label) == 1) {
+    label <- rep(label, length(q))
+  }
   if(is.unsorted(q)) {
-    q <- sort(q)
+    o <- order(q)
+    label <- label[o]
+    q <- q[o]
   }
   # Eliminate times we know
-  q <- setdiff(q, bm$t)
+  q2 <- setdiff(q, bm$t)
+  label <- label[q2 %in% q]
+  q <- q2
 
   lyr.hard <- localised[localised$t.u==t, c("Lu.hard","Ud.hard")]
   for(qq in q) {
     if(any(!lyr.hard)) {
-      sim.condlocalsoft_(bm, s_idx, qq, t_idx)
+      sim.condlocalsoft_(bm, s_idx, qq, t_idx, label[qq==q])
       lyr.hard <- tail(bm$layers)[,c("Lu.hard","Ud.hard")]
     } else {
-      sim.condlocal_(bm, s_idx, qq, t_idx)
+      sim.condlocal_(bm, s_idx, qq, t_idx, label[qq==q])
       # don't need to update as hard stays hard
     }
     s_idx <- s_idx+1
@@ -81,7 +90,7 @@ sim.condlocal <- function(bm, s, t, q = NULL, q.grid = NULL) {
   invisible(bm.res)
 }
 
-sim.condlocal_ <- function(bm, s_idx, q, t_idx) {
+sim.condlocal_ <- function(bm, s_idx, q, t_idx, label) {
 
 # TODO: tidy this up, vectorise wrt q and remove dependency on scale pkg C++ code!
 
@@ -176,10 +185,13 @@ sim.condlocal_ <- function(bm, s_idx, q, t_idx) {
                        Ud.hard = TRUE) # Always hard ... "conditional simulation is the viagra of Brownian motion" - M Pollock, 3/2/2021
   bm$layers <- bm$layers[-cur.layer,]
 
+  add.labels_(bm, "user", q)
+  add.labels_(bm, label, q)
+
   bm
 }
 
-sim.condlocalsoft_ <- function(bm, s_idx, q, t_idx) {
+sim.condlocalsoft_ <- function(bm, s_idx, q, t_idx, label) {
   s <- bm$t[s_idx]
   t <- bm$t[t_idx]
   x <- bm$W_t[s_idx]
@@ -315,6 +327,9 @@ sim.condlocalsoft_ <- function(bm, s_idx, q, t_idx) {
                        Lu.hard = ifelse(minI==1 | layer.qt[6]==W_t, TRUE, FALSE),
                        Ud.hard = ifelse(minI!=1 | layer.qt[7]==W_t, TRUE, FALSE))
   bm$layers <- bm$layers[-cur.layer,]
+
+  add.labels_(bm, "user", q)
+  add.labels_(bm, label, q)
 
 # minimum & Ud==w
 # want: - Lu.hard = T, Ud.hard = T

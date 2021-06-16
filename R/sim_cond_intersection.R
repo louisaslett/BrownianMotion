@@ -2,7 +2,7 @@
 #'
 #'
 #' @export
-sim.condintersection <- function(bm, s, t, q = NULL, q.grid = NULL) {
+sim.condintersection <- function(bm, s, t, q = NULL, q.grid = NULL, label = names(q)) {
   # Arg types & combos
   if(!("BrownianMotion" %in% class(bm))) {
     stop("bm argument must be a BrownianMotion object.")
@@ -49,14 +49,23 @@ sim.condintersection <- function(bm, s, t, q = NULL, q.grid = NULL) {
   if(any(q < s) || any(q > t)) {
     stop("All q must lie between s and t")
   }
+  # Label checks now we have q
+  assert.bmlabel(label, q)
+  if(!is.null(label) && length(label) == 1) {
+    label <- rep(label, length(q))
+  }
   if(is.unsorted(q)) {
-    q <- sort(q)
+    o <- order(q)
+    label <- label[o]
+    q <- q[o]
   }
   # Eliminate times we know
-  q <- setdiff(q, bm$t)
+  q2 <- setdiff(q, bm$t)
+  label <- label[q2 %in% q]
+  q <- q2
 
   for(qq in q) {
-    bm.res <- sim.condintersection_(bm, s_idx, qq, t_idx)
+    bm.res <- sim.condintersection_(bm, s_idx, qq, t_idx, label[qq==q])
     s_idx <- s_idx+1
     t_idx <- t_idx+1
   }
@@ -67,7 +76,7 @@ sim.condintersection <- function(bm, s, t, q = NULL, q.grid = NULL) {
 
 
 
-sim.condintersection_ <- function(bm, s_idx, q, t_idx) {
+sim.condintersection_ <- function(bm, s_idx, q, t_idx, label) {
   s <- bm$t[s_idx]
   t <- bm$t[t_idx]
   cur.layer <- which(bm$layers$t.l == s & bm$layers$t.u == t)
@@ -115,6 +124,9 @@ sim.condintersection_ <- function(bm, s_idx, q, t_idx) {
                        Lu.hard = TRUE,
                        Ud.hard = TRUE)
   bm$layers <- bm$layers[-cur.layer,]
+
+  add.labels_(bm, "user", q)
+  add.labels_(bm, label, q)
 
   bm
 }

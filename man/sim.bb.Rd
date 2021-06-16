@@ -4,7 +4,7 @@
 \alias{sim.bb}
 \title{Simulate a Brownian bridge}
 \usage{
-sim.bb(bm, s, t, q = NULL, q.grid = NULL)
+sim.bb(bm, s, t, q = NULL, q.grid = NULL, label = names(q))
 }
 \arguments{
 \item{bm}{a Brownian motion object from which simulation should continue.

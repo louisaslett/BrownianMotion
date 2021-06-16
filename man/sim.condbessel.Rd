@@ -4,7 +4,7 @@
 \alias{sim.condbessel}
 \title{Simulate Brownian motion conditional on bessel layer}
 \usage{
-sim.condbessel(bm, s, t, q = NULL, q.grid = NULL)
+sim.condbessel(bm, s, t, q = NULL, q.grid = NULL, label = names(q))
 }
 \description{
 This currently converts the Bessel layer to an intersection layer and then
