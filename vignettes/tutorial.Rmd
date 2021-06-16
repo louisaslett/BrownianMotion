@@ -27,7 +27,7 @@ library(magrittr)
 set.seed(212)
 ```
 
-The first task is to create an object which will contain the Brownian motion path and layer information.  This is acomplished using the `create_bm()` function.  It is possible to call with all default options, but here for demonstration purposes we will force the path to start at $W_1 = 100$ (the default is $W_0 = 0$).
+The first task is to create an object which will contain the Brownian motion path and layer information.  This is accomplished using the `create_bm()` function.  It is possible to call with all default options, but here for demonstration purposes we will force the path to start at $W_1 = 100$ (the default is $W_0 = 0$).
 
 ```{r}
 bm <- create.bm(1, 100)
