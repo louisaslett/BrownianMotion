@@ -98,7 +98,7 @@ sim.condbessel <- function(bm, s, t, q = NULL, q.grid = NULL, label = names(q)) 
 #   bm
 # }
 
-sim.condbessel_ <- function(bm, s_idx, q, t_idx, label) {
+sim.condbessel_ <- function(bm, s_idx, q, t_idx, label, dr = NA) {
 
   s <- bm$t[s_idx]
   t <- bm$t[t_idx]
@@ -110,7 +110,11 @@ sim.condbessel_ <- function(bm, s_idx, q, t_idx, label) {
   Ul <- bm$layers$Ud[cur.layer]
   Uu <- bm$layers$Uu[cur.layer]
 
-  res <- sim.condbessel2_(q, s, t, x, y, Ll, Lu, Ul, Uu)
+  if(is.na(dr)) {
+    res <- sim.condbessel2_(q, s, t, x, y, Ll, Lu, Ul, Uu)
+  } else {
+    res <- sim.condbessel3_(dr, q, s, t, x, y, Ll, Lu, Ul, Uu)
+  }
 
   bm$t <- c(bm$t[1:s_idx],
             q,
@@ -163,6 +167,11 @@ sim.condbessel2_ <- function(q, s, t, x, y, Ll, Lu, Ul, Uu) {
     ar.prob <- eabesex_(c(s,q),c(q,t),c(x,dr),c(dr,y),m,B1,B2,minI)
     if(ar.prob$accI==1){break}
   }
+
+  sim.condbessel3_(dr, q, s, t, x, y, Ll, Lu, Ul, Uu)
+}
+
+sim.condbessel3_ <- function(dr, q, s, t, x, y, Ll, Lu, Ul, Uu) {
   # Modification of Ul / Lu fiven new intermediate point
   nLuu.left <- min(x,dr)
   nLuu.right <- min(dr,y)

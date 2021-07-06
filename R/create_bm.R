@@ -34,6 +34,7 @@ create.bm_ <- function(t, W_t, refine, mult, prefer, nested = FALSE) {
   bm <- new.env(parent = emptyenv())
   bm$t <- t
   bm$W_t <- W_t
+  bm$W_tm <- W_t
   bm$labels <- list()
   bm$labels[["start"]] <- t
   bm$labels[["end"]] <- t

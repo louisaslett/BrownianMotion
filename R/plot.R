@@ -16,9 +16,18 @@ plot.BrownianMotion <- function(x, y, ...) {
 
   bm <- x
 
-  p <- ggplot() +
-    geom_line(aes(x = t, y = x), tibble(t = bm$t, x = bm$W_t), colour = "grey") +
-    geom_point(aes(x = t, y = x), tibble(t = bm$t, x = bm$W_t), colour = "black", size = 0.1)
+  p <- ggplot()
+
+  jd <- c(1, which(bm$W_t != bm$W_tm), length(bm$t))
+  for(j in 2:length(jd)) {
+    p <- p + geom_line(aes(x = t, y = x), tibble(t = bm$t[jd[j-1]:jd[j]], x = c(bm$W_t[jd[j-1]:(jd[j]-1)], bm$W_tm[jd[j]])), colour = "grey")
+  }
+
+  p <- p + geom_point(aes(x = t, y = x), tibble(t = bm$t, x = bm$W_t), colour = "black", size = 0.1)
+  jd <- jd[c(-1, -length(jd))]
+  if(length(jd) > 0) {
+    p <- p + geom_point(aes(x = t, y = x), tibble(t = bm$t[jd], x = bm$W_tm[jd]), colour = "black", size = 1, shape = 1)
+  }
 
   localised <- bm$layers[bm$layers$type == "localised",]
   intersection <- bm$layers[bm$layers$type == "intersection",]
