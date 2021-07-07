@@ -4,74 +4,7 @@
 #'
 #' @export
 intersection.layers <- function(bm, s, t, refine = bm$refine, mult = bm$mult, prefer = bm$prefer, label = c(names(s), names(t))) {
-  ## NOTE TO LOUIS: This shares a lot of setup with Bessel Layers -- pull out into utility code (except the find Bessel layers part)
-  if(!("BrownianMotion" %in% class(bm))) {
-    stop("bm argument must be a BrownianMotion object.")
-  }
-  if(!is.realscalar(s) || !is.realscalar(t) || !is.realscalar(mult)) {
-    stop("s, t and mult must be real scalars.")
-  }
-  if(s >= t) {
-    stop("s must be less than t.")
-  }
-  if(mult <= 0) {
-    stop("mult must be strictly positive.")
-  }
-  assert.bmlabel(label, 1:2)
-  if(!is.null(label)) {
-    names(s) <- label[1]
-    names(t) <- label[2]
-  }
-
-  # Are these endpoints part of the skeleton?
-  # If not, and the point is beyond the end, simulate it.  Otherwise, error
-  if(!(s %in% bm$t)) {
-    sim(bm, s, refine, mult, prefer)
-  }
-  if(!(t %in% bm$t)) {
-    sim(bm, t, refine, mult, prefer)
-  }
-
-  # Find all intervals between s and t not currently inside any other layer or inside a Bessel layer
-  s.i <- which(s == bm$t)
-  t.i <- which(t == bm$t)
-  all.pairs.noL <- matrix(c(bm$t[s.i:(t.i-1)], bm$t[(s.i+1):t.i]), byrow = FALSE, ncol = 2)
-  all.pairs.BL  <- matrix(c(bm$t[s.i:(t.i-1)], bm$t[(s.i+1):t.i]), byrow = FALSE, ncol = 2)
-  # No layer
-  mid <- (all.pairs.noL[,2]+all.pairs.noL[,1])/2
-  incl <- rep(TRUE, nrow(all.pairs.noL))
-  for(i in 1:length(mid)) {
-    if(any(mid[i] >= bm$layers$t.l & mid[i] <= bm$layers$t.u) ||
-       any(mid[i] >= bm$user.layers$t.l & mid[i] <= bm$user.layers$t.u)) {
-      incl[i] <- FALSE
-    }
-  }
-  all.pairs.noL <- all.pairs.noL[incl,,drop = FALSE]
-  # cat("No layer:"); print(all.pairs.noL)
-  # Bessel layer
-  mid <- (all.pairs.BL[,2]+all.pairs.BL[,1])/2
-  incl <- rep(FALSE, nrow(all.pairs.BL))
-  for(i in 1:length(mid)) {
-    if(any(mid[i] >= bm$layers$t.l & mid[i] <= bm$layers$t.u & bm$layers$type == "bessel")) {
-      incl[i] <- TRUE
-    }
-  }
-  all.pairs.BL <- all.pairs.BL[incl,,drop = FALSE]
-  # cat("Bessel layer:"); print(all.pairs.BL)
-
-  if(nrow(all.pairs.noL) > 0) {
-    for(i in 1:nrow(all.pairs.noL)) {
-      intersection.layers.BLIL_(bm, all.pairs.noL[i,1], all.pairs.noL[i,2], mult)
-    }
-  }
-  if(nrow(all.pairs.BL) > 0) {
-    for(i in 1:nrow(all.pairs.BL)) {
-      intersection.layers.IL_(bm, all.pairs.BL[i,1], all.pairs.BL[i,2], mult)
-    }
-  }
-
-  bm$layers <- bm$layers[order(bm$layers$t.l),]
-  invisible(bm)
+  new.layers(bm, s, t, "intersection", refine, mult, prefer, label)
 }
 
 

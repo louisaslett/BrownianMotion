@@ -42,7 +42,7 @@ create.bm_ <- function(t, W_t, refine, mult, prefer, nested = FALSE) {
   bm$refine <- refine
   bm$mult <- mult
   bm$prefer <- prefer
-  bm$layers <- tibble(type = factor(levels = c("localised", "localised-bb", "bessel", "intersection")),
+  bm$layers <- tibble(type = factor(levels = c("localised", "localised-bb", "bessel", "bessel-bb", "intersection", "intersection-bb")),
                       t.l = numeric(),
                       t.u = numeric(),
                       Ld = numeric(),
