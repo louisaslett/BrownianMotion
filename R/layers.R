@@ -19,7 +19,7 @@
 #' dplyr (and other) style pipes.
 #'
 #' @export
-new.layers <- function(bm, s, t, type = bm$prefer, refine = bm$refine, mult = bm$mult, prefer = bm$prefer, label = c(names(s), names(t))) {
+layers <- function(bm, s, t, type = bm$prefer, refine = bm$refine, mult = bm$mult, prefer = bm$prefer, label = c(names(s), names(t))) {
   if(!("BrownianMotion" %in% class(bm))) {
     stop("bm argument must be a BrownianMotion object.")
   }

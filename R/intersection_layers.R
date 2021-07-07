@@ -4,7 +4,7 @@
 #'
 #' @export
 intersection.layers <- function(bm, s, t, refine = bm$refine, mult = bm$mult, prefer = bm$prefer, label = c(names(s), names(t))) {
-  new.layers(bm, s, t, "intersection", refine, mult, prefer, label)
+  layers(bm, s, t, "intersection", refine, mult, prefer, label)
 }
 
 
