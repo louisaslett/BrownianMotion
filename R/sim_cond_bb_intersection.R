@@ -3,7 +3,7 @@ sim.condbbintersection_ <- function(bm, s_idx, q, t_idx, label) {
   bb.t_idx <- match(bm$t[t_idx], bm$bb.local$t)
 
   Bs <- bm$W_t[s_idx]
-  Bt <- bm$W_t[t_idx]
+  Bt <- bm$W_tm[t_idx]
   Ws <- bm$bb.local$W_t[bb.s_idx]
   Wt <- bm$bb.local$W_t[bb.t_idx]
   s <- bm$t[s_idx]
@@ -19,6 +19,9 @@ sim.condbbintersection_ <- function(bm, s_idx, q, t_idx, label) {
   bm$W_t <- c(bm$W_t[1:s_idx],
               Bq,
               bm$W_t[t_idx:length(bm$W_t)])
+  bm$W_tm <- c(bm$W_tm[1:s_idx],
+               Bq,
+               bm$W_tm[t_idx:length(bm$W_tm)])
 
   cur.layer <- which(bm$layers$t.l == s & bm$layers$t.u == t)
   i <- nrow(bm$bb.local$layers)-1

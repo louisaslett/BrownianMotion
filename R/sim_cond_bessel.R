@@ -25,7 +25,7 @@ sim.condbessel_ <- function(bm, s_idx, q, t_idx, label, dr = NA) {
   s <- bm$t[s_idx]
   t <- bm$t[t_idx]
   x <- bm$W_t[s_idx]
-  y <- bm$W_t[t_idx]
+  y <- bm$W_tm[t_idx]
   cur.layer <- which(bm$layers$t.l == s & bm$layers$t.u == t)
   Ll <- bm$layers$Ld[cur.layer]
   Lu <- bm$layers$Lu[cur.layer]
@@ -44,6 +44,9 @@ sim.condbessel_ <- function(bm, s_idx, q, t_idx, label, dr = NA) {
   bm$W_t <- c(bm$W_t[1:s_idx],
               res$w,
               bm$W_t[t_idx:length(bm$W_t)])
+  bm$W_tm <- c(bm$W_tm[1:s_idx],
+               res$w,
+               bm$W_tm[t_idx:length(bm$W_tm)])
 
   # Update layer info
   # We split the layer in two, adding left and right layers either side of the

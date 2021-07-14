@@ -3,7 +3,7 @@ sim.bb_ <- function(bm, s_idx, q, t_idx, label) {
 
   W_t <- rep(0, n)
   W_t[1] <- bm$W_t[s_idx]
-  W_t[n] <- bm$W_t[t_idx]
+  W_t[n] <- bm$W_tm[t_idx]
 
   for(i in 2:(n-1)) {
     W_t[i] <- rnorm(1,
@@ -16,6 +16,9 @@ sim.bb_ <- function(bm, s_idx, q, t_idx, label) {
   bm$W_t <- c(bm$W_t[1:s_idx],
               head(tail(W_t, -1), -1),
               bm$W_t[t_idx:length(bm$W_t)])
+  bm$W_tm <- c(bm$W_tm[1:s_idx],
+              head(tail(W_t, -1), -1),
+              bm$W_tm[t_idx:length(bm$W_tm)])
 
   add.labels_(bm, "user", q[2:(n-1)])
   add.labels_(bm, label, q[2:(n-1)])

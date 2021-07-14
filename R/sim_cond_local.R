@@ -1,20 +1,20 @@
 sim.condlocal_ <- function(bm, s_idx, q, t_idx, label) {
 
-# TODO: tidy this up, vectorise wrt q and remove dependency on scale pkg C++ code!
+  # TODO: tidy this up, vectorise wrt q and remove dependency on scale pkg C++ code!
 
-# Internal implementation of above callable without error checking
-# q = new time
-# s = left end time
-# tau = attained min/max time
-# x = W_s
-# y = W_tau
-# minI = +1 if tau is the time of attaining min, -1 if the time of attaining max
-# bdry = value of the other boundary that is not attained at tau
+  # Internal implementation of above callable without error checking
+  # q = new time
+  # s = left end time
+  # tau = attained min/max time
+  # x = W_s
+  # y = W_tau
+  # minI = +1 if tau is the time of attaining min, -1 if the time of attaining max
+  # bdry = value of the other boundary that is not attained at tau
 
   s <- bm$t[s_idx]
   tau <- bm$t[t_idx]
   x <- bm$W_t[s_idx]
-  y <- bm$W_t[t_idx]
+  y <- bm$W_tm[t_idx]
   minmax_idx <- match(tau, bm$layers$t.u)
   if(y == bm$layers$Ld[minmax_idx]) {
     minI <- +1
@@ -26,7 +26,7 @@ sim.condlocal_ <- function(bm, s_idx, q, t_idx, label) {
     stop("Error: min/max mismatch at tau")
   }
 
-# sim.condlocal_ <- function(q, s, tau, x, y, minI, bdry) {
+  # sim.condlocal_ <- function(q, s, tau, x, y, minI, bdry) {
 
 
   ## Repeat until acceptance
@@ -66,6 +66,9 @@ sim.condlocal_ <- function(bm, s_idx, q, t_idx, label) {
   bm$W_t <- c(bm$W_t[1:s_idx],
               W_t,
               bm$W_t[t_idx:length(bm$W_t)])
+  bm$W_tm <- c(bm$W_tm[1:s_idx],
+               W_t,
+               bm$W_tm[t_idx:length(bm$W_tm)])
 
   # Update layer info
   # We split the layer in two, adding left and right layers either side of the
@@ -103,7 +106,7 @@ sim.condlocalsoft_ <- function(bm, s_idx, q, t_idx, label) {
   s <- bm$t[s_idx]
   t <- bm$t[t_idx]
   x <- bm$W_t[s_idx]
-  y <- bm$W_t[t_idx]
+  y <- bm$W_tm[t_idx]
 
   lyr_idx <- match(t, bm$layers$t.u)
   Ll <- bm$layers$Ld[lyr_idx]
@@ -209,6 +212,9 @@ sim.condlocalsoft_ <- function(bm, s_idx, q, t_idx, label) {
   bm$W_t <- c(bm$W_t[1:s_idx],
               W_t,
               bm$W_t[t_idx:length(bm$W_t)])
+  bm$W_tm <- c(bm$W_tm[1:s_idx],
+               W_t,
+               bm$W_tm[t_idx:length(bm$W_tm)])
 
   # Update layer info
   # We split the layer in two, adding left and right layers either side of the
@@ -239,27 +245,27 @@ sim.condlocalsoft_ <- function(bm, s_idx, q, t_idx, label) {
   add.labels_(bm, "user", q)
   add.labels_(bm, label, q)
 
-# minimum & Ud==w
-# want: - Lu.hard = T, Ud.hard = T
-# alg LA: Lu.hard = T, Ud.hard = T
-# alg MP:
-#
-# minimum & Ud > w
-# want: - - Lu.hard = T, Ud.hard = F
-# alg LA: Lu.hard = T, Ud.hard = F
-#   alg MP:
-#
-# maximum & Lu = w
-# want: - - Lu.hard = T, Ud.hard = T
-# alg LA: Lu.hard = T, Ud.hard = T
-#   alg MP:
-#
-# maximum & Lu < w
-# want: - - Lu.hard = F, Ud.hard = T
-# alg LA: Lu.hard = F, Ud.hard = T
-#   alg MP:
-### Output
-# list(w=w, layer.sq=layer.sq, layer.sq.type="Intersection", layer.qt=layer.qt, layer.qt.type=if(minI==1){if(layer.qt[7]==w){"Hard Localised"}else{"Soft Localised"}}else{if(layer.qt[6]==w){"Hard Localised"}else{"Soft Localised"}},u.sq=u.sq, sq.bds=c(bounds.l.sq,bounds.u.sq), u.qt = u.qt, qt.bds = c(bounds.l.qt,bounds.u.qt))}
+  # minimum & Ud==w
+  # want: - Lu.hard = T, Ud.hard = T
+  # alg LA: Lu.hard = T, Ud.hard = T
+  # alg MP:
+  #
+  # minimum & Ud > w
+  # want: - - Lu.hard = T, Ud.hard = F
+  # alg LA: Lu.hard = T, Ud.hard = F
+  #   alg MP:
+  #
+  # maximum & Lu = w
+  # want: - - Lu.hard = T, Ud.hard = T
+  # alg LA: Lu.hard = T, Ud.hard = T
+  #   alg MP:
+  #
+  # maximum & Lu < w
+  # want: - - Lu.hard = F, Ud.hard = T
+  # alg LA: Lu.hard = F, Ud.hard = T
+  #   alg MP:
+  ### Output
+  # list(w=w, layer.sq=layer.sq, layer.sq.type="Intersection", layer.qt=layer.qt, layer.qt.type=if(minI==1){if(layer.qt[7]==w){"Hard Localised"}else{"Soft Localised"}}else{if(layer.qt[6]==w){"Hard Localised"}else{"Soft Localised"}},u.sq=u.sq, sq.bds=c(bounds.l.sq,bounds.u.sq), u.qt = u.qt, qt.bds = c(bounds.l.qt,bounds.u.qt))}
 
   bm
 }

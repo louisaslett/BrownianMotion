@@ -1,10 +1,12 @@
 sim.condintersection_ <- function(bm, s_idx, q, t_idx, label) {
   s <- bm$t[s_idx]
   t <- bm$t[t_idx]
+  x <- bm$W_t[s_idx]
+  y <- bm$W_tm[t_idx]
   cur.layer <- which(bm$layers$t.l == s & bm$layers$t.u == t)
 
   # Simulate new point conditional on intersection layer
-  w <- sim.condintersection.simpt_(s, q, t, bm$W_t[s_idx], bm$W_t[t_idx],
+  w <- sim.condintersection.simpt_(s, q, t, x, y,
                                    Ll = bm$layers$Ld[cur.layer],
                                    Lu = bm$layers$Lu[cur.layer],
                                    Ul = bm$layers$Ud[cur.layer],
@@ -15,11 +17,14 @@ sim.condintersection_ <- function(bm, s_idx, q, t_idx, label) {
   bm$W_t <- c(bm$W_t[1:s_idx],
               w,
               bm$W_t[t_idx:length(bm$W_t)])
+  bm$W_tm <- c(bm$W_tm[1:s_idx],
+               w,
+               bm$W_tm[t_idx:length(bm$W_tm)])
 
   # Update layer info
   # We split the layer in two, adding left and right layers either side of the
   # newly simulated time, then remove the old layer
-  newlyrs <- sim.condintersection.simlyr_(s, q, t, bm$W_t[s_idx], w, bm$W_t[t_idx+1],
+  newlyrs <- sim.condintersection.simlyr_(s, q, t, x, w, y,
                                           Ll = bm$layers$Ld[cur.layer],
                                           Lu = bm$layers$Lu[cur.layer],
                                           Ul = bm$layers$Ud[cur.layer],
