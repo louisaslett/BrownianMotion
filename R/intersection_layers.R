@@ -15,7 +15,7 @@ intersection.layers.IL_ <- function(bm, s, t, mult) {
     stop("Unable to identify bessel layer.")
   }
 
-  res <- intersection.layers.sim_(bm, s, t, bm$W_t[match(s, bm$t)], bm$W_t[match(t, bm$t)],
+  res <- intersection.layers.sim_(bm, s, t, bm$W_t[match(s, bm$t)], bm$W_tm[match(t, bm$t)],
                                   Ll = bm$layers[BL,"Ld",drop=TRUE],
                                   Lu = bm$layers[BL,"Lu",drop=TRUE],
                                   Ul = bm$layers[BL,"Ud",drop=TRUE],
@@ -41,9 +41,9 @@ intersection.layers.IL_ <- function(bm, s, t, mult) {
 
 intersection.layers.BLIL_ <- function(bm, s, t, mult) {
   # Simulate bessel layer before additional layer simulation
-  BL <- bessel.layers.sim_(bm, s, t, bm$W_t[match(s, bm$t)], bm$W_t[match(t, bm$t)], mult)
+  BL <- bessel.layers.sim_(bm, s, t, bm$W_t[match(s, bm$t)], bm$W_tm[match(t, bm$t)], mult)
 
-  res <- intersection.layers.sim_(bm, s, t, bm$W_t[match(s, bm$t)], bm$W_t[match(t, bm$t)],
+  res <- intersection.layers.sim_(bm, s, t, bm$W_t[match(s, bm$t)], bm$W_tm[match(t, bm$t)],
                                   Ll = BL$xb - BL$au,
                                   Lu = BL$xb - BL$al,
                                   Ul = BL$yb + BL$al,

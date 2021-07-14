@@ -156,6 +156,7 @@ first.passage_ <- function(bm, l, u, label) {
   # Now append the new sims to the BM object
   bm$t <- c(bm$t, unname(t.new))
   bm$W_t <- c(bm$W_t, x.new+x)
+  bm$W_tm <- c(bm$W_tm, x.new+x)
   bm$layers <- add_row(bm$layers,
                        type = "localised",
                        t.l = t.l.new,

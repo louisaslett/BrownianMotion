@@ -23,7 +23,7 @@ bessel.layers <- function(bm, s, t, refine = bm$refine, mult = bm$mult, prefer =
 }
 
 bessel.layers_ <- function(bm, s, t, mult) {
-  res <- bessel.layers.sim_(bm, s, t, bm$W_t[match(s, bm$t)], bm$W_t[match(t, bm$t)], mult)
+  res <- bessel.layers.sim_(bm, s, t, bm$W_t[match(s, bm$t)], bm$W_tm[match(t, bm$t)], mult)
 
   bm$layers <- add_row(bm$layers,
                        type = "bessel",

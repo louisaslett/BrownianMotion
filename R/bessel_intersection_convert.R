@@ -42,7 +42,7 @@ intersection.to.bessel_ <- function(bm, lyr_idxs) {
     s <- bm$layers$t.l[lyr_idx]
     t <- bm$layers$t.u[lyr_idx]
     x <- bm$W_t[which(bm$t==s)]
-    y <- bm$W_t[which(bm$t==t)]
+    y <- bm$W_tm[which(bm$t==t)]
     if(bm$layers$Ud[lyr_idx] == max(x,y) && bm$layers$Lu[lyr_idx] == min(x,y)) {
       bm$layers$type[lyr_idx] <- "bessel"
       res <- c(res, lyr_idx)

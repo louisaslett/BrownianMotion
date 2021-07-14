@@ -52,7 +52,7 @@ refine.intersection_ <- function(bm, lyr.idx, mult) {
   s <- bm$layers[lyr.idx,"t.l",drop=TRUE]
   t <- bm$layers[lyr.idx,"t.u",drop=TRUE]
   x <- bm$W_t[match(s, bm$t)]
-  y <- bm$W_t[match(t, bm$t)]
+  y <- bm$W_tm[match(t, bm$t)]
   Ll <- bm$layers[lyr.idx,"Ld",drop=TRUE]
   Lu <- bm$layers[lyr.idx,"Lu",drop=TRUE]
   Ul <- bm$layers[lyr.idx,"Ud",drop=TRUE]
@@ -123,7 +123,7 @@ refine.bbintersection_ <- function(bm, lyr.idx, mult) {
   bb.t_idx <- match(bm$layers$t.u[lyr.idx], bm$bb.local$t)
 
   Bs <- bm$W_t[s_idx]
-  Bt <- bm$W_t[t_idx]
+  Bt <- bm$W_tm[t_idx]
   Ws <- bm$bb.local$W_t[bb.s_idx]
   Wt <- bm$bb.local$W_t[bb.t_idx]
 
@@ -145,7 +145,7 @@ refine.local_ <- function(bm, lyr.idx, mult) {
   s <- bm$layers[lyr.idx,"t.l",drop=TRUE]
   t <- bm$layers[lyr.idx,"t.u",drop=TRUE]
   x <- bm$W_t[match(s, bm$t)]
-  y <- bm$W_t[match(t, bm$t)]
+  y <- bm$W_tm[match(t, bm$t)]
   Ll <- bm$layers[lyr.idx,"Ld",drop=TRUE]
   Lu <- bm$layers[lyr.idx,"Lu",drop=TRUE]
   Ul <- bm$layers[lyr.idx,"Ud",drop=TRUE]
@@ -253,7 +253,7 @@ refine.bblocal_ <- function(bm, lyr.idx, mult) {
   bb.t_idx <- match(bm$layers$t.u[lyr.idx], bm$bb.local$t)
 
   Bs <- bm$W_t[s_idx]
-  Bt <- bm$W_t[t_idx]
+  Bt <- bm$W_tm[t_idx]
   Ws <- bm$bb.local$W_t[bb.s_idx]
   Wt <- bm$bb.local$W_t[bb.t_idx]
 
@@ -275,7 +275,7 @@ refine.bessel_ <- function(bm, lyr.idx, mult) { # s, t, x, y, Ll, Lu, Ul, Uu, mu
   s <- bm$layers[lyr.idx,"t.l",drop=TRUE]
   t <- bm$layers[lyr.idx,"t.u",drop=TRUE]
   x <- bm$W_t[match(s, bm$t)]
-  y <- bm$W_t[match(t, bm$t)]
+  y <- bm$W_tm[match(t, bm$t)]
   Ll <- bm$layers[lyr.idx,"Ld",drop=TRUE]
   Lu <- bm$layers[lyr.idx,"Lu",drop=TRUE]
   Ul <- bm$layers[lyr.idx,"Ud",drop=TRUE]
@@ -349,7 +349,7 @@ refine.bbbessel_ <- function(bm, lyr.idx, mult) {
   bb.t_idx <- match(bm$layers$t.u[lyr.idx], bm$bb.local$t)
 
   Bs <- bm$W_t[s_idx]
-  Bt <- bm$W_t[t_idx]
+  Bt <- bm$W_tm[t_idx]
   Ws <- bm$bb.local$W_t[bb.s_idx]
   Wt <- bm$bb.local$W_t[bb.t_idx]
 

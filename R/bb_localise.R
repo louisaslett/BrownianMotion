@@ -2,16 +2,15 @@ bb.localise_ <- function(bm, s, t, refine, mult, prefer) {
   theta <- mult*sqrt(t-s)
 
   x <- bm$W_t[match(s, bm$t)]
-  y <- bm$W_t[match(t, bm$t)]
+  y <- bm$W_tm[match(t, bm$t)]
 
   # Force points in auxiliary path
-  new.bm <- create.bm(bm$t[1],
-                      bm$W_t[1],
+  new.bm <- create.bm(s,
+                      0,
                       refine,
                       mult,
                       prefer)
-  new.bm$t <- c(s)
-  new.bm$W_t <- c(0)
+
 
   # Sim aux first passages until exceed t-s, then infill @ t-s
   first.passage(new.bm, delta = theta/2)
@@ -113,6 +112,9 @@ bb.localise_ <- function(bm, s, t, refine, mult, prefer) {
   bm$W_t <- c(bm$W_t[bm$t<=s],
               trans.B_t,
               bm$W_t[bm$t>=t])
+  bm$W_tm <- c(bm$W_tm[bm$t<=s],
+              trans.B_t,
+              bm$W_tm[bm$t>=t])
   bm$t <- c(bm$t[bm$t<=s],
             new.bm$t,
             bm$t[bm$t>=t])
