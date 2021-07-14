@@ -97,6 +97,15 @@ delete.skeleton <- function(bm, l = -Inf, r = Inf, type = "all") {
           bm$labels[[lbl]] <- NULL
       }
     }
+    ### Reconcile W_t and W_tm changes at the deletion times ###
+    if(l!=-Inf) {
+      l_idx <- which(bm$t == l)
+      bm$W_t[l_idx] <- bm$W_tm[l_idx]
+    }
+    if(r!=Inf) {
+      r_idx <- which(bm$t == r)
+      bm$W_tm[r_idx] <- bm$W_t[r_idx]
+    }
   }
 
   bm$labels[["start"]] <- min(bm$t)
