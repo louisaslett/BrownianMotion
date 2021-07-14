@@ -10,5 +10,6 @@ sim.uncond_ <- function(bm, t, label) {
   add.labels_(bm, "user", t)
   add.labels_(bm, label, t)
   bm$labels[["end"]] <- max(t)
+  bm$labels[["seg.end"]][length(bm$labels[["seg.end"]])] <- bm$labels[["end"]]
   bm
 }

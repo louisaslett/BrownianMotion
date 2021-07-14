@@ -177,6 +177,7 @@ first.passage_ <- function(bm, l, u, label) {
   add.labels_(bm, "internal", t.new)
   add.labels_(bm, label, t.new)
   bm$labels[["end"]] <- max(t.new)
+  bm$labels[["seg.end"]][length(bm$labels[["seg.end"]])] <- bm$labels[["end"]]
 
   bm
 }

@@ -38,6 +38,8 @@ create.bm_ <- function(t, W_t, refine, mult, prefer, nested = FALSE) {
   bm$labels <- list()
   bm$labels[["start"]] <- t
   bm$labels[["end"]] <- t
+  bm$labels[["seg.start"]] <- t
+  bm$labels[["seg.end"]] <- t
   bm$labels[["forced"]] <- t
   bm$refine <- refine
   bm$mult <- mult
