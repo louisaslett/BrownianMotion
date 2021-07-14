@@ -106,9 +106,12 @@ delete.skeleton <- function(bm, l = -Inf, r = Inf, type = "all") {
       r_idx <- which(bm$t == r)
       bm$W_tm[r_idx] <- bm$W_t[r_idx]
     }
+    ### Update labels ###
+    bm$labels[["start"]] <- min(bm$t)
+    bm$labels[["end"]] <- max(bm$t)
+    bm$labels[["seg.start"]] <- c(bm$labels[["start"]], bm$t[which(bm$W_t != bm$W_tm)])
+    bm$labels[["seg.end"]] <- c(bm$t[which(bm$W_t != bm$W_tm)], bm$labels[["end"]])
   }
 
-  bm$labels[["start"]] <- min(bm$t)
-  bm$labels[["end"]] <- max(bm$t)
   invisible(bm)
 }
