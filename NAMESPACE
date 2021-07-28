@@ -3,6 +3,7 @@
 S3method(plot,BrownianMotion)
 S3method(points,BrownianMotion)
 export(add.points)
+export(add.segment)
 export(bessel.layers)
 export(create.bm)
 export(delete.skeleton)
