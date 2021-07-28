@@ -4,7 +4,7 @@
 \alias{add.segment}
 \title{Create/move a segment}
 \usage{
-add.segment(bm, l = -Inf, r = Inf, delta = NULL, W_t = NULL, label = NULL)
+add.segment(bm, l = -Inf, r = Inf, W_t = NULL, delta = NULL, label = NULL)
 }
 \arguments{
 \item{l}{}
