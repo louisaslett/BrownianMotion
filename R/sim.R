@@ -40,7 +40,7 @@ sim <- function(bm, t, refine = bm$refine, mult = bm$mult, prefer = bm$prefer, l
     stop("prefer must be one of 'bessel' or 'intersection'")
   }
   if(any(t < min(bm$t))) {
-    stop(paste0("cannot simulate path at times before the path was initialised (at time ", min(bm$t), ")"))
+    stop(paste0("cannot simulate path at times before the path was initialised (at time ", min(bm$t), ") -- to add in points prior to the beginning of path use add.points()"))
   }
   assert.bmlabel(label, t)
   if(!is.null(label) && length(label) == 1) {
