@@ -19,69 +19,78 @@ knitr::opts_chunk$set(
 )
 ```
 
-First load the package and the `magrittr` utility package, which provides the `%>%` pipe operator, allowing natural chaining of commands.  We also set the seed to ensure reproducibility of this vignette.
+Note the pipe operator in this vignette (`|>`) assumes you have R 4.1.0+, allowing natural chaining of commands. The package does not require this version of R, only this vignette. We also set the seed to ensure reproducibility of this vignette.
 
 ```{r setup}
 library(BrownianMotion)
-library(magrittr)
 set.seed(212)
 ```
 
-The first task is to create an object which will contain the Brownian motion path and layer information.  This is accomplished using the `create_bm()` function.  It is possible to call with all default options, but here for demonstration purposes we will force the path to start at $W_1 = 100$ (the default is $W_0 = 0$).
+The first task is to create an object which will contain the Brownian motion path and layer information. This is accomplished using the `create.bm()` function. It is possible to call with all default options, but here for demonstration purposes we will force the path to start at $W_{-1
+} = 100$ (the default is $W_0 = 0$).
 
 ```{r}
-bm <- create.bm(1, 100)
+bm <- create.bm(-1, 100)
 ```
+
+Of course, we may be interested in "forcing" a path constrained to hit particular point(s) at particular time(s) (i.e., bridge simulation). For instance, we may wish the path to "hit" $W_0 = 101$ and $W_1=99$. This can be achieved using the `add.points` which has two required arguments, one for specifying a vector of forced times, and the second a vector of forced points:
+
+```{r}
+bm |> add.points(c(0,1), c(101,99))
+```
+
+At this point we can see a plot of our nascent path, by simply using the `plot()` function:
+
+```{r}
+plot(bm)
+```
+
+Here, black dots represent path observations and these are connected by grey lines. Note grey lines do *not* represent the actual path, although see later section on [Publication Graphics](#publication-graphics) for details on plotting an illustrative sample path.
+
 
 # Standard simulation
 
 ## Unconditional simulation
 
-The simplest operation is unconditional simulation of the path at future times (beyond the existing path).  Although one could call the specialised function `sim.uncond()`, this is not necessary: there is a universal function, `sim()`, which automatically detects the correct kind of simulation to perform based on the current path and new times requested.  Thus, specifying a vector of times $t>t_0$ to `sim()` will result in unconditional simulation:
+The simplest operation is unconditional simulation of the path at future times (beyond the end time of the existing path). To do this we use the function `sim()`, and supply a vector of times. Any of the times supplied which are in excess of the current end point will be simulated in order unconditionally (and all other times will be dealt with appropriately automatically, as discussed later). For instance, noting for our object `bm` the current end point is $t = 1$, suppose we wish to simulate the path at the times $t = (2,3,4)$, we have:
 
 ```{r}
-bm %>% sim(2:4)
+bm |> sim(2:4)
 ```
 
-Note in the above:
+Note that the `bm` object is updated in place: there is no need to assign the result back to bm (ie you do *not* need to do `bm <- bm |> sim(2:4)`, although there will be no negative side effects if you do so).
 
-- we provide a vector of times, $t = (2,3,4)$ here, and these will be simulated in order forwards to ensure unconditional simulation sequentially;
-- the `bm` object is updated in place ... there is no need to assign the result back to bm (ie you do *not* need to do `bm <- bm %>% sim(2:4)`).
-
-At this point we can see a plot of our nascent path:
+We can again visualise the path by using the `plot()` function:
 
 ```{r}
 plot(bm)
 ```
 
-Here, black dots represent path observations and these are connected by grey lines.  Note grey lines do *not* represent the actual path, although see later section on [Publication Graphics](#publication-graphics) for details on plotting an illustrative sample path.
 
 ## Brownian bridge simulation
 
-The simplest step beyond unconditional simulation would be to simulate times which are intermediate to already observed time points, achieved using Brownian bridge simulation.  As before, although one could call the specialised function `sim.bb()`, this is not necessary as `sim()` will identify when points fall at a time requiring conditioning.  Note, these can be mixed with additional unconditioned times, for example:
+The simplest step beyond unconditional simulation would be to simulate times which are intermediate to already observed time points. This can be achieved using Brownian bridge simulation. As before, we can simply use the function `sim()`: all time points in a vector supplied to the function which fall between existing times in the existing `bm` path will be appropriately simulated. The handling of the function `sim()` intuitively deals with a mixed vector of times which require unconditioned and conditioned simulation. For example, suppling the vector $t=(0.5, 1.5, 2.5, 3.5, 4.5)$ (and noting that the current end point of `bm` is $t = 4$), we have:
 
 ```{r}
-bm %>% sim(c(1.5, 2.5, 3.5, 4.5))
+bm |> sim(c(0.5, 1.5, 2.5, 3.5, 4.5))
 plot(bm)
 ```
 
-results in conditional simulation of $t=(1.5, 2.5, 3.5)$ and an extension of the path unconditionally to $t=4.5$.
-
-In particular, note that the first argument to sim can be a vector of times produced in any manner, say via `seq()` or even by random simulation of times:
+Further note that the first argument to `sim()` can be a vector of times produced in any manner, say via `seq()` (or even by random simulation of times):
 
 ```{r}
-bm %>% sim(runif(5, 1, 4.5))
+bm |> sim(runif(5, -1, 4.5))
 plot(bm)
 ```
 
-This will simulate at 5 times randomly chosen between the start and end times.  Note this highlights that the vector of times passed to `sim()` need not be sorted: (non-standard) sorting of required times is handled by the package to ensure robustness of functionals.
+The above will simulate at 5 times randomly chosen between the start and end times of the existing path. Note this highlights that the vector of times passed to `sim()` need not be sorted: (non-standard) sorting of required times is handled by the package to ensure robustness of functionals.
 
 ## A peek under the hood
 
 At this point it is instructive to look at the stored path:
 
-- `$t` contains the times of observations, $t$;
-- `$W_t` contains the value of the path at those times, $W_t$.
+-   `$t` contains the times of observations, $t$;
+-   `$W_t` contains the value of the path at those times, $W_t$.
 
 For ease of reading, the following example takes these two slots of the Brownian motion object and places them in a data frame, though this is not necessary:
 
@@ -90,68 +99,163 @@ data.frame(t   = bm$t,
            W_t = bm$W_t)
 ```
 
-In this simple setting $t$ and $W_t$ comprise the *"path skeleton"*: they are a finite dimensional representation of the Brownian motion path, which can be used to reconstruct the path at any other time point of interest. 
+In this simple setting $t$ and $W_t$ comprise the *"path skeleton"*: they are a finite dimensional representation of the Brownian motion path, which can be used to reconstruct the path at any other time point of interest.
 
 As an illustration of using this "under the hood" information, we can simulate an Exponential($\lambda = W_{4.5} / 10$) time past the end of the path, without having had to track in our code that $t=4.5$ is the end of the path what this current end time is:
 
 ```{r}
-bm %>% sim(max(bm$t)+rexp(1, bm$W_t[which.max(bm$t)]/10))
+bm |> sim(max(bm$t)+rexp(1, bm$W_t[which.max(bm$t)]/10))
 plot(bm)
 ```
 
-# Layers, layers, everywhere!
+Of course, the specification of the above time to simulate is rather clunky. To aid the user the package provides default `labels` to the time points which constitute the path skeleton (with each point possibly having multiple labels). We further give the user the option to add in their own labels. For instance, we can see the currently defined labels as a named list of times:
+
+```{r}
+bm$labels
+```
+
+Note that each list item name corresponds to the times that have been assigned a particular label (and note that some times have multiple labels, for instance $t=1$). For our existing path `bm` all existing labels are those automatically assigned by the package. All automatically assigned labels are dynamically updated as the path changes. In particular:
+
+-   `start` and `end` are the first and last times in the existing skeleton.
+-   `seg.start` and `seg.end` are the first and last times for respective "segments" (see [Segments](#segments)).
+-   `forced` is applied to any point introduced by the user by specifying not just the time, but also the position of the path. Recall, when we initialised the path (at $t=-1$), we introduced "forced" points at $t=0$ and $t=1$.
+-   `user` is applied to any time for which the path has been simulated by the user using the `sim()` function.
+
+There is considerable flexibility for the user to introduce their own labelling. Existing times associated with a user specified label are fixed (and do not get dynamically updated in the same manner as the automatic labels above). This can be done as the path is generated by using the optionally available argument `label` in either the `add.points()` or `sim()` function we have introduced thus far. `label` if specified should be a vector of length $1$ (in which case the same label is applied to all elements of the vector suppled), or of length equal to that of the supplied vector. For instance, suppose we wanted to simulate the path at times $t = (6,7)$ and give them the label `special.time.1` and `special.time.2` respectively then:
+
+```{r}
+bm |> sim(c(6, 7), label = c("special.time.1","special.time.2"))
+bm$labels
+```
+
+Note now the addition of the new labels and associated times. We may wish to specify an additional user label to existing times with existing labels. This can be done by simply supplying a vector of the existing times to the `sim()` function (noting that applying `sim()` to an existing path does not alter the existing path). For instance, we may wish the times with the label `forced` to be be given the label `special.time.1`, and those with the label `user` to be given the additional label `special.time.2`:
+
+```{r}
+bm |> sim(bm$labels$forced, label = c("special.time.1")) |> sim(bm$labels$user, label = c("special.time.2"))
+bm$labels
+```
+
+Note the flexibility labelling offers, as we can use labels themselves as arguments in function calls. For instance, returning to our earlier example which motivated our labelling, we could simulate the path at an Exponential($\lambda = W_{4.5} / 10$) time past the end of the path, without having had to track in our code that $t=7$:
+
+```{r}
+bm |> sim(bm$labels$end+rexp(1, bm$W_t[which.max(bm$t)]/10))
+plot(bm)
+```
+
+**TODO**: Add in details of `get.bm()` functionality, which allows easy user interaction with the `bm` object.
+**TODO** Modify above example using `get.bm()` function to avoid the clumsy index lookup
+
+# Manipulating and existing skeleton
+
+Having initialised the path at $W_{-1}=100$ we may naturally wish to simulate a time prior to the time the path was intisialised. Simulating prior to the initialised time is ambiguous once the path also includes `layers` (see [Layers, layers, everywhere!](#layers)). As a result, directly using the `sim()` function (for instance, simulating the path at time $t=-2$) will result in an error:
+
+```{r,error=TRUE,purl=FALSE}
+bm |> sim(-2)
+```
+
+As indicated in the error message, one apporach to handling this is to manually add in a point. For instance, if we were unconditionally simulating the path to the left of the initialisation time:
+
+```{r}
+bm |> add.points(-2, rnorm(1, bm$W_t[which.min(bm$t)], sqrt(abs(-2 - bm$labels$start))))
+plot(bm)
+```
+Of course, we may wish to now artifically "adjust" the path by shifting the path to the right so it is initialised at $t=0$. This is easily achieved by creating a new path (say, `bm.adjust`) using the `concat.bm()` function and specifying the time the adjusted path should be initialised (although for full details of the `concat.bm()` function see [Path Concatenation](#concat))
+
+```{r}
+bm.adjust <- concat.bm(bm,t0=0)
+plot(bm.adjust)
+bm.adjust$labels
+```
+
+Note that for the `bm.adjust` path all associated labels have also been shifted.
+
+# Cautionary note on `bm` objects
+
+It is important for package users to understand that all Brownian motion path objects, such as `bm` and `bm.adjust` in the above, are internally stored as R environments. This means that attempting to assign from one variable name to another **does not** result in a copy of the object as one might expect with idomatic R: instead, you end up with two variable names referencing the same environment so that calls on one variable appear to update both. For example,
+
+```{r}
+# Current end time of path in bm
+bm$labels$end
+# Assign bm to a new variable called bm.x
+bm.x <- bm
+# Check end time of bm.x
+bm.x$labels$end
+# Extend bm.x path
+bm.x |> sim(bm.x$labels$end + 100)
+# Observe both have updated since these are just handles to the same environment
+bm$labels$end
+bm.x$labels$end
+```
+
+If you do in fact wish to create a copy rather than an additional handle to the same path, then a simple call to `concat.bm()` without providing any other path to concatenate with will trigger a copy:
+
+```{r}
+# Current end time of path in bm
+bm$labels$end
+# Use concat to trigger a copy
+bm.x <- concat.bm(bm)
+# Check end time of bm.x
+bm.x$labels$end
+# Extend bm.x path
+bm.x |> sim(bm.x$labels$end + 100)
+# Observe this time that both have not updated since we obtained a copy
+bm$labels$end
+bm.x$labels$end
+```
+
+# Layers, layers, everywhere! {#layers}
 
 In many settings we want to simulate Brownian motion together with *"layer"* information. Layer information determines a compact (spatial) interval which constrains the path over a given time interval. This can be achieved using this package in three broad ways:
 
-- *Bessel*: This follows (broadly) the approach outlined in [@MCAP].
-- *Localised*: This follows (broadly) the approach outlined in [@DEV], following the implementation in [@SCALE]
-- *Intersection*: This follows (broadly) the approach outlined in [@BERN], 
+-   *Bessel*: This follows (broadly) the approach outlined in [@MCAP].
+-   *Localised*: This follows (broadly) the approach outlined in [@DEV], following the implementation in [@SCALE]
+-   *Intersection*: This follows (broadly) the approach outlined in [@BERN],
 
 There are merits to using each of these approaches, and so the user has the flexibility (when possible) of specifying these.
 
-If a layer is simulated then this forms part of the *path skeleton*. Once a layer is simulated, then simulating further points of the path is more involved: again, these fall into the category of unconditional and conditional simulation. 
+If a layer is simulated then this forms part of the *path skeleton*. Once a layer is simulated, then simulating further points of the path is more involved: again, these fall into the category of unconditional and conditional simulation.
 
 ## Bessel
 
-We begin by specifying that we want to simulate a Bessel layer over the interval $t=[6,8]$. Note that $t=6$ is beyond the existing terminal time of the path, and so the path will first be (unconditionally) simulated to this time: 
+We begin by specifying that we want to simulate a Bessel layer over the interval $t=[10,12]$ for our path `bm.adjust`. This can be achieved by using the (simply named!) function `layers()`. Note that $t=10$ is beyond the existing terminal time of the path, and so the path will first be (unconditionally) simulated to this time:
 
 ```{r}
-bm %>% bessel.layers(6, 8)
-plot(bm)
+bm.adjust |> layers(10, 12)
+plot(bm.adjust)
 ```
 
 Purple is used to illustrate a Bessel layer (which will be useful later when we consider simultaneously different layer types). The solid lines are the *layer* indicating the spatial interval which constrains the path (the path falls entirely between the upper and lower solid lines). The dashed lines indicate a spatial interval which *does not* constrain the path (the path at some point will fall out-with the interval). As the end-points of the interval co-incide with the dashed lines we further know that the path *will* fall at some point both above the upper dashed line *and* below the lower dashed line.
 
-Note we can now simulate at a time falling within this Bessel layer specification and the above constraints will be honoured and result in an updated layer specification.  This is achieved using either the specialised `sim.condbessel()` function, or (recommended) the same `sim()` function used to date. It will automatically detect the surrounding layer information and conduct conditional Bessel layer simulation.  For example, simulating at $t=7$ gives:
+Note we can now simulate at a time falling within this Bessel layer specification and the above constraints will be honoured and result in an updated layer specification. This is achieved using the same `sim()` function used to date: it will automatically detect the surrounding layer information and conduct conditional Bessel layer simulation. For example, simulating at $t=11$ gives:
 
 ```{r}
-bm %>% sim(7)
-plot(bm)
+bm.adjust |> sim(11)
+plot(bm.adjust)
 ```
 
-In particular, note that the Bessel layer specification has now updated, resulting in the single layer becoming two Bessel layers either side of the newly simulated time.  In this case (though not always) this has resulted in two further variants of the Bessel layer. This is shown in the left hand interval by *two dotted* lines replacing the interior dashed lines of the earlier figure, and in the right hand interval by *one dotted, one dashed* lines replacing the interior dashed lines.
+In particular, note that the Bessel layer specification has now updated, resulting in the single layer becoming two Bessel layers either side of the newly simulated time. In this case (though not always) this has resulted in two further variants of the Bessel layer. This is shown in the left hand interval by *two dotted* lines replacing the interior dashed lines of the earlier figure, and in the right hand interval by *one dotted, one dashed* lines replacing the interior dashed lines.
 
-The dotted line indicates a more nuanced layer information, where the layer does not coincide with the end-points for the interval, but again indicates a spatial interval which *does not* constrain the path (the path at some point fall out-with the interval). 
+The dotted line indicates a more nuanced layer information, where the layer does not coincide with the end-points for the interval, but again indicates a spatial interval which *does not* constrain the path (the path at some point fall out-with the interval).
 
-More precisely, in the left hand interval with *two dotted* lines there are three possible cases for the (unrealised) path. In particular, either: 
+More precisely, in the left hand interval with *two dotted* lines there are three possible cases for the (unrealised) path. In particular, either:
 
-1. the path has a minimum which falls between the lower dotted and lower solid line, **and**, a maximum which falls between the upper dotted and upper solid line; or
-1. the path has a minimum which falls between the lower dotted and lower solid line, **and**, a maximum which falls between the maximum of the end-points of the path and the upper dotted line; or
-1. the path has a minimum which falls between the minimum of the end-points of the path and the lower dotted line, **and**, a maximum which falls between the upper dotted and upper solid line. 
+1.  the path has a minimum which falls between the lower dotted and lower solid line, **and**, a maximum which falls between the upper dotted and upper solid line; or
+2.  the path has a minimum which falls between the lower dotted and lower solid line, **and**, a maximum which falls between the maximum of the end-points of the path and the upper dotted line; or
+3.  the path has a minimum which falls between the minimum of the end-points of the path and the lower dotted line, **and**, a maximum which falls between the upper dotted and upper solid line.
 
-The right hand interval has both a dashed (lower) and dotted (upper) line. These follow the same convention as the two earlier examples. As one of the end-points co-incides with the dashed line (lower) we know the path at some point falls below this level. This eliminates the possibility of case 3 in the list above, leaving case 1 and 2. It is possible that the dashed and dotted lines were in the reverse order (dashed being the upper, and dotted being the lower), in which case we would either have case 1 or 3. 
+The right hand interval has both a dashed (lower) and dotted (upper) line. These follow the same convention as the two earlier examples. As one of the end-points co-incides with the dashed line (lower) we know the path at some point falls below this level. This eliminates the possibility of case 3 in the list above, leaving case 1 and 2. It is possible that the dashed and dotted lines were in the reverse order (dashed being the upper, and dotted being the lower), in which case we would either have case 1 or 3.
 
-When using `bessel.layers()` there is no need for the start and end times to co-incide with the current skeleton. It can be some future interval (as above), an interval of time pre-ceding the current skeleton, or an interval which partially includes the current skeleton. If there are pre-existing layers then a call to `bessel.layers()` only introduces layers for intervals which do not already have layers. For instance, consider the introduction of layers over the interval $t\in[5,9]$:
+When using `layers()` there is no need for the start and end times to co-incide with the current skeleton. It can be some future interval (as above), an interval of time pre-ceding the current skeleton, or an interval which partially includes the current skeleton. If there are pre-existing layers then a call to `layers()` only introduces layers for intervals which do not already have layers. For instance, consider the introduction of layers over the interval $t\in[5,14]$:
 
 ```{r}
-bm %>% bessel.layers(5,9)
-plot(bm)
+bm.adjust |> layers(5,14)
+plot(bm.adjust)
 ```
 
-Note that as the `bm` object becomes larger, calling the `plot` command can be less informative. You may instead wish to only `plot` a specific time interval for clarity. This is possible using the `t.lim` argument within the `plot` command. For instance, suppose you were interested only in visualising the interval $[5,7.5]$: 
+Note that as the `bm.adjust` object becomes larger, calling the `plot` command can be less informative. You may instead wish to only `plot` a specific time interval for clarity. This is possible using the `t.lim` argument within the `plot` command. For instance, suppose you were interested only in visualising the interval $[5,10]$:
 
 ```{r}
-plot(bm, t.lim = c(5,7.5))
+plot(bm.adjust, t.lim = c(5,10))
 ```
 
 ## Localised
@@ -160,25 +264,23 @@ plot(bm, t.lim = c(5,7.5))
 
 The second layer type we will consider is based around first passage times of Brownian motion.
 
-First passage times are the basis of the "localised layers" we introduce fully in the next subsection.  Here, we consider the path initialiased at its current terminal value, and determine the first time it leaves a prescribed interval. The interval can be prescribed by the user in a number of different ways, by specifying among a choice of arguments:
+First passage times are the basis of the "localised layers" we introduce fully in the next subsection. Here, we consider the path initialiased at its current terminal value, and determine the first time it leaves a prescribed interval. The interval can be prescribed by the user in a number of different ways, by specifying among a choice of arguments:
 
-- `delta`: specifying a symmetric interval around the current terminal value;
-- `delta.l` and `delta.u`: specifying a asymmetric interval which is `delta.l` below and `delta.u` above the current terminal value;
-- `l` and `u`: specifying the lower and upper boundary values directly.
+-   `delta`: specifying a symmetric interval around the current terminal value;
+-   `delta.l` and `delta.u`: specifying a asymmetric interval which is `delta.l` below and `delta.u` above the current terminal value;
+-   `l` and `u`: specifying the lower and upper boundary values directly.
 
-To better illustrate this we begin by simulating the existing path unconditionally at time $t=10$ by again calling `sim()` before then simulating a first passage to a symmetric interval $\pm 1$ from $W_{10}$.  Notice that commands can be chained together using the pipe `%>%` operator:
+To better illustrate this we begin by simulating the existing path unconditionally at time $t=15$ by again calling `sim()` before then simulating a first passage to a symmetric interval $\pm 1$ from $W_{10}$. Notice that commands can be chained together using the pipe `%>%` operator:
 
 ```{r}
-bm %>%
-  sim(10) %>%
-  first.passage(delta = 1)
-plot(bm)
+bm.adjust |> sim(15) |> first.passage(delta = 1)
+plot(bm.adjust)
 ```
 
-The green lines indicate the bounds specified by You, the user. The green line does not form part of the realised Brownian motion, and is used for visualisation. As such, it can be turned off using the `hide.user` argument in the plot command:  
+The green lines indicate the bounds specified by You, the user. The green line does not form part of the realised Brownian motion, and is used for visualisation. As such, it can be turned off using the `hide.user` argument in the plot command:
 
 ```{r}
-plot(bm, hide.user = TRUE)
+plot(bm.adjust, hide.user = TRUE)
 ```
 
 Note that the green lines were over-plotting solid red lines. Again, solid lines form part of the Brownian motion object and indicate the interval which constrains the path over the specified interval. We term this a *"localised layer"* as the end-point coincides with layer. Red is used as the colour to plot such layer types. The dashed lines follow the earlier convention, although note there will only be one. In the case above we in effect have the upper dashed line coinciding with the left hand end-point, and both the dashed and solid lines coinciding with the right hand end-point.
@@ -186,152 +288,163 @@ Note that the green lines were over-plotting solid red lines. Again, solid lines
 If we instead we want asymmetric layers and use the arguments `delta.l` and `delta.u` then these are the lower and upper offsets (respectively) of the current terminal end-point:
 
 ```{r}
-bm %>% first.passage(delta.l = -1, delta.u=3)
-plot(bm)
+bm.adjust |> first.passage(delta.l = -1, delta.u=3)
+plot(bm.adjust)
 ```
 
 The output in this case is slightly different as this is achieved algorithmically by decomposing the requested layers into iterative calls of the *symmetric* variant of the function.
 
-We may not be interested in the first passage time of a level offset by the current terminal time, but instead some specified level. This can be achieved by using the arguments `l` and `u` where these are the lower and upper layers requested. For instance, we may want the first passage time of the (spatial) interval $[90,100]$: 
+We may not be interested in the first passage time of a level offset by the current terminal time, but instead some specified level. This can be achieved by using the arguments `l` and `u` where these are the lower and upper layers requested. For instance, we may want the first passage time of the (spatial) interval $[90,100]$:
 
 ```{r}
-bm %>% first.passage(l = 90, u=100)
-plot(bm)
+bm.adjust |> first.passage(l = 90, u=100)
+plot(bm.adjust)
 ```
 
-Note that if using the arguments `l` and `u` then the current terminal point must be contained within the interval, as otherwise it is not possible and results in an error: 
+Note that if using the arguments `l` and `u` then the current terminal point must be contained within the interval, as otherwise it is not possible and results in an error:
 
 ```{r,error=TRUE,purl=FALSE}
-bm %>% first.passage(l = 80, u=85)
+bm.adjust |> first.passage(l = 80, u=85)
 ```
 
-Time points within a localised layer may be simulated using the specialised function `sim.condlocal()`, or (recommended) by using `sim()` which will automatically detect the surrounding layer information to perform the correct conditioning.
+Again, time points within a localised layer can be simulated using `sim()` in the usual manner (and the package will automatically detect the surrounding layer information to perform the correct conditioning).
 
 ```{r}
-bm %>% sim(c(17, 18))
-plot(bm)
+bm.adjust |> sim(c(40, 60))
+plot(bm.adjust)
 ```
 
 Note conditional simulations within a localised layer can give rise to a change in layer type, in this instance resulting in the first part of the localised layer becoming of Bessel type (recalling that for localised layers the layer coincides with the the end-point).
 
 ### Localised layer over a specified interval
 
-Simulating localised layers by means first passage times can be advantageous in some settings, although the time the first passage occurs is random, and this randomness can introduce its own complications. 
+Simulating localised layers by means of first passage times can be advantageous in some settings, although the time the first passage occurs is random, and this randomness can introduce its own complications.
 
-Instead, we may wish to simulate localised layers over a specified interval (in the same manner as we did for Bessel layers). For instance, suppose we want a localised layer in the interval $t\in[23,29]$ this can be achieved using the `localised.layers()` function: 
+Instead, we may wish to simulate localised layers over a specified interval (in the same manner as we did for Bessel layers). For instance, suppose we want a localised layer in the interval $t\in[23,29]$ this can again be achieved using the `layers()` function, but with the additional argument `type = "localised"`:
 
 ```{r}
-bm %>% localise.layers(23,29)
-plot(bm)
+bm.adjust |> layers(90, 140, type = "localised")
+plot(bm.adjust)
 ```
 
-Note that the resulting skeleton for the interval will comprise zero or more (red) localised layers, followed by a single (purple) Bessel layer: this because the end-point will no longer coincide with the layer. By default `delta` is chosen to be $\sqrt{t-s}/2$, although this can be altered by the user using the argument `mult` which multiplies the default layer size. For instance, 
+Note that the resulting skeleton for the interval will comprise zero or more (red) localised layers, followed by a single (purple) Bessel layer: this is because the end-point will no longer coincide with the layer. By default `delta` is chosen to be $\sqrt{t-s}/2$, although this can be altered by the user using the argument `mult` which multiplies the default layer size. For instance,
 
 ```{r}
-bm %>% localise.layers(31,35,mult=1.5)
-plot(bm)
+bm.adjust |> layers(180, 210, type = "localised", mult=5)
+plot(bm.adjust)
 ```
 
-Intermediary points can be added in the same way as before. For instance, using our recommended `sim()` function: 
+We may wish to add a bridge analogue of a localised layer: ie a localised layer over one or more existing intervals in the skeleton. This can be achieved again by using the `layers()` function with the argument `type = "localised"`. For instance, we may wish to introduce localised intervals over every interval between times $[140,230]$ (where $t=230$ exceeds the current end-time of $t=210$):
 
 ```{r}
-bm %>% sim(33)
-plot(bm)
+bm.adjust |> layers(140, 230, type = "localised")
+plot(bm.adjust)
 ```
 
-We may wish to add a bridge analogue of a localised layer: ie a localised layer over one or more existing intervals in the skeleton. This can be achieved again by using the `localise.layers()` function. For instance, we may wish to intrduce localised intervals over every interval between times $[10,40]$ (where $40$ exceeds the current end-time of $35$):
-
+Note that the path has been extended (unconditionally) beyond $t=140$ as per above. For each interval within the current skeleton, which did not already have a layer, a localised layer has been introduced. The "bridge" localised layers are simulated by means of an appropriate scaling of unconditional Brownian motions, and so have a gradient of $(W_t-W_s)/(t-s)$. The interior dashed, dotted and solid lines, together with the associated Bessel layer all follow the earlier conventions (albeit now with a gradient). The outer horizontal solid lines are for the use of You (and don't form part of the skeleton) to easily indicate a spatial interval which constrains the path over a given (time) interval. We can again more clearly see the localised bridge layers by specifying a shorter interval to plot the path (for instance $[140,180]$):
 
 ```{r}
-bm %>% localise.layers(10,40)
-plot(bm)
+plot(bm.adjust, t.lim=c(140, 180))
 ```
 
-Note that the path has been extended (unconditionally) beyond $t=35$ as per above. For each interval within the current skeleton, which did not already have a layer, a localised layer has been introduced. The "bridge" localised layers are simulated by means of an appropriate scaling of unconditional Brownian motions, and so have a gradient of $(W_t-W_s)/(t-s)$. The interior dashed, dotted and solid lines, together with the associated Bessel layer all follow the earlier conventions (albeit now with a gradient). The outer horizontal solid lines are for the use of You (and don't form part of the skeleton) to easily indicate a spatial interval which constrains the path over a given (time) interval. We can again more clearly see the localised bridge layers by specifying a shorter interval to plot the path (for instance $[27,33]$): 
+As the horizontal layers do not strictly form part of the path skeleton, these can be toggled off when plotting by again using the `hide.user` argument:
 
 ```{r}
-plot(bm, t.lim=c(27,33))
-```
-
-As the horizontal layers do not strictly form part of the path skeleton, these can be toggled off when plotting by again using the `hide.user` argument: 
-
-```{r}
-plot(bm, t.lim=c(27,33), hide.user = TRUE)
+plot(bm.adjust, t.lim=c(140, 180), hide.user = TRUE)
 ```
 
 ### (Another) peek under the hood
 
 In addition to the earlier discussion on the slots `$t` and `$W_t`, there are slots which contain the layering information, both for the main path and those in the transformed space just discussed above.
 
-- `$layers` is a data frame containing the layering information of the main path, including variables:
-    - `type` to indicate the layer type, one of:
-        - `bessel`
-        - `localised`
-        - `intersection` (see forthcoming section);
-        - `bessel-bb`
-        - `localised-bb`
-        - `intersection-bb` (see forthcoming section);
-      
-      The suffix `-bb` indicates that this layer type results from simulating the localised layer bridge of the last section.
-    - `t.l` and `t.u` giving the temporal interval (left and right time points) to which the layer applies;
-    - `Ld` corresponds to the lower solid line;
-    - `Uu` corresponds to the upper solid line;
-    - `Lu` corresponds to the lower interior dashed/dotted line;
-    - `Ud` corresponds to the upper interior dashed/dotted line;
-    - `Lu.hard` indicating whether the lower interior line coincides with the end point;
-    - `Ud.hard` indicating whether the upper interior line coincides with the end point;
-- `$user.layers` is a data frame containing the information on which first passage layers were requested by You (resulting in the green lines on the plot).  This contains
-    - `t.l` and `t.u` giving the temporal interval (left and right time points) to which the layer applies;
-    - `L` and `U` which are the boundaries specified by You (perhaps indirectly via `delta` or `delta.l`/`delta.u`)
-- `$bb.local` is a nested Brownian motion object used in the construction of the localised layer bridges.  Note this will only contain intervals pertaining to the localised layer bridge intervals of `$layers` (those ending `-bb`), but otherwise follows the same form.
+-   `$layers` is a data frame containing the layering information of the main path, including variables:
+
+    -   `type` to indicate the layer type, one of:
+
+        -   `bessel`
+        -   `localised`
+        -   `intersection` (see forthcoming section);
+        -   `bessel-bb`
+        -   `localised-bb`
+        -   `intersection-bb` (see forthcoming section);
+
+        The suffix `-bb` indicates that this layer type results from simulating the localised layer bridge of the last section.
+
+    -   `t.l` and `t.u` giving the temporal interval (left and right time points) to which the layer applies;
+
+    -   `Ld` corresponds to the lower solid line;
+
+    -   `Uu` corresponds to the upper solid line;
+
+    -   `Lu` corresponds to the lower interior dashed/dotted line;
+
+    -   `Ud` corresponds to the upper interior dashed/dotted line;
+
+    -   `Lu.hard` indicating whether the lower interior line coincides with the end point;
+
+    -   `Ud.hard` indicating whether the upper interior line coincides with the end point;
+
+-   `$user.layers` is a data frame containing the information on which first passage layers were requested by You (resulting in the green lines on the plot). This contains
+
+    -   `t.l` and `t.u` giving the temporal interval (left and right time points) to which the layer applies;
+    -   `L` and `U` which are the boundaries specified by You (perhaps indirectly via `delta` or `delta.l`/`delta.u`)
+
+-   `$bb.local` is a nested Brownian motion object used in the construction of the localised layer bridges. Note this will only contain intervals pertaining to the localised layer bridge intervals of `$layers` (those ending `-bb`), but otherwise follows the same form.
 
 For example, the path produced to date in this vignette has the following internal layering representation:
 
 ```{r,eval=FALSE}
-bm$layers
+bm.adjust$layers
 ```
+
 ```{r,echo=FALSE}
-rmarkdown::paged_table(bm$layers)
+rmarkdown::paged_table(bm.adjust$layers)
 ```
 
 ```{r,eval=FALSE}
-bm$user.layers
+bm.adjust$user.layers
 ```
+
 ```{r,echo=FALSE,results='asis'}
-knitr::kable(bm$user.layers)
+knitr::kable(bm.adjust$user.layers)
 ```
 
 ```{r,eval=FALSE}
-bm$bb.local$layers
+bm.adjust$bb.local$layers
 ```
+
 ```{r,echo=FALSE,results='asis'}
-knitr::kable(bm$bb.local$layers)
+knitr::kable(bm.adjust$bb.local$layers)
 ```
 
 
-## Intersection 
+################################################################################
+            CONTINUE FROM HERE ON FRIDAY
+################################################################################
 
-Now suppose we want an Intersection layer over the interval $t=[50,60]$, this can be done by calling the function `intersection.layers()`. The structure of introducing Intersection layers follows that of Bessel layers. Note that $t=50$ is beyond the current terminal point of the path: 
+## Intersection
+
+Now suppose we want an Intersection layer over the interval $t=[50,60]$, this can be done by calling the function `intersection.layers()`. The structure of introducing Intersection layers follows that of Bessel layers. Note that $t=50$ is beyond the current terminal point of the path:
 
 ```{r}
 bm %>% intersection.layers(50,60)
 plot(bm)
 ```
 
-Blue is used to illustrate an Intersection layer. Again, solid lines are the *layer* indicating the spatial interval which constrains the path. The interior lines for Intersection layers are always dashed. Dashed lines have the same interpretation as for Bessel layers, but need not coincide with the end-points for an interval. More precisely, we know the path has a maximum which falls between the upper dashed and solid lines, and a minimum which falls between the lower dashed and solid lines.  
+Blue is used to illustrate an Intersection layer. Again, solid lines are the *layer* indicating the spatial interval which constrains the path. The interior lines for Intersection layers are always dashed. Dashed lines have the same interpretation as for Bessel layers, but need not coincide with the end-points for an interval. More precisely, we know the path has a maximum which falls between the upper dashed and solid lines, and a minimum which falls between the lower dashed and solid lines.
 
-Intermediary points of the trajectory can be either simulated using the dedicated function `sim.condintersection()`, or (recommended) one can simply again use the `sim()` function. For instance, consider simulating the path at $t=11$: 
+Intermediary points of the trajectory can be either simulated using the dedicated function `sim.condintersection()`, or (recommended) one can simply again use the `sim()` function. For instance, consider simulating the path at $t=11$:
 
 ```{r}
 bm %>% sim(55)
 plot(bm)
 ```
 
-Note that on simulating an intermediary point(s) a number of Bessel (purple) or Intersection layers may arise. Intersection layers have the same interpretation as the parent Intersection layer, and Bessel layers are the same as in the earlier section. By default, the package will if possible attempt to "convert" Intersection layers to Bessel layers: we will address this default in the next subsection. Any further simulation will be handled appropriately for the given layer type by using the `sim()` function. 
+Note that on simulating an intermediary point(s) a number of Bessel (purple) or Intersection layers may arise. Intersection layers have the same interpretation as the parent Intersection layer, and Bessel layers are the same as in the earlier section. By default, the package will if possible attempt to "convert" Intersection layers to Bessel layers: we will address this default in the next subsection. Any further simulation will be handled appropriately for the given layer type by using the `sim()` function.
 
 ### (Yet Another) peek under the hood
 
-As demonstrated in the previous section, by default the package has a preference for using Bessel layers over Intersection layers wherever possible. It is typical that the user will want to only consider one layer type, and the Bessel layer type has been selected as default as this is most likely to be the one practitioners will use. We do however want the flexibility to use multiple layer types or change the default to Intersection. 
+As demonstrated in the previous section, by default the package has a preference for using Bessel layers over Intersection layers wherever possible. It is typical that the user will want to only consider one layer type, and the Bessel layer type has been selected as default as this is most likely to be the one practitioners will use. We do however want the flexibility to use multiple layer types or change the default to Intersection.
 
 To do this we can change the default argument from `prefer = "bessel"` to `prefer = "intersection"` within the functions we have considered. For instance, we may consider a new path (`bm2`) initialised at $W_0=0$:
 
@@ -340,9 +453,9 @@ set.seed(42)
 bm2 <- create.bm(prefer = "intersection")
 ```
 
-This has the consequence that any call to `sim()` (with no further argument as the preference is inherited from the creation of the path) will where possible convert Bessel layers to Intersection layers. Note that although it is only occasionally possible to convert Intersection layers to Bessel layers, it is always possible to change Bessel layers to Intersection layers. 
+This has the consequence that any call to `sim()` (with no further argument as the preference is inherited from the creation of the path) will where possible convert Bessel layers to Intersection layers. Note that although it is only occasionally possible to convert Intersection layers to Bessel layers, it is always possible to change Bessel layers to Intersection layers.
 
-For instance, suppose we simulate Bessel layers over $t\in[1,3]$: 
+For instance, suppose we simulate Bessel layers over $t\in[1,3]$:
 
 ```{r}
 bm2 %>% bessel.layers(1, 3)
@@ -356,7 +469,7 @@ bm2 %>% sim(2, prefer = "bessel")
 plot(bm2)
 ```
 
-In particular, further simulation of the path at $t=1.25$ and $t=2.5$ results in both Bessel layers (in the interval $[1,2]$ and $[2,3]$ being converted to Intersection layers: 
+In particular, further simulation of the path at $t=1.25$ and $t=2.5$ results in both Bessel layers (in the interval $[1,2]$ and $[2,3]$ being converted to Intersection layers:
 
 ```{r}
 bm2 %>% sim(c(1.25,2.5))
@@ -365,42 +478,42 @@ plot(bm2)
 
 Note that we do not need to specify we have a preference for Intersection layers, as this preference is an attribute assigned to the path on its creation using `create.bm()`. In principle this could be changed for the path globally (for instance, `bm2$prefer <- "bessel"`), but this is not necessary as we will outline below.
 
-It is not possible to convert from or to Localised layers from other layer types. However, once the path has been created with the attribute `prefer="intersection"` then conditional simulation of localised layers will result in the appearance of Intersection layers (as opposed to Bessel layers). For instance, note that when simulating a Localised layer over the interval $t\in[4,5]$ that the final interval is an Intersection layer (and not a Bessel layer as before): 
+It is not possible to convert from or to Localised layers from other layer types. However, once the path has been created with the attribute `prefer="intersection"` then conditional simulation of localised layers will result in the appearance of Intersection layers (as opposed to Bessel layers). For instance, note that when simulating a Localised layer over the interval $t\in[4,5]$ that the final interval is an Intersection layer (and not a Bessel layer as before):
 
 ```{r}
 bm2 %>% localise.layers(4,5)
 plot(bm2)
 ```
 
-The preference for Intersection layers inherited from the creation of the path can be changed when calling any of the other functions we have introduce. For instance, consider simulating localised layers (of the Bessel sort) in the interval $t\in[6,8]$: 
+The preference for Intersection layers inherited from the creation of the path can be changed when calling any of the other functions we have introduce. For instance, consider simulating localised layers (of the Bessel sort) in the interval $t\in[6,8]$:
 
 ```{r}
 bm2 %>% localise.layers(6,8,prefer="bessel")
 plot(bm2)
 ```
 
-and then the simulation of intermediary points in this interval: 
+and then the simulation of intermediary points in this interval:
 
 ```{r}
 bm2 %>% sim(c(6.5,7,7.5),prefer="bessel")
 plot(bm2)
 ```
 
-We can change the layer type (if possible) for every interval in the path by simply calling either `bessel.layers()` or `intersection.layers()` together with arguments for the end-points fo the path. For instance, suppose we now wanted Intersection layers: 
+We can change the layer type (if possible) for every interval in the path by simply calling either `bessel.layers()` or `intersection.layers()` together with arguments for the end-points fo the path. For instance, suppose we now wanted Intersection layers:
 
 ```{r}
 bm2 %>% intersection.layers(0,8)
 plot(bm2)
 ```
 
-results in any Bessel layers being converted to Intersection layers. Similarly we could attempt to convert back to Bessel layers (although this may not always be possible for every interval): 
+results in any Bessel layers being converted to Intersection layers. Similarly we could attempt to convert back to Bessel layers (although this may not always be possible for every interval):
 
 ```{r}
 bm2 %>% bessel.layers(0,8)
 plot(bm2)
 ```
 
-Note that converting the layers from Intersection to Bessel or Bessel to Intersection does not change the preference when calling the `sim()` function. For instance: 
+Note that converting the layers from Intersection to Bessel or Bessel to Intersection does not change the preference when calling the `sim()` function. For instance:
 
 ```{r}
 bm2 %>% sim(3.75)
@@ -409,7 +522,7 @@ plot(bm2)
 
 # Refinement
 
-When simulating layers the package will by default control the size of the layer so it scales appropriately with the length of the interval being considered. In particular, by default, the package will attempt to ensure the difference between the upper solid and upper dashed/dotted lines *AND* the difference between the lower solid and upper dashed/dotted lines is no greater than $\sqrt{t-s}$ (where $s$ and $t$ are the left and right hand end-points of the interval respectively). This control on the layer size can be removed by changing the `refine=TRUE` attribute to `refine=FALSE` on creation of the path. Note that this is not recommended as it can introduce numerical instability, but to show its affect consider the following Bessel layer over the interval $[0,10]$: 
+When simulating layers the package will by default control the size of the layer so it scales appropriately with the length of the interval being considered. In particular, by default, the package will attempt to ensure the difference between the upper solid and upper dashed/dotted lines *AND* the difference between the lower solid and upper dashed/dotted lines is no greater than $\sqrt{t-s}$ (where $s$ and $t$ are the left and right hand end-points of the interval respectively). This control on the layer size can be removed by changing the `refine=TRUE` attribute to `refine=FALSE` on creation of the path. Note that this is not recommended as it can introduce numerical instability, but to show its affect consider the following Bessel layer over the interval $[0,10]$:
 
 ```{r}
 set.seed(42^2)
@@ -418,7 +531,7 @@ bm3 %>% bessel.layers(0, 10)
 plot(bm3)
 ```
 
-Now, if we simulate a number of intermediary points (say a grid of $20$), then note that although we again have Bessel layers that the size of the Bessel layers is "stretched" when contrasted with earlier simulations: 
+Now, if we simulate a number of intermediary points (say a grid of $20$), then note that although we again have Bessel layers that the size of the Bessel layers is "stretched" when contrasted with earlier simulations:
 
 ```{r}
 bm3 %>% sim(seq(0,10,by=0.5))
@@ -451,21 +564,21 @@ bm5 %>% bessel.layers(0, 10)
 plot(bm5)
 ```
 
-The simulation of the path at additional points will inherit `mult=3`. For instance, contrast the following with `bm4` above: 
+The simulation of the path at additional points will inherit `mult=3`. For instance, contrast the following with `bm4` above:
 
 ```{r}
 bm5 %>% sim(seq(0,10,by=0.5))
 plot(bm5)
 ```
 
-If we introduce an additional points (say mid-points to the existing path in the interval $[0,5]$), but we want increased increased refinement (say of `mult=1`) this can be done by changing the default argument in any of the earlier functions as before. For instance: 
+If we introduce an additional points (say mid-points to the existing path in the interval $[0,5]$), but we want increased increased refinement (say of `mult=1`) this can be done by changing the default argument in any of the earlier functions as before. For instance:
 
 ```{r}
 bm5 %>% sim(seq(0,5,by=0.25),mult = 1)
 plot(bm5)
 ```
 
-Note that the intervals in the first half of the path are far more resolved. It is possible to set the layer size to some constant level (not dependent on the length of the interval) by specifying `mult` to be at a level the reciprocal of $\sqrt{t-s}$. This however is not recommended, as it can introduce numerical instability. 
+Note that the intervals in the first half of the path are far more resolved. It is possible to set the layer size to some constant level (not dependent on the length of the interval) by specifying `mult` to be at a level the reciprocal of $\sqrt{t-s}$. This however is not recommended, as it can introduce numerical instability.
 
 Finally, we may wish to refine the existing intervals without the introduction of additional points. This can be achieved using the `refine` function, which can *increase* the resolution on any (or all) intervals. For instance:
 
@@ -478,12 +591,13 @@ The `mult = 1` argument has increased the resolution of existing layers in the i
 
 # Deletion
 
-It is possible that You want to delete both the path observations and layers, or only the layers, of the skeleton over some specified interval. This can be achieved within the package by using the `delete.skeleton` command, and specifying an open interval which you wish to delete from the skeleton. The left and right hand ends of the open interval are specified using the arguments `l` and `r` respectively. For instance, considering `bm5`, we may wish to delete the entire skeleton in the interval $(2.5,5)$: 
+It is possible that You want to delete both the path observations and layers, or only the layers, of the skeleton over some specified interval. This can be achieved within the package by using the `delete.skeleton` command, and specifying an open interval which you wish to delete from the skeleton. The left and right hand ends of the open interval are specified using the arguments `l` and `r` respectively. For instance, considering `bm5`, we may wish to delete the entire skeleton in the interval $(2.5,5)$:
 
 ```{r}
 bm5 %>% delete.skeleton(l = 2.5, r = 5)
 plot(bm5)
 ```
+
 By default the package will delete both path observations and layers within the open interval (by default the argument `type  = "all"`). However, deletion of only the layers (retaining the path observations) is possible by setting `type = "layer"`. For instance, considering deleting only the skeleton layers in the interval $(5,7.5)$:
 
 ```{r}
@@ -491,35 +605,33 @@ bm5 %>% delete.skeleton(l = 5, r = 7.5, type = "layer")
 plot(bm5)
 ```
 
-Note that as a safety precaution, `l` and `r` *must* co-incide with time points within the skeleton. As a consequence, if You want to delete an interval which does not co-incide with time points within the skeleton then You must first introduce those points using the `sim` function. For instance, consider deleting the skeleton entirely in the interval $(2.0001,7.9999)$ (noting these times do not currently appear in the skeleton) then this can be achieved as follows: 
+Note that as a safety precaution, `l` and `r` *must* co-incide with time points within the skeleton. As a consequence, if You want to delete an interval which does not co-incide with time points within the skeleton then You must first introduce those points using the `sim` function. For instance, consider deleting the skeleton entirely in the interval $(2.0001,7.9999)$ (noting these times do not currently appear in the skeleton) then this can be achieved as follows:
 
 ```{r}
 bm5 %>% sim(c(2.0001,7.9999)) %>% delete.skeleton(l = 2.0001, r = 7.9999)
 plot(bm5)
 ```
 
-In some scenarios we may wish to delete the path entirely to the left or right of some point. This is possible by not specifying the right or left point (respectively). For instance, suppose we wish to delete the skeleton entirely to the right of $t=2$ then: 
+In some scenarios we may wish to delete the path entirely to the left or right of some point. This is possible by not specifying the right or left point (respectively). For instance, suppose we wish to delete the skeleton entirely to the right of $t=2$ then:
 
 ```{r}
 bm5 %>% delete.skeleton(l = 2)
 plot(bm5)
 ```
 
-Alternatively, deletion entirely to the left of $t=1$ is possible in a similar manner by not specifying the `l` argument: 
+Alternatively, deletion entirely to the left of $t=1$ is possible in a similar manner by not specifying the `l` argument:
 
 ```{r}
 bm5 %>% delete.skeleton(r = 1)
 plot(bm5)
 ```
 
-Note that (as a fail-safe) it is not possible to delete the entire path by leaving *both* arguments un-specified. Intead You should do this by removing the `bm5` object from your workspace using the base R `rm` command. If you attempt to do this You will get an (informative) error: 
+Note that (as a fail-safe) it is not possible to delete the entire path by leaving *both* arguments un-specified. Intead You should do this by removing the `bm5` object from your workspace using the base R `rm` command. If you attempt to do this You will get an (informative) error:
 
 ```{r,error=TRUE,purl=FALSE}
 bm5 %>% delete.skeleton()
 ```
 
-# Publication Graphics
+# Publication Graphics {#publication-graphics}
 
 # References
-
-
