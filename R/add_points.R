@@ -33,17 +33,25 @@ add.points <- function(bm, t, W_t, label = names(t)) {
   }
 
   if(length(t) == 1) { # for single value insertion sort for speed
-    i <- max(which(bm$t < t))
-    bm$t <- c(bm$t[1:i],
-              t,
-              bm$t[(i+1):length(bm$t)])
-    bm$W_t <- c(bm$W_t[1:i],
-                W_t,
-                bm$W_t[(i+1):length(bm$W_t)])
-    bm$W_tm <- c(bm$W_tm[1:i],
-                 W_t,
-                 bm$W_tm[(i+1):length(bm$W_tm)])
-
+    if(t < min(bm$t)) { # insertion at the start
+      bm$t <- c(t,
+                bm$t)
+      bm$W_t <- c(W_t,
+                  bm$W_t)
+      bm$W_tm <- c(W_t,
+                   bm$W_tm)
+    } else {
+      i <- max(which(bm$t < t))
+      bm$t <- c(bm$t[1:i],
+                t,
+                bm$t[(i+1):length(bm$t)])
+      bm$W_t <- c(bm$W_t[1:i],
+                  W_t,
+                  bm$W_t[(i+1):length(bm$W_t)])
+      bm$W_tm <- c(bm$W_tm[1:i],
+                   W_t,
+                   bm$W_tm[(i+1):length(bm$W_tm)])
+    }
   } else { # otherwise resort to append and sort
     bm$t <- c(bm$t, t)
     bm$W_t <- c(bm$W_t, W_t)
