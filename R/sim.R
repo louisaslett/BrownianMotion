@@ -54,7 +54,8 @@ sim <- function(bm, t, refine = bm$refine, mult = bm$mult, prefer = bm$prefer, l
   }
 
   # Eliminate times we know
-  t2 <- setdiff(t, bm$t)
+  # t2 <- setdiff(t, bm$t) # <- strips names off the vector!
+  t2 <- t[!(t %in% bm$t)]
   # Add labels to times we're eliminating
   if(length(t2) != length(t)) {
     add.labels_(bm, label[!(t %in% t2)], t[!(t %in% t2)])
