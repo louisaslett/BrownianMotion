@@ -78,6 +78,7 @@ layers <- function(bm, s, t, type = bm$prefer, refine = bm$refine, mult = bm$mul
   }
 
   # Extracting intervals over the s&t defined, and determining existing layer type (if any)
+  bm$layers <- bm$layers[order(bm$layers$t.l), ] # **** TODO: remove this once layer table is kept ordered
   s.i <- which(s == bm$t) # Index of the left hand most time
   t.i <- which(t == bm$t) # Index of the right hand most time
   all.pairs <- matrix(c(bm$t[s.i:(t.i-1)], bm$t[(s.i+1):t.i]), byrow = FALSE, ncol = 2) # All pairs of consecutive times between s + t, which define intervals
