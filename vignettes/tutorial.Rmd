@@ -270,7 +270,7 @@ First passage times are the basis of the "localised layers" we introduce fully i
 -   `delta.l` and `delta.u`: specifying a asymmetric interval which is `delta.l` below and `delta.u` above the current terminal value;
 -   `l` and `u`: specifying the lower and upper boundary values directly.
 
-To better illustrate this we begin by simulating the existing path unconditionally at time $t=15$ by again calling `sim()` before then simulating a first passage to a symmetric interval $\pm 1$ from $W_{10}$. Notice that commands can be chained together using the pipe `%>%` operator:
+To better illustrate this we begin by simulating the existing path unconditionally at time $t=15$ by again calling `sim()` before then simulating a first passage to a symmetric interval $\pm 1$ from $W_{10}$. Notice that commands can be chained together using the pipe `|>` operator:
 
 ```{r}
 bm.adjust |> sim(15) |> first.passage(delta = 1)
@@ -424,27 +424,27 @@ knitr::kable(bm.adjust$bb.local$layers)
 
 ## Intersection
 
-Now suppose we want an Intersection layer over the interval $t=[50,60]$, this can be done by calling the function `intersection.layers()`. The structure of introducing Intersection layers follows that of Bessel layers. Note that $t=50$ is beyond the current terminal point of the path:
+Now suppose we want an Intersection layer over the interval $t=[50,60]$, this can be done by calling the function `layers()` with the argument `type = "intersection"`. The structure of introducing Intersection layers follows that of Bessel layers. Note that $t=280$ is beyond the current terminal point of the path:
 
 ```{r}
-bm %>% intersection.layers(50,60)
-plot(bm)
+bm.adjust |> layers(280,350, type ="intersection")
+plot(bm.adjust)
 ```
 
 Blue is used to illustrate an Intersection layer. Again, solid lines are the *layer* indicating the spatial interval which constrains the path. The interior lines for Intersection layers are always dashed. Dashed lines have the same interpretation as for Bessel layers, but need not coincide with the end-points for an interval. More precisely, we know the path has a maximum which falls between the upper dashed and solid lines, and a minimum which falls between the lower dashed and solid lines.
 
-Intermediary points of the trajectory can be either simulated using the dedicated function `sim.condintersection()`, or (recommended) one can simply again use the `sim()` function. For instance, consider simulating the path at $t=11$:
+The `sim()` function can be used once again to simulate intermediary points of intersection layers.  For instance, consider simulating the path at $t=325$:
 
 ```{r}
-bm %>% sim(55)
-plot(bm)
+bm.adjust |> sim(325)
+plot(bm.adjust)
 ```
 
-Note that on simulating an intermediary point(s) a number of Bessel (purple) or Intersection layers may arise. Intersection layers have the same interpretation as the parent Intersection layer, and Bessel layers are the same as in the earlier section. By default, the package will if possible attempt to "convert" Intersection layers to Bessel layers: we will address this default in the next subsection. Any further simulation will be handled appropriately for the given layer type by using the `sim()` function.
+Note that on simulating an intermediary point(s) a number of Bessel (purple) or Intersection layers may arise. Intersection layers have the same interpretation as the parent Intersection layer, and Bessel layers are the same as in the earlier section. By default, the package will if possible attempt to "convert" Intersection layers to Bessel layers: we will address this default in the next subsection. Any further simulation will be handled appropriately (for the given layer type) by using the `sim()` function.
 
 ### (Yet Another) peek under the hood
 
-As demonstrated in the previous section, by default the package has a preference for using Bessel layers over Intersection layers wherever possible. It is typical that the user will want to only consider one layer type, and the Bessel layer type has been selected as default as this is most likely to be the one practitioners will use. We do however want the flexibility to use multiple layer types or change the default to Intersection.
+As demonstrated in the previous section, by default the package has a preference for using Bessel layers over Intersection layers wherever possible. It is typical that the user will want to only consider one layer type, and the Bessel layer type has been selected as default as this is most likely to be the one practitioners will use. We do however want the flexibility to use multiple layer types, or change the default to Intersection.
 
 To do this we can change the default argument from `prefer = "bessel"` to `prefer = "intersection"` within the functions we have considered. For instance, we may consider a new path (`bm2`) initialised at $W_0=0$:
 
@@ -455,68 +455,68 @@ bm2 <- create.bm(prefer = "intersection")
 
 This has the consequence that any call to `sim()` (with no further argument as the preference is inherited from the creation of the path) will where possible convert Bessel layers to Intersection layers. Note that although it is only occasionally possible to convert Intersection layers to Bessel layers, it is always possible to change Bessel layers to Intersection layers.
 
-For instance, suppose we simulate Bessel layers over $t\in[1,3]$:
+Now suppose we want to simulate Bessel layers over $t\in[1,3]$. This can be achieved by again using the `layers()` function, but noting that as the default type is "intersection" (as inherited on the creation of the path with the argument `prefer = "interesection"`), the additional argument `type = "bessel"` has to be passed to the `layers()` function to simulate a Bessel layer, In particular,
 
 ```{r}
-bm2 %>% bessel.layers(1, 3)
+bm2 |> layers(1, 3, type = "bessel")
 plot(bm2)
 ```
 
 then if we want to simulate the path at $t=2$ and have resultant Bessel layers then this needs to be specified by the user as it differs from the default on the paths creation (`prefer = "intersection"`):
 
 ```{r}
-bm2 %>% sim(2, prefer = "bessel")
+bm2 |> sim(2, prefer = "bessel")
 plot(bm2)
 ```
 
-In particular, further simulation of the path at $t=1.25$ and $t=2.5$ results in both Bessel layers (in the interval $[1,2]$ and $[2,3]$ being converted to Intersection layers:
+If however we don't include the argument `prefer = "bessel"`, then further simulation of the path (say at $t=1.25$ and $t=2.5$) results in both Bessel layers being converted to Intersection layers:
 
 ```{r}
-bm2 %>% sim(c(1.25,2.5))
+bm2 |> sim(c(1.25,2.5))
 plot(bm2)
 ```
 
 Note that we do not need to specify we have a preference for Intersection layers, as this preference is an attribute assigned to the path on its creation using `create.bm()`. In principle this could be changed for the path globally (for instance, `bm2$prefer <- "bessel"`), but this is not necessary as we will outline below.
 
-It is not possible to convert from or to Localised layers from other layer types. However, once the path has been created with the attribute `prefer="intersection"` then conditional simulation of localised layers will result in the appearance of Intersection layers (as opposed to Bessel layers). For instance, note that when simulating a Localised layer over the interval $t\in[4,5]$ that the final interval is an Intersection layer (and not a Bessel layer as before):
+It is not possible to convert from, or to, Localised layers from other layer types. However, once the path has been created with the attribute `prefer="intersection"` then conditional simulation of localised layers will result in the appearance of Intersection layers (as opposed to Bessel layers). For instance, note that when simulating a Localised layer over the interval $t\in[4,5]$ that the final interval is an Intersection layer (and not a Bessel layer as before):
 
 ```{r}
-bm2 %>% localise.layers(4,5)
+bm2 |> layers(4, 5, type = "localised")
 plot(bm2)
 ```
 
 The preference for Intersection layers inherited from the creation of the path can be changed when calling any of the other functions we have introduce. For instance, consider simulating localised layers (of the Bessel sort) in the interval $t\in[6,8]$:
 
 ```{r}
-bm2 %>% localise.layers(6,8,prefer="bessel")
+bm2 |> layers(6, 8, type = "localised", prefer = "bessel")
 plot(bm2)
 ```
 
 and then the simulation of intermediary points in this interval:
 
 ```{r}
-bm2 %>% sim(c(6.5,7,7.5),prefer="bessel")
+bm2 |> sim(c(6.5, 7, 7.5), prefer = "bessel")
 plot(bm2)
 ```
 
-We can change the layer type (if possible) for every interval in the path by simply calling either `bessel.layers()` or `intersection.layers()` together with arguments for the end-points fo the path. For instance, suppose we now wanted Intersection layers:
+We can change the layer type (if possible) for every interval in the path by simply calling `layers()` together with arguments for the end-points for the path. For instance, suppose we now wanted Intersection layers (we choose to add `type = "intersection"` for clarity, but it is strictly not needed since this is the `prefer` default set upon the creation of the path):
 
 ```{r}
-bm2 %>% intersection.layers(0,8)
+bm2 |> layers(0, 8, type = "intersection")
 plot(bm2)
 ```
 
-results in any Bessel layers being converted to Intersection layers. Similarly we could attempt to convert back to Bessel layers (although this may not always be possible for every interval):
+This results in any Bessel layers being converted to Intersection layers. Similarly we could attempt to convert back to Bessel layers (although this may not always be possible for every interval):
 
 ```{r}
-bm2 %>% bessel.layers(0,8)
+bm2 |> bessel.layers(0,8)
 plot(bm2)
 ```
 
 Note that converting the layers from Intersection to Bessel or Bessel to Intersection does not change the preference when calling the `sim()` function. For instance:
 
 ```{r}
-bm2 %>% sim(3.75)
+bm2 |> sim(3.75)
 plot(bm2)
 ```
 
@@ -527,14 +527,14 @@ When simulating layers the package will by default control the size of the layer
 ```{r}
 set.seed(42^2)
 bm3 <- create.bm(refine = FALSE)
-bm3 %>% bessel.layers(0, 10)
+bm3 |> bessel.layers(0, 10)
 plot(bm3)
 ```
 
 Now, if we simulate a number of intermediary points (say a grid of $20$), then note that although we again have Bessel layers that the size of the Bessel layers is "stretched" when contrasted with earlier simulations:
 
 ```{r}
-bm3 %>% sim(seq(0,10,by=0.5))
+bm3 |> sim(seq(0,10,by=0.5))
 plot(bm3)
 ```
 
@@ -542,15 +542,15 @@ Contrast this with a similar path where we haven't set `refine=FALSE`:
 
 ```{r}
 bm4 <- create.bm()
-bm4 %>% bessel.layers(0, 10)
-bm4 %>% sim(seq(0,10,by=0.5))
+bm4 |> bessel.layers(0, 10)
+bm4 |> sim(seq(0,10,by=0.5))
 plot(bm4)
 ```
 
 Whether the package does refinement by default is inherited from the attribute when the path is created. We can either change this at some future point globally (for instance, `bm3$refine <- TRUE`), or alternatively specify within the other functionals in the same manner as the `prefer` attribute discussed earlier. For instance, consider the introduction of mid-points to the existing path in the interval $[0,5]$:
 
 ```{r}
-bm3 %>% sim(seq(0,5,by=0.25),refine = TRUE)
+bm3 |> sim(seq(0,5,by=0.25),refine = TRUE)
 plot(bm3)
 ```
 
@@ -559,22 +559,22 @@ Note that the intervals in the first half of the path have been refined, but the
 Now, in the case where we *are* refining by default (`refine = TRUE`), then we may want to alter the default layer size. This is done using the `mult` attribute, which was described earlier with Localised layers. Recall that by default when refining, the difference between the upper solid and upper dashed/dotted lines *AND* the difference between the lower solid and upper dashed/dotted lines is no greater than $\sqrt{t-s}$. The `mult` attribute multiplies this tolerance by a user-specified amount. By default, `mult = 1` and is specified at the creation of the path. For instance, consider a new path (`bm5`) together with Bessel layers in the interval $[0,10]$, but with the default layer size multiplied by $3$ :
 
 ```{r}
-bm5 <- create.bm(mult=3)
-bm5 %>% bessel.layers(0, 10)
+bm5 <- create.bm(mult = 3)
+bm5 |> bessel.layers(0, 10)
 plot(bm5)
 ```
 
-The simulation of the path at additional points will inherit `mult=3`. For instance, contrast the following with `bm4` above:
+The simulation of the path at additional points will inherit `mult = 3`. For instance, contrast the following with `bm4` above:
 
 ```{r}
-bm5 %>% sim(seq(0,10,by=0.5))
+bm5 |> sim(seq(0, 10, by = 0.5))
 plot(bm5)
 ```
 
-If we introduce an additional points (say mid-points to the existing path in the interval $[0,5]$), but we want increased increased refinement (say of `mult=1`) this can be done by changing the default argument in any of the earlier functions as before. For instance:
+If we introduce an additional points (say mid-points to the existing path in the interval $[0,5]$), but we want increased increased refinement (say of `mult = 1`) this can be done by changing the default argument in any of the earlier functions as before. For instance:
 
 ```{r}
-bm5 %>% sim(seq(0,5,by=0.25),mult = 1)
+bm5 |> sim(seq(0, 5, by = 0.25), mult = 1)
 plot(bm5)
 ```
 
@@ -583,7 +583,7 @@ Note that the intervals in the first half of the path are far more resolved. It 
 Finally, we may wish to refine the existing intervals without the introduction of additional points. This can be achieved using the `refine` function, which can *increase* the resolution on any (or all) intervals. For instance:
 
 ```{r}
-bm5 %>% refine(5,10,mult = 1)
+bm5 |> refine(5, 10, mult = 1)
 plot(bm5)
 ```
 
@@ -591,46 +591,133 @@ The `mult = 1` argument has increased the resolution of existing layers in the i
 
 # Deletion
 
-It is possible that You want to delete both the path observations and layers, or only the layers, of the skeleton over some specified interval. This can be achieved within the package by using the `delete.skeleton` command, and specifying an open interval which you wish to delete from the skeleton. The left and right hand ends of the open interval are specified using the arguments `l` and `r` respectively. For instance, considering `bm5`, we may wish to delete the entire skeleton in the interval $(2.5,5)$:
+It is possible that You want to delete both the path observations and layers, or only the layers, of the skeleton over some specified interval. This can be achieved within the package by using the `delete.skeleton()` function, and specifying an open interval which you wish to delete from the skeleton. The left and right hand ends of the open interval are specified using the arguments `l` and `r` respectively. For instance, considering `bm5`, we may wish to delete the entire skeleton in the interval $(2.5,5)$:
 
 ```{r}
-bm5 %>% delete.skeleton(l = 2.5, r = 5)
+bm5 |> delete.skeleton(l = 2.5, r = 5)
 plot(bm5)
 ```
 
 By default the package will delete both path observations and layers within the open interval (by default the argument `type  = "all"`). However, deletion of only the layers (retaining the path observations) is possible by setting `type = "layer"`. For instance, considering deleting only the skeleton layers in the interval $(5,7.5)$:
 
 ```{r}
-bm5 %>% delete.skeleton(l = 5, r = 7.5, type = "layer")
+bm5 |> delete.skeleton(l = 5, r = 7.5, type = "layer")
 plot(bm5)
 ```
 
 Note that as a safety precaution, `l` and `r` *must* co-incide with time points within the skeleton. As a consequence, if You want to delete an interval which does not co-incide with time points within the skeleton then You must first introduce those points using the `sim` function. For instance, consider deleting the skeleton entirely in the interval $(2.0001,7.9999)$ (noting these times do not currently appear in the skeleton) then this can be achieved as follows:
 
 ```{r}
-bm5 %>% sim(c(2.0001,7.9999)) %>% delete.skeleton(l = 2.0001, r = 7.9999)
+bm5 |> sim(c(2.0001,7.9999)) |> delete.skeleton(l = 2.0001, r = 7.9999)
 plot(bm5)
 ```
 
 In some scenarios we may wish to delete the path entirely to the left or right of some point. This is possible by not specifying the right or left point (respectively). For instance, suppose we wish to delete the skeleton entirely to the right of $t=2$ then:
 
 ```{r}
-bm5 %>% delete.skeleton(l = 2)
+bm5 |> delete.skeleton(l = 2)
 plot(bm5)
 ```
 
 Alternatively, deletion entirely to the left of $t=1$ is possible in a similar manner by not specifying the `l` argument:
 
 ```{r}
-bm5 %>% delete.skeleton(r = 1)
+bm5 |> delete.skeleton(r = 1)
 plot(bm5)
 ```
 
 Note that (as a fail-safe) it is not possible to delete the entire path by leaving *both* arguments un-specified. Intead You should do this by removing the `bm5` object from your workspace using the base R `rm` command. If you attempt to do this You will get an (informative) error:
 
 ```{r,error=TRUE,purl=FALSE}
-bm5 %>% delete.skeleton()
+bm5 |> delete.skeleton()
 ```
+# Segments
+
+For many practical uses of the package, the user may wish to add in path discontinuties. In such settings we will have a number of path "segments" (the term we give for the continuous paths seperated by the path discontinuties). To aid this, in addition to `$t` and `$W_t`, the stored path actually contains `$W_tm`:
+
+-   `$W_tm` contains the value of the path at those times, $W_{t-}$.
+
+Note that when considering the simulation of any intermediary time for an existing path (using the `sim()` function), we treat the process as cadlag: for instace, consider simulation at time $t'$ for an existing path (using the `sim()` function), where $t_1 < t' < t_2$ and $t_1$ and $t_2$ are the closest realisations of the path on either side, then the simulation will be done conditional on $(t_1, W_{t_1})$ and $(t_2, W_{t_2-})$.
+
+To illustrate `$W_tm`, we begin by considering a new Brownian motion object, `bm6`, realised at a collection of times:
+
+```{r}
+bm6 <- create.bm()
+bm6 |> sim(seq(0,10,length=11))
+plot(bm6)
+```
+
+Note that if we look at the associated `$t`, `$W_t` and `$W_tm` for the `bm6` Brownian motion object, that (as suggested by our plot above) we have a single continuous path ($W_t = W_tm$ at all times the path has been realised):
+
+```{r}
+data.frame(t        = bm6$t,
+           W_t      = bm6$W_t,
+           W_tm     = bm6$W_tm,
+           equality = bm6$W_t == bm6$W_tm)
+```
+
+Now, to add in a path discontinuity we can use the `add.segment()` function, which *moves* by some user specified amount the path between two times which appear in the path skeleton , *or* the entire path to the right of a given time, *or* the entire path to the left of a given time. There are a number of ways the user can specifiy the movement. 
+
+For instance, suppose we wish to move the path between times in the interval $t\in[1,3)$ by a constant $1$, then this can be achieved using the optional `delta` argument. We may wish to `label` this and so we can additionally pass in our own labelling argument:
+
+```{r}
+bm6 |> add.segment(l = 1, r = 3, delta = 1, label = "path.move")
+plot(bm6)
+data.frame(t        = bm6$t,
+           W_t      = bm6$W_t,
+           W_tm     = bm6$W_tm,
+           equality = bm6$W_t == bm6$W_tm)
+```
+
+Note that the plot of the path has changed. Vertical, dotted, black lines at $t=1$ and $t=3$ indicate there are path discontinues at those times. As per convention with cadlag processes, at $t=1$ (for instance) there is an open circle indicating the value the path take at the time ($W_{1-}$), and (as per the package convention) a block dot at $t=1$ represented the value the path at $W_1$. This can be verified in our data frame. As discussed above, conditional simulation of the path at intermediary times is appropriately handled by the package. For instance, consider a sequence of times between $t=0$ and $t=4$:
+
+```{r}
+bm6 |> sim(seq(0,4, length = 21))
+plot(bm6)
+```
+
+Further note that the automatic `labels` we introduced for user convenience are now additionally identifying the segment start and end times (`seg.start` and `seg.end` respectively), and those appear in addition to the labels we've passed into the `add.segment()` function:
+
+```{r}
+bm6$labels
+```
+
+Of course, shifting the path by some fixed amount may not be natural in all settings. Suppose instead we want to at $t=10$ "jump" to some given point (for instance, $W_{10}=0$), then this can again be done by "moving" the path fixed at the left by the current end point (i,e. $[10,\infty)$), to $0$, by means of the `W_t` optional argument in `add.segment()`.  To better illustate this, following our "jump" to $0$ we will simulate the path to $t=11$:
+
+```{r}
+bm6 |> add.segment(l = 10, W_t = 0) |> sim(11)
+plot(bm6)
+```
+
+Using only the argument `r` we can shift the path fixed at some right point in the same fashion. For instance, everything in the interval $t\in[0,5)$ being shifted such that $W_0=4$:
+
+
+```{r}
+bm6 |> add.segment(r = 5, W_t = 4) 
+plot(bm6)
+```
+
+A cautionary note is that if we shift the entire path by specifying `l` and `r` to be the start and end of the path respectively, then that will introduce path discontinuities at those time since the specification of `l` and `r` is of a half-open interval (ie $t=0-$ and $t=11$ are both times that appear in the existing path skeleton, and we would be moving the path in the interval $t\in[0,11)$). For instance, 
+
+```{r}
+bm6 |> add.segment(l = bm6$labels$start, r = bm6$labels$end, delta = -1)
+plot(bm6)
+```
+Instead, we should omit both the `l` and `r` arguments (we will first undo the previous path move):
+
+```{r}
+bm6 |> add.segment(l = bm6$labels$start, r = bm6$labels$end, delta = 1) |> add.segment(delta = -1)
+plot(bm6)
+```
+
+Further note that the syntax of the `delete.skeleton()` function matches that of `add.segment()`. It is possible to remove segments, 
+
+
+a bit about delete.skeleton with discontinuties
+
+
+# Path Concatenation
+
 
 # Publication Graphics {#publication-graphics}
 
