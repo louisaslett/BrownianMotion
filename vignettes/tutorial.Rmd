@@ -633,11 +633,11 @@ bm5 |> delete.skeleton()
 ```
 # Segments
 
-For many practical uses of the package, the user may wish to add in path discontinuties. In such settings we will have a number of path "segments" (the term we give for the continuous paths seperated by the path discontinuties). To aid this, in addition to `$t` and `$W_t`, the stored path actually contains `$W_tm`:
+For many practical uses of the package, the user may wish to add in path discontinuities. In such settings we will have a number of path "segments" (the term we give for the continuous paths separated by the path discontinuities). To aid this, in addition to `$t` and `$W_t`, the stored path actually contains `$W_tm`:
 
 -   `$W_tm` contains the value of the path at those times, $W_{t-}$.
 
-Note that when considering the simulation of any intermediary time for an existing path (using the `sim()` function), we treat the process as cadlag: for instace, consider simulation at time $t'$ for an existing path (using the `sim()` function), where $t_1 < t' < t_2$ and $t_1$ and $t_2$ are the closest realisations of the path on either side, then the simulation will be done conditional on $(t_1, W_{t_1})$ and $(t_2, W_{t_2-})$.
+Note that when considering the simulation of any intermediary time for an existing path (using the `sim()` function), we treat the process as cadlag: for instance, consider simulation at time $t'$ for an existing path (using the `sim()` function), where $t_1 < t' < t_2$ and $t_1$ and $t_2$ are the closest realisations of the path on either side, then the simulation will be done conditional on $(t_1, W_{t_1})$ and $(t_2, W_{t_2-})$.
 
 To illustrate `$W_tm`, we begin by considering a new Brownian motion object, `bm6`, realised at a collection of times:
 
@@ -682,7 +682,7 @@ Further note that the automatic `labels` we introduced for user convenience are 
 bm6$labels
 ```
 
-Of course, shifting the path by some fixed amount may not be natural in all settings. Suppose instead we want to at $t = 10$ "jump" to some given point (for instance, $W_{10} = 0$), then this can again be done by "moving" the path fixed at the left by the current end point (i,e. $[10,\infty)$), to $0$, by means of the `W_t` optional argument in `add.segment()`.  To better illustate this, following our "jump" to $0$ we will simulate the path to $t = 11$:
+Of course, shifting the path by some fixed amount may not be natural in all settings. Suppose instead we want to at $t = 10$ "jump" to some given point (for instance, $W_{10} = 0$), then this can again be done by "moving" the path fixed at the left by the current end point (i,e. $[10,\infty)$), to $0$, by means of the `W_t` optional argument in `add.segment()`.  To better illustrate this, following our "jump" to $0$ we will simulate the path to $t = 11$:
 
 ```{r}
 bm6 |> add.segment(l = 10, W_t = 0) |> sim(11)
@@ -721,7 +721,7 @@ data.frame(t        = bm6$t,
            equality = bm6$W_t == bm6$W_tm)
 ```
 
-Note that (as in the above example) the deleton of part of a path may result in a change to the number of segments: this will result in an automatic updating of the associated labelling.  
+Note that (as in the above example) the deletion of part of a path may result in a change to the number of segments: this will result in an updating of the associated automatic labelling (but not the user specified labelling).  
 
 ```{r}
 bm6$labels
@@ -729,12 +729,12 @@ bm6$labels
 
 # Path Concatenation
 
-In some settings it may be useful to concatenate path skeletons. Seperate path skeletons can be considered as segments of a newly created Brownian motion object, and if the paths are align then be considered as single segments. This can be done using the `bm.concat()` function that we introduced earlier: but in addition to passing in a single `bm` together with the required `t0` argument specifying the start of the newly created path, *any* number of paths in the order they are to be concatenated. For instance, consider the concatenation of `bm6` together with `bm5`, and then again `bm6`, into a newly created `bm.concat` object initalised at $t = 10$
+In some settings it may be useful to concatenate path skeletons. Seperate path skeletons can be considered as segments of a newly created Brownian motion object, and if the paths are align then be considered as single segments. This can be done using the `bm.concat()` function that we introduced earlier: but in addition to passing in a single `bm` together with the required `t0` argument specifying the start of the newly created path, *any* number of paths in the order they are to be concatenated. For instance, consider the concatenation of `bm6` together with `bm5`, and then again `bm6`, into a newly created `bm.concat` object initialised at $t = 10$
 
 
 ```{r}
 bm.concat <- concat.bm(bm6, bm5, bm6, t0 = 10)
-plot(bm)
+plot(bm.concat)
 ```
 
 
