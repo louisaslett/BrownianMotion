@@ -40,6 +40,13 @@ add.points <- function(bm, t, W_t, label = names(t)) {
                   bm$W_t)
       bm$W_tm <- c(W_t,
                    bm$W_tm)
+    } else if(t > max(bm$t)) {
+      bm$t <- c(bm$t,
+                t)
+      bm$W_t <- c(bm$W_t,
+                  W_t)
+      bm$W_tm <- c(bm$W_tm,
+                   W_t)
     } else {
       i <- max(which(bm$t < t))
       bm$t <- c(bm$t[1:i],

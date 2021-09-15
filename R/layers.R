@@ -39,9 +39,11 @@ layers <- function(bm, s, t, type = bm$prefer, refine = bm$refine, mult = bm$mul
     stop("layer type must be one of 'bessel' or 'intersection'")
   }
   assert.bmlabel(label, 1:2)
-  if(!is.null(label)) {
-    names(s) <- label[1]
-    names(t) <- label[2]
+  if(!is.null(label) && length(label) == 1) {
+    names(s) <- names(t) <- if(is.na(label)) { NULL } else { label }
+  } else if(!is.null(label)) {
+    names(s) <- if(is.na(label[1])) { NULL } else { label[1] }
+    names(t) <- if(is.na(label[2])) { NULL } else { label[2] }
   }
 
   # Are these endpoints part of the skeleton?
