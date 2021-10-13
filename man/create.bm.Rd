@@ -7,9 +7,9 @@
 create.bm(t = 0, W_t = 0, refine = TRUE, mult = 1, prefer = "bessel")
 }
 \arguments{
-\item{t}{the starting time of the Brownian motion.  Defaults to 0.}
+\item{t}{vector of fixed times of the Brownian motion.  Defaults to 0.}
 
-\item{W_t}{the starting location of the Brownian motion at time t.  Defaults to 0.}
+\item{W_t}{vector of corresponding locations of the Brownian motion at the times t.  Defaults to 0.}
 
 \item{refine}{refine is}
 

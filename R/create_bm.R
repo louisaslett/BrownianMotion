@@ -3,19 +3,19 @@
 #' Creates an R environment to contain the trajectories and layer information of
 #' a Brownian motion.
 #'
-#' @param t the starting time of the Brownian motion.  Defaults to 0.
-#' @param W_t the starting location of the Brownian motion at time t.  Defaults to 0.
+#' @param t vector of fixed times of the Brownian motion.  Defaults to 0.
+#' @param W_t vector of corresponding locations of the Brownian motion at the times t.  Defaults to 0.
 #' @param refine refine is
 #' @param mult mult is
 #' @param prefer prefer is
 #'
 #' @export
 create.bm <- function(t = 0, W_t = 0, refine = TRUE, mult = 1, prefer = "bessel") {
-  if(!is.realscalar(t)) {
-    stop("Argument t must be a scalar")
+  if(!is.numeric(t)) {
+    stop("Argument t must be a numeric vector")
   }
-  if(!is.realscalar(W_t)) {
-    stop("Argument W_t must be a scalar")
+  if(!is.numeric(W_t)) {
+    stop("Argument W_t must be a numeric vector")
   }
   if(length(refine) != 1 || !is.logical(refine)) {
     stop("refine must be a scalar logical value")
@@ -32,15 +32,15 @@ create.bm <- function(t = 0, W_t = 0, refine = TRUE, mult = 1, prefer = "bessel"
 
 create.bm_ <- function(t, W_t, refine, mult, prefer, nested = FALSE) {
   bm <- new.env(parent = emptyenv())
-  bm$t <- t
-  bm$W_t <- W_t
-  bm$W_tm <- W_t
+  bm$W_t <- W_t[order(t)]
+  bm$W_tm <- W_t[order(t)]
+  bm$t <- sort(t)
   bm$labels <- list()
-  bm$labels[["start"]] <- t
-  bm$labels[["end"]] <- t
-  bm$labels[["seg.start"]] <- t
-  bm$labels[["seg.end"]] <- t
-  bm$labels[["forced"]] <- t
+  bm$labels[["start"]] <- min(t)
+  bm$labels[["end"]] <- max(t)
+  bm$labels[["seg.start"]] <- min(t)
+  bm$labels[["seg.end"]] <- max(t)
+  bm$labels[["forced"]] <- sort(t)
   bm$refine <- refine
   bm$mult <- mult
   bm$prefer <- prefer

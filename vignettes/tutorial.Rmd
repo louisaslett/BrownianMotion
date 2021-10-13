@@ -26,14 +26,13 @@ library(BrownianMotion)
 set.seed(212)
 ```
 
-The first task is to create an object which will contain the Brownian motion path and layer information. This is accomplished using the `create.bm()` function. It is possible to call with all default options, but here for demonstration purposes we will force the path to start at $W_{-1
-} = 100$ (the default is $W_0 = 0$).
+The first task is to create an object which will contain the Brownian motion path and layer information. This is accomplished using the `create.bm()` function. It is possible to call with all default options, but here for demonstration purposes we will force the path to start at $W_{-1} = 100$ (the default is $W_0 = 0$).
 
 ```{r}
 bm <- create.bm(-1, 100)
 ```
 
-Of course, we may be interested in "forcing" a path constrained to hit particular point(s) at particular time(s) (i.e., bridge simulation). For instance, we may wish the path to "hit" $W_0 = 101$ and $W_1 = 99$. This can be achieved using the `add.points` which has two required arguments, one for specifying a vector of forced times, and the second a vector of forced points:
+Of course, we may be interested in subsequently "forcing" a path constrained to hit particular point(s) at particular time(s) (i.e., bridge simulation). For instance, we may wish the path to "hit" $W_0 = 101$ and $W_1 = 99$. This can be achieved using the `add.points` which has two required arguments, one for specifying a vector of forced times, and the second a vector of forced points:
 
 ```{r}
 bm |> add.points(c(0, 1), c(101, 99))
@@ -47,6 +46,12 @@ plot(bm)
 
 Here, black dots represent path observations and these are connected by grey lines. Note grey lines do *not* represent the actual path, although see later section on [Publication Graphics](#publication-graphics) for details on plotting an illustrative sample path (TODO).
 
+Alternatively, if at the outset we wish to simulate a Brownian bridge, we can supply a vector of times and position to the `create.bm` function. For instance, replicating the above: 
+
+```{r}
+bm <- create.bm(c(-1, 0, 1), c(100, 101, 99))
+plot(bm)
+```
 
 # Standard simulation
 

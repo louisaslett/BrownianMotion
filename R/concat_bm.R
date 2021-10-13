@@ -45,6 +45,9 @@ concat.bm <- function(..., t0 = NULL) {
     res$bb.local$t <- res$bb.local$t + del.t
     res$bb.local$layers[,2:3] <- res$bb.local$layers[,2:3] + del.t
     res$bb.local$user.layers[,1:2] <- res$bb.local$user.layers[,1:2] + del.t
+    for(lab in names(res$labels)) {
+      res$labels[[lab]] <- res$labels[[lab]] + del.t
+    }
   }
   if(length(bms) > 1) {
     for(i in 2:length(bms)) {
