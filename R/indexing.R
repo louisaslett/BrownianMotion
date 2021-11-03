@@ -13,19 +13,37 @@
     x <- which(bm$t %in% t)
   } else {
     reorder.t <- order(x)
+    t <- bm$t[x]
   }
 
   if(length(x) == 0) {
     if(is.na(var)) {
-      return(list(t = NULL,
-                  W_t = NULL,
-                  W_tm = NULL,
-                  layers = bm$layers[c(),]))
+      if(nrow(bm$layers) == 0) {
+        lyrs.x <- NULL
+      } else {
+        lyrs.x <- (rowSums(sapply(c(bm$t[x], missing), function(t) { bm$layers$t.l <= t & bm$layers$t.u > t })) > 0)
+      }
+      return(list(t = t,
+                  W_t = rep(NA, length(t)),
+                  W_tm = rep(NA, length(t)),
+                  layers = bm$layers[lyrs.x,]))
+    } else if(var == "t") {
+      # Get just t
+      return(unname(t))
+    } else if(var == "W_t") {
+      # Get just W_t
+      return(rep(NA, length(t)))
+    } else if(var == "W_tm") {
+      # Get just W_tm
+      return(rep(NA, length(t)))
     } else if(var == "layers") {
       # Get just layers
-      return(bm$layers[c(),])
-    } else {
-      return(NULL)
+      if(nrow(bm$layers) == 0) {
+        lyrs.x <- NULL
+      } else {
+        lyrs.x <- (rowSums(sapply(c(bm$t[x], missing), function(t) { bm$layers$t.l <= t & bm$layers$t.u > t })) > 0)
+      }
+      return(bm$layers[lyrs.x,])
     }
   }
 
@@ -37,14 +55,18 @@
     stop("index out of bounds")
   }
 
-  if(is.na(var)) {
+  if(is.na(var) || var == "") {
     # Get everything
 
-    lyrs.x <- (rowSums(sapply(c(bm$t[x], missing), function(t) { bm$layers$t.l <= t & bm$layers$t.u > t })) > 0)
+    if(nrow(bm$layers) == 0) {
+      lyrs.x <- NULL
+    } else {
+      lyrs.x <- (rowSums(sapply(c(bm$t[x], missing), function(t) { bm$layers$t.l <= t & bm$layers$t.u > t })) > 0)
+    }
 
-    res <- matrix(c(bm$t[x], missing,
-                    bm$W_t[x], rep(NA, length(missing)),
-                    bm$W_tm[x], rep(NA, length(missing))), ncol = 3)
+    res <- matrix(c(unname(bm$t[x]), missing,
+                    unname(bm$W_t[x]), rep(NA, length(missing)),
+                    unname(bm$W_tm[x]), rep(NA, length(missing))), ncol = 3)
     res <- res[order(res[,1]),,drop=FALSE][reorder.t,,drop=FALSE]
 
     return(list(t = res[,1],
@@ -53,16 +75,26 @@
                 layers = bm$layers[lyrs.x,]))
   } else if(var == "t") {
     # Get just t
-    return(bm$t[x])
+    return(unname(t))
   } else if(var == "W_t") {
     # Get just W_t
-    return(bm$W_t[x])
+    res <- matrix(c(unname(bm$t[x]), missing,
+                    unname(bm$W_t[x]), rep(NA, length(missing))), ncol = 2)
+    res <- res[order(res[,1]),,drop=FALSE][reorder.t,,drop=FALSE]
+    return(unname(res[,2]))
   } else if(var == "W_tm") {
     # Get just W_tm
-    return(bm$W_tm[x])
+    res <- matrix(c(unname(bm$t[x]), missing,
+                    unname(bm$W_tm[x]), rep(NA, length(missing))), ncol = 2)
+    res <- res[order(res[,1]),,drop=FALSE][reorder.t,,drop=FALSE]
+    return(unname(res[,2]))
   } else if(var == "layers") {
     # Get just layers
-    lyrs.x <- (rowSums(sapply(bm$t[x], function(t) { bm$layers$t.l <= t & bm$layers$t.u > t })) > 0)
+    if(nrow(bm$layers) == 0) {
+      lyrs.x <- NULL
+    } else {
+      lyrs.x <- (rowSums(sapply(c(bm$t[x], missing), function(t) { bm$layers$t.l <= t & bm$layers$t.u > t })) > 0)
+    }
     return(bm$layers[lyrs.x,])
   }
 }

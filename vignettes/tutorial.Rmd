@@ -104,12 +104,22 @@ data.frame(t   = bm$t,
            W_t = bm$W_t)
 ```
 
-In this simple setting $t$ and $W_t$ comprise the *"path skeleton"*: they are a finite dimensional representation of the Brownian motion path, which can be used to reconstruct the path at any other time point of interest.
+In this simple setting $t$ and $W_t$ comprise the *"path skeleton"*: they are a finite dimensional representation of the Brownian motion path, which can be used to reconstruct the path at any other time point of interest. The indices of the vectors `t` and `W_t` match one another, and so (for instance) the value taken by the path at time $t = 1$ is $W_t = 99$. To avoid the user having to do complicated matching of the indices in order to extract the value of the path at a given time, one can instead index the `bm` object as follows, specifying in the `t` argument what time (or vector of times) they require, together with the part of the object they require (here, `"W_t"`, which must be quoted): 
+
+```{r}
+bm[t = 1, "W_t"]
+```
+Note that by default calls to the `bm` environment without specifying the `t` argument will instead assume the user wants the associated index. For instance:
+
+
+```{r}
+bm[1, "W_t"]
+```
 
 As an illustration of using this "under the hood" information, we can simulate an Exponential($\lambda = W_{4.5} / 10$) time past the end of the path, without having had to track in our code that $t=4.5$ is the end of the path what this current end time is:
 
 ```{r}
-bm |> sim(max(bm$t) + rexp(1, bm$W_t[which.max(bm$t)]/10))
+bm |> sim(max(bm$t) + rexp(1, bm[t = 4.5, "W_t"]/10))
 plot(bm)
 ```
 
@@ -140,15 +150,18 @@ bm |> sim(bm$labels$forced, label = c("special.time.1")) |> sim(bm$labels$user, 
 bm$labels
 ```
 
+Of course, we may also wish to know what value(s) the path took at time(s) given by a specific label. This can be achievied by simply passing a label (for instance, `special.time.1`) as the index in a call to `bm`:
+
+```{r}
+bm["special.time.1", "W_t"]
+```
+
 Note the flexibility labelling offers, as we can use labels themselves as arguments in function calls. For instance, returning to our earlier example which motivated our labelling, we could simulate the path at an Exponential($\lambda = W_{4.5} / 10$) time past the end of the path, without having had to track in our code that $t=7$:
 
 ```{r}
-bm |> sim(bm$labels$end + rexp(1, bm$W_t[which.max(bm$t)]/10))
+bm |> sim(bm["end", "t"] + rexp(1, bm["end", "W_t"]/10))
 plot(bm)
 ```
-
-**TODO**: Add in details of `get.bm()` functionality, which allows easy user interaction with the `bm` object.
-**TODO** Modify above example using `get.bm()` function to avoid the clumsy index lookup
 
 # Manipulating and existing skeleton
 
@@ -161,10 +174,10 @@ bm |> sim(-2)
 As indicated in the error message, one apporach to handling this is to manually add in a point. For instance, if we were unconditionally simulating the path to the left of the initialisation time:
 
 ```{r}
-bm |> add.points(-2, rnorm(1, bm$W_t[which.min(bm$t)], sqrt(abs(-2 - bm$labels$start))))
+bm |> add.points(-2, rnorm(1, bm["start", "W_t"], sqrt(abs(-2 - bm["start", "t"]))))
 plot(bm)
 ```
-Of course, we may wish to now artifically "adjust" the path by shifting the path to the right so it is initialised at $t=0$. This is easily achieved by creating a new path (say, `bm.adjust`) using the `concat.bm()` function and specifying the time the adjusted path should be initialised (although for full details of the `concat.bm()` function see [Path Concatenation](#concat))
+Of course, we may wish to now artificially "adjust" the path by shifting the path to the right so it is initialised at $t=0$. This is easily achieved by creating a new path (say, `bm.adjust`) using the `concat.bm()` function and specifying the time the adjusted path should be initialised (although for full details of the `concat.bm()` function see [Path Concatenation](#concat))
 
 ```{r}
 bm.adjust <- concat.bm(bm, t0 = 0)
@@ -422,10 +435,12 @@ bm.adjust$bb.local$layers
 knitr::kable(bm.adjust$bb.local$layers)
 ```
 
+Again, we might naturally be more interested in the layers associated with a specific time. A given time may not lie within the current skeleton of the path, and if it does (for reasons discussed later), then of the two possible layers (to the left and right of that point) we are naturally more interested in the right hand layer. Note that there may be *no layer* associated with a given time (in which case it is supressed). For instance, suppose we were interested with path layers at the times $t = \{4.5, 4.6 \dots, 5.5\}$:
 
-################################################################################
-            CONTINUE FROM HERE ON FRIDAY
-################################################################################
+```{r}
+bm.adjust[t = seq(4.5, 5.5, by = 0.1), "layers"]
+```
+
 
 ## Intersection
 
@@ -705,7 +720,7 @@ plot(bm6)
 A cautionary note is that if we shift the entire path by specifying `l` and `r` to be the start and end of the path respectively, then that will introduce path discontinuities at those time since the specification of `l` and `r` is of a half-open interval (ie $t = 0-$ and $t = 11$ are both times that appear in the existing path skeleton, and we would be moving the path in the interval $t\in[0,11)$). For instance, 
 
 ```{r}
-bm6 |> add.segment(l = bm6$labels$start, r = bm6$labels$end, delta = -1)
+bm6 |> add.segment(l = bm6["start", "t"], r = bm6["end", "t"], delta = -1)
 plot(bm6)
 ```
 Instead, we should omit both the `l` and `r` arguments (we will first undo the previous path move):
@@ -730,6 +745,12 @@ Note that (as in the above example) the deletion of part of a path may result in
 
 ```{r}
 bm6$labels
+```
+
+We can access the vector associated with `W_tm` by calling the environment in the same way as previously. Alternatively, by not specifying any argument then calling the enviroment returns `t`, `W_t`, `W_tm` and `layers`:
+
+```{r}
+bm6[t = 1]
 ```
 
 # Path Concatenation
