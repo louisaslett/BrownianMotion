@@ -5,11 +5,11 @@ bb.localise_ <- function(bm, s, t, refine, mult, prefer) {
   y <- bm$W_tm[match(t, bm$t)]
 
   # Force points in auxiliary path
-  new.bm <- create.bm(s,
-                      0,
-                      refine,
-                      mult,
-                      prefer)
+  new.bm <- create.bm_(s,
+                       0,
+                       refine,
+                       mult,
+                       prefer)
 
 
   # Sim aux first passages until exceed t-s, then infill @ t-s

@@ -32,6 +32,9 @@
 #'
 #' @export
 first.passage <- function(bm, l = NULL, u = NULL, delta.l = NULL, delta.u = NULL, delta = NULL, label = NULL) {
+  if("BrownianMotionNd" %in% class(bm)) {
+    stop("only 1-dimensional BrownianMotion objects support first passage times.")
+  }
   if(!("BrownianMotion" %in% class(bm))) {
     stop("bm argument must be a BrownianMotion object.")
   }

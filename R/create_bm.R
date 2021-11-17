@@ -27,6 +27,9 @@ create.bm <- function(t = 0, W_t = 0, dim = 1, cov = 1, refine = TRUE, mult = 1,
     if(!isTRUE(e <- checkmate::check_vector(W_t, strict = TRUE, any.missing = FALSE, len = length(t), null.ok = FALSE))) {
       stop("Error with argument W_t: ", e)
     }
+    if(!is.matrix(W_t)) {
+      W_t <- matrix(W_t, ncol = 1)
+    }
   } else if(dim > 1L) {
     if(length(t) == 1) { # allow W_t to be scalar or vector
       if(is.matrix(W_t) && nrow(W_t) == 1) {
@@ -109,16 +112,20 @@ create.bm <- function(t = 0, W_t = 0, dim = 1, cov = 1, refine = TRUE, mult = 1,
   }
 
 
-  bm <- new.env(parent = emptyenv())
-  bm$chol <- chol(cov)
-  bm$dim <- dim
-  bm$Z.bm <- list()
-  for(d in 1:dim) {
-    bm$Z.bm[[d]] <- create.bm_(t, W_t[,d], refine[d], mult[d], prefer[d])
+  if(dim > 1L) {
+    bm <- new.env(parent = emptyenv())
+    bm$chol <- chol(cov)
+    bm$dim <- dim
+    bm$Z.bm <- list()
+    for(d in 1:dim) {
+      bm$Z.bm[[d]] <- create.bm_(t, W_t[,d], refine[d], mult[d], prefer[d])
+    }
+    # Add storage for outer path and layers containing the post simulation
+    # transformed values (decided against compute on demand for this)
+    class(bm) <- "BrownianMotionNd"
+  } else {
+    bm <- create.bm_(t, W_t[,1], refine[1], mult[1], prefer[1])
   }
-  # Add storage for outer path and layers containing the post simulation
-  # transformed values (decided against compute on demand for this)
-  class(bm) <- "BrownianMotionNd"
 
   bm
 }

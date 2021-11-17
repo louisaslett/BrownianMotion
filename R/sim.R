@@ -24,6 +24,24 @@
 #'
 #' @export
 sim <- function(bm, t, refine = bm$refine, mult = bm$mult, prefer = bm$prefer, label = names(t)) {
+  UseMethod("sim")
+}
+
+#' @export
+sim.BrownianMotionNd <- function(bm, ...) {
+  if(!("BrownianMotionNd" %in% class(bm))) {
+    stop("bm argument must be a BrownianMotionNd object.")
+  }
+
+  for(d in 1:bm$dim) {
+    sim(bm$Z.bm[[d]], ...)
+  }
+
+  invisible(bm)
+}
+
+#' @export
+sim.BrownianMotion <- function(bm, t, refine = bm$refine, mult = bm$mult, prefer = bm$prefer, label = names(t)) {
   if(!("BrownianMotion" %in% class(bm))) {
     stop("bm argument must be a BrownianMotion object.")
   }

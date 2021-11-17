@@ -7,7 +7,60 @@ concat.bm <- function(..., t0 = NULL) {
   bms <- list(...)
 
   if(length(bms) == 1 && is.list(bms[[1]]) && length(bms[[1]]) > 1) {
-    return(do.call(concat.bm, bms[[1]]))
+    return(do.call(concat.bm, c(bms[[1]], t0 = t0)))
+  } else {
+    UseMethod("concat.bm")
+  }
+}
+
+#' @export
+concat.bm.BrownianMotionNd <- function(..., t0 = NULL) {
+  bms <- list(...)
+
+  if(length(bms) == 1 && is.list(bms[[1]]) && length(bms[[1]]) > 1) {
+    return(do.call(concat.bm, c(bms[[1]], t0 = t0)))
+  }
+
+  if(length(bms) > 1) {
+    if(!all(sapply(bms, function(bm) { "BrownianMotionNd" %in% class(bm) }))) {
+      stop("All arguments must be BrownianMotionNd objects")
+    }
+  } else {
+    if(!("BrownianMotionNd" %in% class(bms[[1]]))) {
+      stop("Argument must be BrownianMotionNd objects")
+    }
+  }
+
+  res <- new.env(parent = emptyenv())
+  class(res) <- "BrownianMotionNd"
+  res$dim <- bms[[1]]$dim
+  res$chol <- bms[[1]]$chol
+
+  if(!all(sapply(bms, function(bm) { bm$dim == res$dim }))) {
+    stop("All arguments must be the same dimension")
+  }
+  if(!all(sapply(bms, function(bm) { identical(bm$chol, res$chol) }))) {
+    stop("All arguments must have the same covariance")
+  }
+
+  res$Z.bm <- list()
+  for(d in 1:res$dim) {
+    if(length(bms) == 1) {
+      res$Z.bm[[d]] <- concat.bm(bms[[1]]$Z.bm[[d]], t0 = t0)
+    } else {
+      res$Z.bm[[d]] <- concat.bm(lapply(bms, function(bm) { bm$Z.bm[[d]] }), t0 = t0)
+    }
+  }
+
+  res
+}
+
+#' @export
+concat.bm.BrownianMotion <- function(..., t0 = NULL) {
+  bms <- list(...)
+
+  if(length(bms) == 1 && is.list(bms[[1]]) && length(bms[[1]]) > 1) {
+    return(do.call(concat.bm, c(bms[[1]], t0 = t0)))
   }
 
   if(length(bms) > 1) {

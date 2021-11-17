@@ -20,6 +20,35 @@
 #'
 #' @export
 layers <- function(bm, s, t, type = bm$prefer, refine = bm$refine, mult = bm$mult, prefer = bm$prefer, label = c(names(s), names(t))) {
+  UseMethod("layers")
+}
+
+#' @export
+layers.BrownianMotionNd <- function(bm, ...) {
+  if(!("BrownianMotionNd" %in% class(bm))) {
+    stop("bm argument must be a BrownianMotionNd object.")
+  }
+
+  old.t <- bm$Z.bm[[1]]$t # Extract a vector of the current times simulated in the BrownianMotionNd object
+  new.t <- numeric(0) # Storage vector for new times to be simulated to nsure all dimensions have the same temporal resolution
+
+  for(d in 1:bm$dim) { # Simulate layers for each dimension
+    layers(bm$Z.bm[[d]], ...)
+  }
+
+  for(d in 1:bm$dim) { # Extract the newly simulated times
+    new.t <- unique(c(new.t, setdiff(bm$Z.bm[[d]]$t, old.t)))
+  }
+
+  for(d in 1:bm$dim) { # Cross-populate times on each dimension
+    sim(bm$Z.bm[[d]], t = new.t)
+  }
+
+  invisible(bm)
+}
+
+#' @export
+layers.BrownianMotion <- function(bm, s, t, type = bm$prefer, refine = bm$refine, mult = bm$mult, prefer = bm$prefer, label = c(names(s), names(t))) {
   if(!("BrownianMotion" %in% class(bm))) {
     stop("bm argument must be a BrownianMotion object.")
   }

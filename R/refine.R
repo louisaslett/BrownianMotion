@@ -4,6 +4,24 @@
 #'
 #' @export
 refine <- function(bm, s, t, mult = bm$mult) {
+  UseMethod("refine")
+}
+
+#' @export
+refine.BrownianMotionNd <- function(bm, ...) {
+  if(!("BrownianMotionNd" %in% class(bm))) {
+    stop("bm argument must be a BrownianMotionNd object.")
+  }
+
+  for(d in 1:bm$dim) {
+    refine(bm$Z.bm[[d]], ...)
+  }
+
+  invisible(bm)
+}
+
+#' @export
+refine.BrownianMotion <- function(bm, s, t, mult = bm$mult) {
   # TODO: tidy up and add error handling, this is a quick prototype
 
   lyrs <- which(bm$layers$t.u > s & bm$layers$t.l<t)

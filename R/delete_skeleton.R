@@ -10,6 +10,24 @@
 #'
 #' @export
 delete.skeleton <- function(bm, l = -Inf, r = Inf, type = "all") {
+  UseMethod("delete.skeleton")
+}
+
+#' @export
+delete.skeleton.BrownianMotionNd <- function(bm, ...) {
+  if(!("BrownianMotionNd" %in% class(bm))) {
+    stop("bm argument must be a BrownianMotionNd object.")
+  }
+
+  for(d in 1:bm$dim) {
+    delete.skeleton(bm$Z.bm[[d]], ...)
+  }
+
+  invisible(bm)
+}
+
+#' @export
+delete.skeleton.BrownianMotion <- function(bm, l = -Inf, r = Inf, type = "all") {
   if(!("BrownianMotion" %in% class(bm))) {
     stop("bm argument must be a BrownianMotion object.")
   }

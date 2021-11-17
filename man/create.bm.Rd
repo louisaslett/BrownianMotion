@@ -4,7 +4,15 @@
 \alias{create.bm}
 \title{Create a Brownian motion object}
 \usage{
-create.bm(t = 0, W_t = 0, refine = TRUE, mult = 1, prefer = "bessel")
+create.bm(
+  t = 0,
+  W_t = 0,
+  dim = 1,
+  cov = 1,
+  refine = TRUE,
+  mult = 1,
+  prefer = "bessel"
+)
 }
 \arguments{
 \item{t}{vector of fixed times of the Brownian motion.  Defaults to 0.}

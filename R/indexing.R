@@ -61,7 +61,7 @@
     if(nrow(bm$layers) == 0) {
       lyrs.x <- NULL
     } else {
-      lyrs.x <- (rowSums(sapply(c(bm$t[x], missing), function(t) { bm$layers$t.l <= t & bm$layers$t.u > t })) > 0)
+      lyrs.x <- (rowSums(as.matrix(sapply(c(bm$t[x], missing), function(t) { bm$layers$t.l <= t & bm$layers$t.u > t }))) > 0)
     }
 
     res <- matrix(c(unname(bm$t[x]), missing,
