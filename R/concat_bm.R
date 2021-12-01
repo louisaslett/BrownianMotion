@@ -1,6 +1,8 @@
-#' Concatenate together brownian motion objects
+#' Copy / Concatenate Brownian motion objects
 #'
-#'
+#' @param bm a Brownian motion object from which simulation should continue.
+#'   Note the object is updated in place
+#' @param t0 scalar representing the time the new Brownian motion should be initialised.  Defaults to value of initial time of the first Brownian motion object to be concatenated.
 #'
 #' @export
 concat.bm <- function(..., t0 = NULL) {

@@ -9,9 +9,13 @@
 #'   Note the object is updated in place
 #' @param s left hand time point
 #' @param t right hand time point
+#' @param type type specifies whether to carry out "bessel" or "intersection" or "localised" simulation. If of length 1, then this specifies the type for every dimension. If of length dim, then this specifies for each dimension the type. By default this matches the setting for preference specified on the creation of the Brownian motion object.
+#' @param refine indicates whether refinement should be by default carried out. If of length 1, then this specifies refinement for every dimension. If of length dim, then this specifies refinement for each dimension (in order). By default uses the setting on creation of the Brownian motion object.
 #' @param mult the default layer size is \code{sqrt(t-s)}.  You can scale
 #'   this by specifying the \code{mult} argument which will result in layer
-#'   sizes of \code{mult*sqrt(t-s)}.
+#'   sizes of \code{mult*sqrt(t-s)}. By default uses the setting on creation of the Brownian motion object.
+#' @param prefer indicates whether there is a preference for "bessel" or "intersection" layers where possible. If of length 1, then this specifies the preference for every dimension. If of length dim, then this specifies preference for each dimension (in order). By default uses the setting on creation of the Brownian motion object.
+#' @param label vector of length 1 or the length of t indicating the introduction of user specified labels (if any). By default, uses any names in the vector of times.
 #'
 #' @return
 #' The Brownian motion object which was passed in argument \code{bm} is

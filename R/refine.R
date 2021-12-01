@@ -1,6 +1,12 @@
 #' Refine an intersection layer
 #'
-#'
+#' @param bm a Brownian motion object from which simulation should continue.
+#'   Note the object is updated in place
+#' @param s left hand time point
+#' @param t right hand time point
+#' @param mult the default layer size is \code{sqrt(t-s)}.  You can scale
+#'   this by specifying the \code{mult} argument which will result in layer
+#'   sizes of \code{mult*sqrt(t-s)}. By default uses the setting on creation of the Brownian motion object.
 #'
 #' @export
 refine <- function(bm, s, t, mult = bm$mult) {

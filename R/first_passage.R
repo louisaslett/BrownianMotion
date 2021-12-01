@@ -18,7 +18,7 @@
 #' red lines nested within the solid red line constraint imposed by the overall first
 #' passage simulation.
 #'
-#' @param bm a Brownian motion object from which simulation should continue.
+#' @param bm a Brownian motion object (of dimension 1) from which simulation should continue.
 #'   Note the object is updated in place.
 #' @param l scalar giving lower bound for first passage.
 #' @param u scalar giving upper bound for first passage.

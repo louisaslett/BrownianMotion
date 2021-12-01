@@ -3,11 +3,13 @@
 #' Creates an R environment to contain the trajectories and layer information of
 #' a Brownian motion.
 #'
-#' @param t vector of fixed times of the Brownian motion.  Defaults to 0.
-#' @param W_t vector of corresponding locations of the Brownian motion at the times t.  Defaults to 0.
-#' @param refine refine is
-#' @param mult mult is
-#' @param prefer prefer is
+#' @param t vector of fixed times of the Brownian motion.  Defaults to value of 0.
+#' @param W_t matrix of size the length of t (rows) x dimension (column). If dim = 1, a vector of the length of t is acceptable. If dim > 1 and the length of t = 1, then a vector of length 1 is acceptable (corresponding to the same value at every co-ordinate), or length d is acceptable (corresponding to the d components). Defaults to 0 for every component.
+#' @param dim scalar corresponding to the dimension of the Brownian motion.
+#' @param cov covariance matrix of the Brownian motion. If scalar corresponds to a multiple of the identity matrix. If matrix should be of size dim x dim.
+#' @param refine indicates whether refinement should be by default carried out. If of length 1, then this specifies refinement for every dimension. If of length dim, then this specifies refinement for each dimension (in order).
+#' @param mult indicates in the case of refinement the threshold layer size before refinement is carried out. If of length 1, then the default layer size is \code{sqrt(t-s)}, and you can scale this by specifying the \code{mult} argument which will result in layer sizes of \code{mult*sqrt(t-s)}, and this is common for every dimension. If of length dim, then this specifies the \code{mult} for each dimension (in order).
+#' @param prefer indicates whether there is a preference for "bessel" or "intersection" layers where possible. If of length 1, then this specifies the preference for every dimension. If of length dim, then this specifies preference for each dimension (in order).
 #'
 #' @export
 create.bm <- function(t = 0, W_t = 0, dim = 1, cov = 1, refine = TRUE, mult = 1, prefer = "bessel") {

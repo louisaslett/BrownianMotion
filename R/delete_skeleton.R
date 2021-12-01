@@ -1,8 +1,10 @@
 #' Eliminate parts of path, layer or both from the skeleton
 #'
-#' @param l left end of open interval to delete.  By default, `-Inf` which
+#' @param bm a Brownian motion object from which simulation should continue.
+#'   Note the object is updated in place
+#' @param l closed left end of interval to delete.  By default, `-Inf` which
 #'     results in left truncation of the path up to `r`
-#' @param r right end of open interval to delete.  By default, `Inf` which
+#' @param r open right end of interval to delete.  By default, `Inf` which
 #'     results in right truncation of the path from `l`
 #' @param type one of `"all"` or `"layer"` to specify whether to delete both path
 #'     observations and layers, or just layers in the open interval `(l,r)`
