@@ -2,10 +2,16 @@
 % Please edit documentation in R/concat_bm.R
 \name{concat.bm}
 \alias{concat.bm}
-\title{Concatenate together brownian motion objects}
+\title{Copy / Concatenate Brownian motion objects}
 \usage{
 concat.bm(..., t0 = NULL)
 }
+\arguments{
+\item{t0}{scalar representing the time the new Brownian motion should be initialised.  Defaults to value of initial time of the first Brownian motion object to be concatenated.}
+
+\item{bm}{a Brownian motion object from which simulation should continue.
+Note the object is updated in place}
+}
 \description{
-Concatenate together brownian motion objects
+Copy / Concatenate Brownian motion objects
 }

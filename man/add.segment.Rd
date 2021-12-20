@@ -2,13 +2,26 @@
 % Please edit documentation in R/add_segment.R
 \name{add.segment}
 \alias{add.segment}
-\title{Create/move a segment}
+\title{Create / move a segment}
 \usage{
 add.segment(bm, l = -Inf, r = Inf, W_t = NULL, delta = NULL, label = NULL)
 }
 \arguments{
-\item{l}{}
+\item{bm}{a Brownian motion object from which simulation should continue.
+Note the object is updated in place}
+
+\item{l}{closed left end of interval to add a segment.  By default, `-Inf` which
+results in the introduction of a segment by shifting the entire path up to `r`}
+
+\item{r}{open right end of interval to add a segment.  By default, `Inf` which
+results in the introduction of a segment by shifting the entire path from `l`}
+
+\item{W_t}{vector of length the dimension of the Brownian motion specifying the coordinate of the Brownian motion at the time l (specified by the user). A vector of length 1 is acceptable (corresponding to the same value at every co-ordinate). Defaults to NULL, meaning this argument is ignored in favor of delta.}
+
+\item{delta}{vector of length the dimension of the Brownian motion specifying the shift of the Brownian motion at the time l (specified by the user). A vector of length 1 is acceptable (corresponding to the same shift for every co-ordinate). Defaults to NULL, meaning this argument is ignored in favor of W_t.}
+
+\item{label}{vector of length 1 or the length of t indicating the introduction of user specified labels (if any). By default, uses any names in the vector of times.}
 }
 \description{
-Create/move a segment
+Create / move a segment
 }

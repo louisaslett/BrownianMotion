@@ -15,15 +15,19 @@ create.bm(
 )
 }
 \arguments{
-\item{t}{vector of fixed times of the Brownian motion.  Defaults to 0.}
+\item{t}{vector of fixed times of the Brownian motion.  Defaults to value of 0.}
 
-\item{W_t}{vector of corresponding locations of the Brownian motion at the times t.  Defaults to 0.}
+\item{W_t}{matrix of size the length of t (rows) x dimension (column). If dim = 1, a vector of the length of t is acceptable. If dim > 1 and the length of t = 1, then a vector of length 1 is acceptable (corresponding to the same value at every co-ordinate), or length d is acceptable (corresponding to the d components). Defaults to 0 for every component.}
 
-\item{refine}{refine is}
+\item{dim}{scalar corresponding to the dimension of the Brownian motion.}
 
-\item{mult}{mult is}
+\item{cov}{covariance matrix of the Brownian motion. If scalar corresponds to a multiple of the identity matrix. If matrix should be of size dim x dim.}
 
-\item{prefer}{prefer is}
+\item{refine}{indicates whether refinement should be by default carried out. If of length 1, then this specifies refinement for every dimension. If of length dim, then this specifies refinement for each dimension (in order).}
+
+\item{mult}{indicates in the case of refinement the threshold layer size before refinement is carried out. If of length 1, then the default layer size is \code{sqrt(t-s)}, and you can scale this by specifying the \code{mult} argument which will result in layer sizes of \code{mult*sqrt(t-s)}, and this is common for every dimension. If of length dim, then this specifies the \code{mult} for each dimension (in order).}
+
+\item{prefer}{indicates whether there is a preference for "bessel" or "intersection" layers where possible. If of length 1, then this specifies the preference for every dimension. If of length dim, then this specifies preference for each dimension (in order).}
 }
 \description{
 Creates an R environment to contain the trajectories and layer information of

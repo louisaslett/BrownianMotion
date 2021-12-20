@@ -15,7 +15,7 @@ first.passage(
 )
 }
 \arguments{
-\item{bm}{a Brownian motion object from which simulation should continue.
+\item{bm}{a Brownian motion object (of dimension 1) from which simulation should continue.
 Note the object is updated in place.}
 
 \item{l}{scalar giving lower bound for first passage.}

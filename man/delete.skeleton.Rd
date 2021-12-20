@@ -7,10 +7,13 @@
 delete.skeleton(bm, l = -Inf, r = Inf, type = "all")
 }
 \arguments{
-\item{l}{left end of open interval to delete.  By default, `-Inf` which
+\item{bm}{a Brownian motion object from which simulation should continue.
+Note the object is updated in place}
+
+\item{l}{closed left end of interval to delete.  By default, `-Inf` which
 results in left truncation of the path up to `r`}
 
-\item{r}{right end of open interval to delete.  By default, `Inf` which
+\item{r}{open right end of interval to delete.  By default, `Inf` which
 results in right truncation of the path from `l`}
 
 \item{type}{one of `"all"` or `"layer"` to specify whether to delete both path

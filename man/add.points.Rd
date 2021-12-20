@@ -7,10 +7,15 @@
 add.points(bm, t, W_t, label = names(t))
 }
 \arguments{
-\item{t}{time}
+\item{bm}{a Brownian motion object from which simulation should continue.
+Note the object is updated in place}
 
-\item{W_t}{value}
+\item{t}{vector of fixed times of the Brownian motion.  Defaults to value of 0.}
+
+\item{W_t}{matrix of size the length of t (rows) x dimension (column). If dim = 1, a vector of the length of t is acceptable. If dim > 1 and the length of t = 1, then a vector of length 1 is acceptable (corresponding to the same value at every co-ordinate), or length d is acceptable (corresponding to the d components). Defaults to 0 for every component.}
+
+\item{label}{vector of length 1 or the length of t indicating the introduction of user specified labels (if any). By default, uses any names in the vector of times.}
 }
 \description{
-Only valid outside layers. Cannot be existing time (should delete then add)
+Note: Only valid for time points that don't lie within existing layers. Cannot be an existing time within the skeleton (in this case you should delete then add the point).
 }
