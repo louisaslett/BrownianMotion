@@ -114,16 +114,21 @@ create.bm <- function(t = 0, W_t = 0, dim = 1, cov = 1, refine = TRUE, mult = 1,
   }
 
 
-  if(dim > 1L) {
+  if(!identical(cov, matrix(1, 1, 1))) {
     bm <- new.env(parent = emptyenv())
-    bm$chol <- chol(cov)
+    bm$cov <- cov
+    bm$chol <- chol(bm$cov)
+    bm$chol.inv <- solve(chol(bm$cov))
     bm$dim <- dim
     bm$Z.bm <- list()
+    Z_t <- tcrossprod(W_t, bm$chol.inv)
     for(d in 1:dim) {
-      bm$Z.bm[[d]] <- create.bm_(t, W_t[,d], refine[d], mult[d], prefer[d])
+      bm$Z.bm[[d]] <- create.bm_(t, Z_t[,d], refine[d], mult[d], prefer[d])
     }
-    # Add storage for outer path and layers containing the post simulation
+    # OLD IDEA: Add storage for outer path and layers containing the post simulation
     # transformed values (decided against compute on demand for this)
+    # NEW IDEA: compute on demand first and maybe add caching so don't recompute
+    # when requested again
     class(bm) <- "BrownianMotionNd"
   } else {
     bm <- create.bm_(t, W_t[,1], refine[1], mult[1], prefer[1])
