@@ -1,26 +1,26 @@
-#' Construct Bessel layers
-#'
-#' Performs unbiased simulation of the smallest Bessel layers which contain the
-#' Brownian motion between two known sample points by retrospective Bernoulli
-#' sampling and inversion sampling.
-#'
-#' @param bm a Brownian motion object from which simulation should continue.
-#'   Note the object is updated in place
-#' @param s left hand time point
-#' @param t right hand time point
-#' @param mult the default layer size is \code{sqrt(t-s)}.  You can scale
-#'   this by specifying the \code{mult} argument which will result in layer
-#'   sizes of \code{mult*sqrt(t-s)}.
-#'
-#' @return
-#' The Brownian motion object which was passed in argument \code{bm} is
-#' updated in place and returned, enabling chaining of commands with
-#' dplyr (and other) style pipes.
-#'
-#' @export
-bessel.layers <- function(bm, s, t, refine = bm$refine, mult = bm$mult, prefer = bm$prefer, label = c(names(s), names(t))) {
-  layers(bm, s, t, "bessel", refine, mult, prefer, label)
-}
+# #' Construct Bessel layers
+# #'
+# #' Performs unbiased simulation of the smallest Bessel layers which contain the
+# #' Brownian motion between two known sample points by retrospective Bernoulli
+# #' sampling and inversion sampling.
+# #'
+# #' @param bm a Brownian motion object from which simulation should continue.
+# #'   Note the object is updated in place
+# #' @param s left hand time point
+# #' @param t right hand time point
+# #' @param mult the default layer size is \code{sqrt(t-s)}.  You can scale
+# #'   this by specifying the \code{mult} argument which will result in layer
+# #'   sizes of \code{mult*sqrt(t-s)}.
+# #'
+# #' @return
+# #' The Brownian motion object which was passed in argument \code{bm} is
+# #' updated in place and returned, enabling chaining of commands with
+# #' dplyr (and other) style pipes.
+# #'
+# #' @export
+# bessel.layers <- function(bm, s, t, refine = bm$refine, mult = bm$mult, prefer = bm$prefer, label = c(names(s), names(t))) {
+#   layers(bm, s, t, "bessel", refine, mult, prefer, label)
+# }
 
 bessel.layers_ <- function(bm, s, t, mult) {
   res <- bessel.layers.sim_(bm, s, t, bm$W_t[match(s, bm$t)], bm$W_tm[match(t, bm$t)], mult)
