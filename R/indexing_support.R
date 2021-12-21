@@ -5,7 +5,12 @@ getlayersNd_ <- function(bm, t) {
 
   # Check if there is no layer at the specified time and return early
   if(sum(bm$Z.bm[[1]]$layers$t.l <= t & bm$Z.bm[[1]]$layers$t.u > t) == 0) {
-    return(NULL) # or should this be tibble with NULL entries?
+    return(tibble(
+      t.l = numeric(),
+      t.u = numeric(),
+      L = matrix(numeric(), nrow = 0, ncol = bm$dim),
+      U = matrix(numeric(), nrow = 0, ncol = bm$dim)
+    ))
   }
 
   # Pull out relevant row of layers for the given time
@@ -29,7 +34,7 @@ getlayersNd_ <- function(bm, t) {
 
 transformlayersNd_ <- function(bm, t) {
   lyr <- getlayersNd_(bm, t)
-  if(is.null(lyr))
+  if(nrow(lyr) == 0)
     return(tibble(
       t.l = numeric(),
       t.u = numeric(),

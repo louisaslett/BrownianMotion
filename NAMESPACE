@@ -2,6 +2,7 @@
 
 S3method("[",BrownianMotion)
 S3method("[",BrownianMotionNd)
+S3method("[",BrownianMotionNdZ)
 S3method(add.points,BrownianMotion)
 S3method(add.points,BrownianMotionNd)
 S3method(add.segment,BrownianMotion)

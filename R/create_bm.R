@@ -125,6 +125,9 @@ create.bm <- function(t = 0, W_t = 0, dim = 1, cov = 1, refine = TRUE, mult = 1,
     for(d in 1:dim) {
       bm$Z.bm[[d]] <- create.bm_(t, Z_t[,d], refine[d], mult[d], prefer[d])
     }
+    # Dummy for accessing untransformed path
+    bm$Z <- list(bm)
+    class(bm$Z) <- "BrownianMotionNdZ"
     # OLD IDEA: Add storage for outer path and layers containing the post simulation
     # transformed values (decided against compute on demand for this)
     # NEW IDEA: compute on demand first and maybe add caching so don't recompute

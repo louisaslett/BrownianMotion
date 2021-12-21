@@ -112,6 +112,8 @@
   }
 }
 
+
+
 #' @export
 `[.BrownianMotionNd` <- function(bm, x, t = NULL) {
   # Determine what variable has been requested (eg bm[1,"W_t"])
@@ -266,6 +268,160 @@
       )
     } else {
       lyrs <- dplyr::bind_rows(lapply(c(bm$Z.bm[[1]]$t[x], missing), function(t) { transformlayersNd_(bm, t) }))
+    }
+    return(lyrs)
+  }
+}
+
+
+
+#' @export
+`[.BrownianMotionNdZ` <- function(bm, x, t = NULL) {
+  bm <- bm[[1]]
+
+  # Determine what variable has been requested (eg bm[1,"W_t"])
+  # or is NA if not specified (eg bm[1])
+  var <- as.character(sys.call()[-1])[3]
+
+  # Do we have label in x, and maybe variable to retrieve in t?
+  # If so, get time for each label (and dump variable from t, as we now have in var)
+  if(!is.numeric(t) && is.character(x)) {
+    # TODO: improve this, we're assuming first dimension labels are same as all
+    #       other dimensions. May not be true for internally generated labels
+    #       from layer routines
+    x <- x[x %in% names(bm$Z.bm[[1]]$labels)]
+    t <- c(bm$Z.bm[[1]]$labels[x], recursive = TRUE)
+  }
+
+  # Create dummy to hold times that are not in the skeleton for which
+  # we will only return the relevant layer info (if any)
+  missing <- NULL
+
+  # Do we have a time in t?
+  # If so, find index and put in x,
+  # otherwise, x must be an index already
+  if(is.numeric(t)) {
+    reorder.t <- order(order(t))
+    # TODO: improve this? This gives correct result, but ...
+    #       We've got $t duplicated in all Z.bm objects, but this
+    #       makes implementation easier (especially for layers where we fill in
+    #       anything missing across dims after simulation)
+    missing <- t[!(t %in% bm$Z.bm[[1]]$t)]
+    x <- which(bm$Z.bm[[1]]$t %in% t)
+  } else {
+    reorder.t <- order(x)
+    t <- bm$Z.bm[[1]]$t[x]
+  }
+
+  # Deal with the case where none of the times are skeleton points
+  if(length(x) == 0) {
+    if(is.na(var)) {
+      if(nrow(bm$Z.bm[[1]]$layers) == 0) {
+        # TODO: Murray says he'd love to spend some time allowing
+        #       layers in only certain dimensions and for the
+        #       path to be unconstrained in others.
+        #       Louis places face in palms
+        # TODO: Louis thinks it would be lovely to have a rainbow of
+        #       colours for different time segments and overlapping transparent
+        #       polygons and infilled paths.
+        #       Murray places face in palms
+        lyrs <- tibble(
+          t.l = numeric(),
+          t.u = numeric(),
+          L = matrix(numeric(), nrow = 0, ncol = bm$dim),
+          U = matrix(numeric(), nrow = 0, ncol = bm$dim)
+        )
+      } else {
+        lyrs <- dplyr::bind_rows(lapply(c(bm$Z.bm[[1]]$t[x], missing), function(t) { getlayersNd_(bm, t) }))
+      }
+      return(list(t = t,
+                  Z_t = rep(NA, length(t)),
+                  Z_tm = rep(NA, length(t)),
+                  layers = lyrs))
+    } else if(var == "t") {
+      # Get just t
+      return(unname(t))
+    } else if(var == "Z_t") {
+      # Get just Z_t
+      return(matrix(NA, nrow = length(t), ncol = bm$dim))
+    } else if(var == "Z_tm") {
+      # Get just Z_tm
+      return(matrix(NA, nrow = length(t), ncol = bm$dim))
+    } else if(var == "layers") {
+      # Get just layers
+      if(nrow(bm$Z.bm[[1]]$layers) == 0) {
+        lyrs <- tibble(
+          t.l = numeric(),
+          t.u = numeric(),
+          L = matrix(numeric(), nrow = 0, ncol = bm$dim),
+          U = matrix(numeric(), nrow = 0, ncol = bm$dim)
+        )
+      } else {
+        lyrs <- dplyr::bind_rows(lapply(c(bm$Z.bm[[1]]$t[x], missing), function(t) { getlayersNd_(bm, t) }))
+      }
+      return(lyrs)
+    }
+  }
+
+  # index in x, maybe var in t
+  if(length(x)>0 && any(as.integer(x)!=x)) {
+    stop("must be an integer index")
+  }
+  if(length(x)>0 && any(x < 1 | x > length(bm$Z.bm[[1]]$t))) {
+    stop("index out of bounds")
+  }
+
+  if(is.na(var) || var == "") {
+    # Get everything
+
+    if(nrow(bm$Z.bm[[1]]$layers) == 0) {
+      lyrs <- tibble(
+        t.l = numeric(),
+        t.u = numeric(),
+        L = matrix(numeric(), nrow = 0, ncol = bm$dim),
+        U = matrix(numeric(), nrow = 0, ncol = bm$dim)
+      )
+    } else {
+      lyrs <- dplyr::bind_rows(lapply(c(bm$Z.bm[[1]]$t[x], missing), function(t) { getlayersNd_(bm, t) }))
+    }
+
+    res.t <- c(unname(bm$Z.bm[[1]]$t[x]), missing)
+    res.Z_t <- rbind(getZtNd_(bm, x), matrix(NA, nrow = length(missing), ncol = bm$dim))
+    res.Z_tm <- rbind(getZtmNd_(bm, x), matrix(NA, nrow = length(missing), ncol = bm$dim))
+
+    o <- order(res.t)
+    return(list(t = res.t[o][reorder.t],
+                Z_t = res.Z_t[o,,drop=FALSE][reorder.t,,drop=FALSE],
+                Z_tm = res.Z_tm[o,,drop=FALSE][reorder.t,,drop=FALSE],
+                layers = lyrs))
+  } else if(var == "t") {
+    # Get just t
+    return(unname(t))
+  } else if(var == "Z_t") {
+    # Get just Z_t
+    res.t <- c(unname(bm$Z.bm[[1]]$t[x]), missing)
+    res.Z_t <- rbind(getZtNd_(bm, x), matrix(NA, nrow = length(missing), ncol = bm$dim))
+
+    o <- order(res.t)
+    return(res.Z_t[o,,drop=FALSE][reorder.t,,drop=FALSE])
+  } else if(var == "Z_tm") {
+    # Get just Z_tm
+    res.t <- c(unname(bm$Z.bm[[1]]$t[x]), missing)
+    res.Z_tm <- rbind(getZtmNd_(bm, x), matrix(NA, nrow = length(missing), ncol = bm$dim))
+
+    o <- order(res.t)
+    return(res.Z_tm[o,,drop=FALSE][reorder.t,,drop=FALSE])
+  } else if(var == "layers") {
+    # Get just layers
+    if(nrow(bm$Z.bm[[1]]$layers) == 0) {
+      lyrs <- tibble(
+        t.l = numeric(),
+        t.u = numeric(),
+        L = matrix(numeric(), nrow = 0, ncol = bm$dim),
+        U = matrix(numeric(), nrow = 0, ncol = bm$dim)
+      )
+    } else {
+      lyrs <- dplyr::bind_rows(lapply(c(bm$Z.bm[[1]]$t[x], missing), function(t) { getlayersNd_(bm, t) }))
     }
     return(lyrs)
   }
