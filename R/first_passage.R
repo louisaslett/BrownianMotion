@@ -55,7 +55,7 @@ first.passage <- function(bm, l = NULL, u = NULL, delta.l = NULL, delta.u = NULL
   assert.bmlabel(label, 1)
 
   # Convert every combination to an l&u pair
-  x <- state(bm)
+  x <- bm$W_t[which.max(bm$t)]
   if(!is.null(delta)) {
     if(!is.realscalar(delta) || delta <= 0) {
       stop("if delta is specified, it must be a positive real scalar.")
