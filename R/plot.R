@@ -129,8 +129,8 @@ plot.BrownianMotion <- function(x, y, ...) {
     t.lim <- opts[["t.lim"]]
 
     lyrs <- bm$layers[!(bm$layers$type %in% c("localised-bb","intersection-bb","bessel-bb")),]
-    ymin <- min(lyrs[lyrs$t.u>t.lim[1] & lyrs$t.l<t.lim[2],]$Ld, bm$W_t[bm$t>t.lim[1] & bm$t<t.lim[2]])
-    ymax <- max(lyrs[lyrs$t.u>t.lim[1] & lyrs$t.l<t.lim[2],]$Uu, bm$W_t[bm$t>t.lim[1] & bm$t<t.lim[2]])
+    ymin <- min(lyrs[lyrs$t.u>t.lim[1] & lyrs$t.l<t.lim[2],]$Ld, bm$W_t[bm$t>=t.lim[1] & bm$t<=t.lim[2]])
+    ymax <- max(lyrs[lyrs$t.u>t.lim[1] & lyrs$t.l<t.lim[2],]$Uu, bm$W_t[bm$t>=t.lim[1] & bm$t<=t.lim[2]])
 
     bb.lyrs <- rbind(localised.bb, intersection.bb, bessel.bb)
     if(nrow(bb.lyrs) > 0) {
@@ -142,9 +142,9 @@ plot.BrownianMotion <- function(x, y, ...) {
                   bb.lyrs[bb.lyrs$t.u>t.lim[1] & bb.lyrs$t.l<t.lim[2],]$max)
     }
 
-    print(p + coord_cartesian(xlim = opts[["t.lim"]], ylim = c(ymin,ymax)))
+    return(p + coord_cartesian(xlim = opts[["t.lim"]], ylim = c(ymin,ymax)))
   } else {
-    print(p)
+    return(p)
   }
 }
 
