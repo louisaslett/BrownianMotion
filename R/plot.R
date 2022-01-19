@@ -1,3 +1,302 @@
+plot.diag_ <- function(path, dim, t.lim) {
+  p <- ggplot()
+
+  jd <- c(1, which(path$W_t[,dim] != path$W_tm[,dim]), length(path$t))
+  for(j in 2:length(jd)) {
+    if(j != length(jd))
+      p <- p + geom_vline(xintercept = path$t[jd[j]], linetype = "dotted")
+    if(jd[j]-jd[j-1] > 0)
+      p <- p + geom_line(aes(x = t, y = x), tibble(t = path$t[jd[j-1]:jd[j]], x = c(path$W_t[jd[j-1]:(jd[j]-1),dim], path$W_tm[jd[j],dim])), colour = "grey")
+  }
+
+  p <- p + geom_point(aes(x = t, y = x), tibble(t = path$t, x = path$W_t[,dim]), colour = "black", size = 0.1)
+  jd <- jd[c(-1, -length(jd))]
+  if(length(jd) > 0) {
+    p <- p + geom_point(aes(x = t, y = x), tibble(t = path$t[jd], x = path$W_tm[jd,dim]), colour = "black", size = 1, shape = 1)
+  }
+
+  lyrs <- data.frame(t.l = path$layers$t.l,
+                     t.u = path$layers$t.u,
+                     L = path$layers$outer.L[,dim],
+                     U = path$layers$outer.U[,dim])
+
+  if(nrow(path$layers) > 0) {
+    p <- p +
+      geom_segment(aes(x = t.l, xend = t.u, y = L, yend = L), lyrs, colour = "black") +
+      geom_segment(aes(x = t.l, xend = t.u, y = U, yend = U), lyrs, colour = "black")
+  }
+
+  p + coord_cartesian(xlim = t.lim) + xlab("t") + ylab(paste0("W(",dim,")")) #, ylim = c(ymin,ymax))
+}
+
+plot.offdiag_ <- function(path, dim, t.lim, layers.2d, show.layers) {
+  p <- ggplot()
+
+  lyrs <- data.frame(t.l = path$layers$t.l,
+                     t.u = path$layers$t.u,
+                     L1 = path$layers$outer.L[,dim[1]],
+                     U1 = path$layers$outer.U[,dim[1]],
+                     L2 = path$layers$outer.L[,dim[2]],
+                     U2 = path$layers$outer.U[,dim[2]])
+
+  if(show.layers && nrow(path$layers) > 0) {
+    if(layers.2d == "detailed") {
+      for(i in 1:nrow(path$layers)) {
+        cube <- as.data.frame(path$layers$inner.cube[[i]][,dim])
+        p <- p +
+          geom_polygon(aes(x = V2, y = V1), cube[chull(cube),], alpha = 0, colour = "red")
+      }
+
+      p <- p +
+        geom_segment(aes(x = L2, xend = L2, y = L1, yend = U1), lyrs, colour = "black") +
+        geom_segment(aes(x = U2, xend = U2, y = L1, yend = U1), lyrs, colour = "black") +
+        geom_segment(aes(x = L2, xend = U2, y = L1, yend = L1), lyrs, colour = "black") +
+        geom_segment(aes(x = L2, xend = U2, y = U1, yend = U1), lyrs, colour = "black")
+    } else if(layers.2d == "union") {
+      if(!("sf" %in% installed.packages()[,"Package"])) {
+        stop("The union layering option requires the suggested package sf. NB this option is more computationally intensive than default option.")
+      }
+
+      poly <- lapply(path$layers$inner.cube, function(poly) {
+        poly <- poly[chull(poly[,dim[2:1]]),dim[2:1]]
+        poly <- rbind(poly, poly[1,])
+        sf::st_polygon(list(poly))
+      })
+
+      cube <- sf::st_union(sf::st_buffer(sf::st_sfc(poly), 0.000001))
+      # p <- p + geom_sf(data=cube, fill=NA, colour="red")
+      cube2 <- as.data.frame(cube[[1]][[1]])
+      p <- p + geom_polygon(aes(x = V1, y = V2), cube2, alpha = 0, colour = "red")
+
+      lyrs <- data.frame(L1 = min(lyrs$L1),
+                         L2 = min(lyrs$L2),
+                         U1 = max(lyrs$U1),
+                         U2 = max(lyrs$U2))
+
+      p <- p +
+        geom_segment(aes(x = L2, xend = L2, y = L1, yend = U1), lyrs, colour = "black") +
+        geom_segment(aes(x = U2, xend = U2, y = L1, yend = U1), lyrs, colour = "black") +
+        geom_segment(aes(x = L2, xend = U2, y = L1, yend = L1), lyrs, colour = "black") +
+        geom_segment(aes(x = L2, xend = U2, y = U1, yend = U1), lyrs, colour = "black")
+    } else if(layers.2d == "convex") {
+      cube <- as.data.frame(do.call("rbind", lapply(path$layers$inner.cube, function(x) { x[,dim] })))
+      p <- p +
+          geom_polygon(aes(x = V2, y = V1), cube[chull(cube),], alpha = 0, colour = "red")
+
+      lyrs <- data.frame(L1 = min(lyrs$L1),
+                         L2 = min(lyrs$L2),
+                         U1 = max(lyrs$U1),
+                         U2 = max(lyrs$U2))
+
+      p <- p +
+        geom_segment(aes(x = L2, xend = L2, y = L1, yend = U1), lyrs, colour = "black") +
+        geom_segment(aes(x = U2, xend = U2, y = L1, yend = U1), lyrs, colour = "black") +
+        geom_segment(aes(x = L2, xend = U2, y = L1, yend = L1), lyrs, colour = "black") +
+        geom_segment(aes(x = L2, xend = U2, y = U1, yend = U1), lyrs, colour = "black")
+    } else {
+      stop("Unrecognised setting for layers.2d argument. Valid choices are 'convex' (default), 'union' and 'detailed'.")
+    }
+  }
+
+  jd <- c(1, which(sapply(1:nrow(path$W_t), function(i) { any(path$W_t[i,dim]!=path$W_tm[i,dim]) })), length(path$t))
+  for(j in 2:length(jd)) {
+    if(jd[j]-jd[j-1] > 0)
+      p <- p + geom_path(aes(x = x2, y = x1), tibble(x1 = c(path$W_t[jd[j-1]:(jd[j]-1),dim[1]], path$W_tm[jd[j],dim[1]]), x2 = c(path$W_t[jd[j-1]:(jd[j]-1),dim[2]], path$W_tm[jd[j],dim[2]])), colour = "grey")
+  }
+
+  p <- p + geom_point(aes(x = x2, y = x1), tibble(x1 = path$W_t[,dim[1]], x2 = path$W_t[,dim[2]]), colour = "black", size = 0.1)
+  jd <- jd[c(-1, -length(jd))]
+  if(length(jd) > 0) {
+    p <- p + geom_point(aes(x = x2, y = x1), tibble(x1 = path$W_tm[jd,dim[1]], x2 = path$W_tm[jd,dim[2]]), colour = "black", size = 1, shape = 1)
+  }
+
+  p + xlab("") + ylab("")
+}
+
+#' @export
+plot.BrownianMotionNd <- function(x, y, ...) {
+  opts <- list(...)
+  bm <- x
+
+  # What dimensions to plot?
+  if(!is.null(opts[["dims"]])) {
+    dims <- opts[["dims"]]
+  } else {
+    dims <- 1:bm$dim
+  }
+
+  # Figure out plotting limits and extract visible path
+  if(!is.null(opts[["t.lim"]])) {
+    t.lim <- opts[["t.lim"]]
+  } else {
+    t.lim <- c(bm$Z.bm[[1]]$labels$start, bm$Z.bm[[1]]$labels$end)
+  }
+  t <- bm[,"t"]
+  l <- max(min(t), t[t < t.lim[1]])
+  r <- min(max(t), t[t > t.lim[2]])
+  path.1d <- bm[t=l:r,]
+  #path.2d <- bm[t=max(t[t <= t.lim[1]]):min(t[t > t.lim[2]]),]
+  path.2d <- bm[t=t.lim[1]:t.lim[2],]
+  not.na <- !is.na(path.2d$W_t[,1])
+  path.2d$t <- path.2d$t[not.na]
+  path.2d$W_t <- path.2d$W_t[not.na,]
+  path.2d$W_tm <- path.2d$W_tm[not.na,]
+  # Correct inclusion of layers at the right end of interval
+  # path.2d$layers <- path.2d$layers[path.2d$layers$t.l < t.lim[2],]
+
+  # Layer display
+  if(!is.null(opts[["layers.2d"]])) {
+    layers.2d <- opts[["layers.2d"]]
+  } else {
+    layers.2d <- "convex"
+  }
+
+  # Layers visible?
+  if(nrow(path.1d$layers) > 0) {
+    if(t.lim[2] <= max(path.1d$layers$t.u) &&
+       t.lim[1] >= min(path.1d$layers$t.l) &&
+       all(head(sort(path.1d$layers$t.u), -1) == tail(sort(path.1d$layers$t.l), -1))) {
+      show.layers <- TRUE
+    } else {
+      warning("an interval within the plot time limits requested has no layer information, so all layers suppressed on 2D plots.")
+      show.layers <- FALSE
+    }
+  }
+
+  # Pairs or not
+  if(!is.null(opts[["pairs"]])) {
+    pairs <- opts[["pairs"]]
+  } else {
+    pairs <- TRUE
+  }
+
+  if(length(dims) == 1) {
+    return(plot.diag_(path.1d, dims[1], t.lim))
+  } else if(pairs) {
+    p <- plot.diag_(path.1d, dims[1], t.lim)
+    for(i in 1:length(dims)) {
+      for(j in 1:length(dims)) {
+        if(i == 1 && j == 1) {
+          next
+        }
+        if(i != j) {
+          p <- p + plot.offdiag_(path.2d, dims[c(i,j)], t.lim, layers.2d, show.layers)
+        } else {
+          p <- p + plot.diag_(path.1d, dims[i], t.lim)
+        }
+      }
+    }
+  } else {
+    combs <- combn(dims, 2)
+    p <- plot.offdiag_(path.2d, combs[,1], t.lim, layers.2d, show.layers) +
+      xlab(paste0("W(",combs[2,1],")")) +
+      ylab(paste0("W(",combs[1,1],")"))
+    if(length(dims) > 2) {
+      for(i in 2:ncol(combs)) {
+        p <- p + plot.offdiag_(path.2d, combs[,i], t.lim, layers.2d, show.layers) +
+          xlab(paste0("W(",combs[2,i],")")) +
+          ylab(paste0("W(",combs[1,i],")"))
+      }
+    }
+  }
+
+  p
+}
+
+
+
+#' @export
+plot.BrownianMotionNdZ <- function(x, y, ...) {
+  opts <- list(...)
+  bm <- x[[1]]
+
+  # What dimensions to plot?
+  if(!is.null(opts[["dims"]])) {
+    dims <- opts[["dims"]]
+  } else {
+    dims <- 1:bm$dim
+  }
+
+  # Figure out plotting limits and extract visible path
+  if(!is.null(opts[["t.lim"]])) {
+    t.lim <- opts[["t.lim"]]
+  } else {
+    t.lim <- c(bm$Z.bm[[1]]$labels$start, bm$Z.bm[[1]]$labels$end)
+  }
+  t <- bm[,"t"]
+  l <- max(min(t), t[t < t.lim[1]])
+  r <- min(max(t), t[t > t.lim[2]])
+  path.1d <- bm$Z[t=l:r,]
+  #path.2d <- bm[t=max(t[t <= t.lim[1]]):min(t[t > t.lim[2]]),]
+  path.2d <- bm$Z[t=t.lim[1]:t.lim[2],]
+  not.na <- !is.na(path.2d$Z_t[,1])
+  path.2d$t <- path.2d$t[not.na]
+  path.2d$W_t <- path.2d$Z_t[not.na,]
+  path.2d$W_tm <- path.2d$Z_tm[not.na,]
+  # Correct inclusion of layers at the right end of interval
+  # path.2d$layers <- path.2d$layers[path.2d$layers$t.l < t.lim[2],]
+
+  # Layer display
+  if(!is.null(opts[["layers.2d"]])) {
+    layers.2d <- opts[["layers.2d"]]
+  } else {
+    layers.2d <- "convex"
+  }
+
+  # Layers visible?
+  if(nrow(path.1d$layers) > 0) {
+    if(t.lim[2] <= max(path.1d$layers$t.u) &&
+       t.lim[1] >= min(path.1d$layers$t.l) &&
+       all(head(sort(path.1d$layers$t.u), -1) == tail(sort(path.1d$layers$t.l), -1))) {
+      show.layers <- TRUE
+    } else {
+      warning("an interval within the plot time limits requested has no layer information, so all layers suppressed on 2D plots.")
+      show.layers <- FALSE
+    }
+  }
+
+  # Pairs or not
+  if(!is.null(opts[["pairs"]])) {
+    pairs <- opts[["pairs"]]
+  } else {
+    pairs <- TRUE
+  }
+
+  if(length(dims) == 1) {
+    return(plot(bm$Z.bm[[dims]], t.lim = t.lim) + ylab(paste0("Z(",dims[1],")")))
+  } else if(pairs) {
+    p <- plot(bm$Z.bm[[dims[1]]], t.lim = t.lim) + ylab(paste0("Z(",dims[1],")"))
+    for(i in 1:length(dims)) {
+      for(j in 1:length(dims)) {
+        if(i == 1 && j == 1) {
+          next
+        }
+        if(i != j) {
+          p <- p + plot.offdiag_(path.2d, dims[c(i,j)], t.lim, layers.2d, show.layers)
+        } else {
+          p <- p + (plot(bm$Z.bm[[dims[i]]], t.lim = t.lim) + ylab(paste0("Z(",dims[i],")")))
+        }
+      }
+    }
+  } else {
+    combs <- combn(dims, 2)
+    p <- plot.offdiag_(path.2d, combs[,1], t.lim, layers.2d, show.layers) +
+      xlab(paste0("Z(",combs[2,1],")")) +
+      ylab(paste0("Z(",combs[1,1],")"))
+    if(length(dims) > 2) {
+      for(i in 2:ncol(combs)) {
+        p <- p + plot.offdiag_(path.2d, combs[,i], t.lim, layers.2d, show.layers) +
+          xlab(paste0("Z(",combs[2,i],")")) +
+          ylab(paste0("Z(",combs[1,i],")"))
+      }
+    }
+  }
+
+  p
+}
+
+
+
 #' @export
 plot.BrownianMotion <- function(x, y, ...) {
   # # TODO: update computing y.l and y.u to be over a restricted range is the ...
