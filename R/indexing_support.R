@@ -32,7 +32,7 @@ getlayersNd_ <- function(bm, t) {
   )
 }
 
-transformlayersNd_ <- function(bm, t) {
+transformlayersNd_ <- function(bm, t, do.transform = TRUE) {
   lyr <- getlayersNd_(bm, t)
   if(nrow(lyr) == 0)
     return(tibble(
@@ -45,7 +45,11 @@ transformlayersNd_ <- function(bm, t) {
 
   LU <- rbind(lyr$L,lyr$U)
   Z.vertices <- as.matrix(do.call("expand.grid", lapply(1:bm$dim, function(d) { LU[,d] })))
-  inner.cube <- tcrossprod(Z.vertices, bm$chol)
+  if(do.transform) {
+    inner.cube <- tcrossprod(Z.vertices, bm$chol)
+  } else {
+    inner.cube <- unname(Z.vertices)
+  }
   outer.L <- apply(inner.cube, 2, min)
   outer.U <- apply(inner.cube, 2, max)
   # W.outer <- expand.grid(lapply(1:bm$dim, function(d) { c(outer.L[d], outer.U[d]) }))

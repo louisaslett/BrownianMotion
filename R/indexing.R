@@ -1,8 +1,25 @@
 #' @export
-`[.BrownianMotion` <- function(bm, x, t = NULL) {
+`[.BrownianMotion` <- function(bm, x = NULL, t = NULL) {
   # Determine what variable has been requested (eg bm[1,"W_t"])
   # or is NA if not specified (eg bm[1])
   var <- as.character(sys.call()[-1])[3]
+
+  if(is.null(x)) {
+    x <- 1:length(bm$t)
+  }
+
+  if(!is.null(t)) {
+    t2 <- substitute(t)
+    env <- parent.frame()
+    if(as.character(t2)[1] == ":") {
+      t <- c(eval(t2[[2]], envir = env),
+             bm$t[bm$t > eval(t2[[2]], envir = env) &
+                  bm$t < eval(t2[[3]], envir = env)],
+             eval(t2[[3]], envir = env))
+    } else {
+      t <- eval(t, envir = env)
+    }
+  }
 
   # Do we have label in x, and maybe variable to retrieve in t?
   # If so, get time for each label (and dump variable from t, as we now have in var)
@@ -39,7 +56,8 @@
       return(list(t = t,
                   W_t = rep(NA, length(t)),
                   W_tm = rep(NA, length(t)),
-                  layers = bm$layers[lyrs.x,]))
+                  layers = bm$layers[lyrs.x,],
+                  labels = list()))
     } else if(var == "t") {
       # Get just t
       return(unname(t))
@@ -57,6 +75,8 @@
         lyrs.x <- (rowSums(sapply(c(bm$t[x], missing), function(t) { bm$layers$t.l <= t & bm$layers$t.u > t })) > 0)
       }
       return(bm$layers[lyrs.x,])
+    } else if(var == "labels") {
+      return(list())
     }
   }
 
@@ -81,11 +101,13 @@
                     unname(bm$W_t[x]), rep(NA, length(missing)),
                     unname(bm$W_tm[x]), rep(NA, length(missing))), ncol = 3)
     res <- res[order(res[,1]),,drop=FALSE][reorder.t,,drop=FALSE]
+    res.labels <- lapply(bm$labels, function(ts) { ts[ts %in% res[,1]] })
 
     return(list(t = res[,1],
                 W_t = res[,2],
                 W_tm = res[,3],
-                layers = bm$layers[lyrs.x,]))
+                layers = bm$layers[lyrs.x,],
+                labels = res.labels[lapply(res.labels, length)>0]))
   } else if(var == "t") {
     # Get just t
     return(unname(t))
@@ -109,16 +131,40 @@
       lyrs.x <- (rowSums(sapply(c(bm$t[x], missing), function(t) { bm$layers$t.l <= t & bm$layers$t.u > t })) > 0)
     }
     return(bm$layers[lyrs.x,])
+  } else if(var == "labels") {
+    res <- matrix(c(unname(bm$t[x]), missing,
+                    unname(bm$W_t[x]), rep(NA, length(missing))), ncol = 2)
+
+    res.labels <- lapply(bm$labels, function(ts) { ts[ts %in% res[,1]] })
+
+    return(res.labels[lapply(res.labels, length)>0])
   }
 }
 
 
 
 #' @export
-`[.BrownianMotionNd` <- function(bm, x, t = NULL) {
+`[.BrownianMotionNd` <- function(bm, x = NULL, t = NULL) {
   # Determine what variable has been requested (eg bm[1,"W_t"])
   # or is NA if not specified (eg bm[1])
   var <- as.character(sys.call()[-1])[3]
+
+  if(is.null(x)) {
+    x <- 1:length(bm$Z.bm[[1]]$t)
+  }
+
+  if(!is.null(t)) {
+    t2 <- substitute(t)
+    env <- parent.frame()
+    if(as.character(t2)[1] == ":") {
+      t <- c(eval(t2[[2]], envir = env),
+             bm$Z.bm[[1]]$t[bm$Z.bm[[1]]$t > eval(t2[[2]], envir = env) &
+                            bm$Z.bm[[1]]$t < eval(t2[[3]], envir = env)],
+             eval(t2[[3]], envir = env))
+    } else {
+      t <- eval(t, envir = env)
+    }
+  }
 
   # Do we have label in x, and maybe variable to retrieve in t?
   # If so, get time for each label (and dump variable from t, as we now have in var)
@@ -175,7 +221,8 @@
       return(list(t = t,
                   W_t = rep(NA, length(t)),
                   W_tm = rep(NA, length(t)),
-                  layers = lyrs))
+                  layers = lyrs,
+                  labels = list()))
     } else if(var == "t") {
       # Get just t
       return(unname(t))
@@ -199,6 +246,8 @@
         lyrs <- dplyr::bind_rows(lapply(c(bm$Z.bm[[1]]$t[x], missing), function(t) { transformlayersNd_(bm, t) }))
       }
       return(lyrs)
+    } else if(var == "labels") {
+      return(list())
     }
   }
 
@@ -233,12 +282,14 @@
     res.t <- c(unname(bm$Z.bm[[1]]$t[x]), missing)
     res.W_t <- rbind(getWtNd_(bm, x), matrix(NA, nrow = length(missing), ncol = bm$dim))
     res.W_tm <- rbind(getWtmNd_(bm, x), matrix(NA, nrow = length(missing), ncol = bm$dim))
+    res.labels <- lapply(bm$Z.bm[[1]]$labels, function(ts) { ts[ts %in% res.t] })
 
     o <- order(res.t)
     return(list(t = res.t[o][reorder.t],
                 W_t = res.W_t[o,,drop=FALSE][reorder.t,,drop=FALSE],
                 W_tm = res.W_tm[o,,drop=FALSE][reorder.t,,drop=FALSE],
-                layers = lyrs))
+                layers = lyrs,
+                labels = res.labels[lapply(res.labels, length)>0]))
   } else if(var == "t") {
     # Get just t
     return(unname(t))
@@ -270,18 +321,40 @@
       lyrs <- dplyr::bind_rows(lapply(c(bm$Z.bm[[1]]$t[x], missing), function(t) { transformlayersNd_(bm, t) }))
     }
     return(lyrs)
+  } else if(var == "labels") {
+    res.t <- c(unname(bm$Z.bm[[1]]$t[x]), missing)
+    res.labels <- lapply(bm$Z.bm[[1]]$labels, function(ts) { ts[ts %in% res.t] })
+
+    return(res.labels[lapply(res.labels, length)>0])
   }
 }
 
 
 
 #' @export
-`[.BrownianMotionNdZ` <- function(bm, x, t = NULL) {
+`[.BrownianMotionNdZ` <- function(bm, x = NULL, t = NULL) {
   bm <- bm[[1]]
 
   # Determine what variable has been requested (eg bm[1,"W_t"])
   # or is NA if not specified (eg bm[1])
   var <- as.character(sys.call()[-1])[3]
+
+  if(is.null(x)) {
+    x <- 1:length(bm$Z.bm[[1]]$t)
+  }
+
+  if(!is.null(t)) {
+    t2 <- substitute(t)
+    env <- parent.frame()
+    if(as.character(t2)[1] == ":") {
+      t <- c(eval(t2[[2]], envir = env),
+             bm$Z.bm[[1]]$t[bm$Z.bm[[1]]$t > eval(t2[[2]], envir = env) &
+                              bm$Z.bm[[1]]$t < eval(t2[[3]], envir = env)],
+             eval(t2[[3]], envir = env))
+    } else {
+      t <- eval(t, envir = env)
+    }
+  }
 
   # Do we have label in x, and maybe variable to retrieve in t?
   # If so, get time for each label (and dump variable from t, as we now have in var)
@@ -328,16 +401,18 @@
         lyrs <- tibble(
           t.l = numeric(),
           t.u = numeric(),
-          L = matrix(numeric(), nrow = 0, ncol = bm$dim),
-          U = matrix(numeric(), nrow = 0, ncol = bm$dim)
+          outer.L = matrix(numeric(), nrow = 0, ncol = bm$dim),
+          outer.U = matrix(numeric(), nrow = 0, ncol = bm$dim),
+          inner.cube = list()
         )
       } else {
-        lyrs <- dplyr::bind_rows(lapply(c(bm$Z.bm[[1]]$t[x], missing), function(t) { getlayersNd_(bm, t) }))
+        lyrs <- dplyr::bind_rows(lapply(c(bm$Z.bm[[1]]$t[x], missing), function(t) { transformlayersNd_(bm, t, do.transform = FALSE) }))
       }
       return(list(t = t,
                   Z_t = rep(NA, length(t)),
                   Z_tm = rep(NA, length(t)),
-                  layers = lyrs))
+                  layers = lyrs,
+                  labels = list()))
     } else if(var == "t") {
       # Get just t
       return(unname(t))
@@ -353,13 +428,16 @@
         lyrs <- tibble(
           t.l = numeric(),
           t.u = numeric(),
-          L = matrix(numeric(), nrow = 0, ncol = bm$dim),
-          U = matrix(numeric(), nrow = 0, ncol = bm$dim)
+          outer.L = matrix(numeric(), nrow = 0, ncol = bm$dim),
+          outer.U = matrix(numeric(), nrow = 0, ncol = bm$dim),
+          inner.cube = list()
         )
       } else {
-        lyrs <- dplyr::bind_rows(lapply(c(bm$Z.bm[[1]]$t[x], missing), function(t) { getlayersNd_(bm, t) }))
+        lyrs <- dplyr::bind_rows(lapply(c(bm$Z.bm[[1]]$t[x], missing), function(t) { transformlayersNd_(bm, t, do.transform = FALSE) }))
       }
       return(lyrs)
+    } else if(var == "labels") {
+      return(list())
     }
   }
 
@@ -378,22 +456,25 @@
       lyrs <- tibble(
         t.l = numeric(),
         t.u = numeric(),
-        L = matrix(numeric(), nrow = 0, ncol = bm$dim),
-        U = matrix(numeric(), nrow = 0, ncol = bm$dim)
+        outer.L = matrix(numeric(), nrow = 0, ncol = bm$dim),
+        outer.U = matrix(numeric(), nrow = 0, ncol = bm$dim),
+        inner.cube = list()
       )
     } else {
-      lyrs <- dplyr::bind_rows(lapply(c(bm$Z.bm[[1]]$t[x], missing), function(t) { getlayersNd_(bm, t) }))
+      lyrs <- dplyr::bind_rows(lapply(c(bm$Z.bm[[1]]$t[x], missing), function(t) { transformlayersNd_(bm, t, do.transform = FALSE) }))
     }
 
     res.t <- c(unname(bm$Z.bm[[1]]$t[x]), missing)
     res.Z_t <- rbind(getZtNd_(bm, x), matrix(NA, nrow = length(missing), ncol = bm$dim))
     res.Z_tm <- rbind(getZtmNd_(bm, x), matrix(NA, nrow = length(missing), ncol = bm$dim))
+    res.labels <- lapply(bm$Z.bm[[1]]$labels, function(ts) { ts[ts %in% res.t] })
 
     o <- order(res.t)
     return(list(t = res.t[o][reorder.t],
                 Z_t = res.Z_t[o,,drop=FALSE][reorder.t,,drop=FALSE],
                 Z_tm = res.Z_tm[o,,drop=FALSE][reorder.t,,drop=FALSE],
-                layers = lyrs))
+                layers = lyrs,
+                labels = res.labels[lapply(res.labels, length)>0]))
   } else if(var == "t") {
     # Get just t
     return(unname(t))
@@ -417,12 +498,18 @@
       lyrs <- tibble(
         t.l = numeric(),
         t.u = numeric(),
-        L = matrix(numeric(), nrow = 0, ncol = bm$dim),
-        U = matrix(numeric(), nrow = 0, ncol = bm$dim)
+        outer.L = matrix(numeric(), nrow = 0, ncol = bm$dim),
+        outer.U = matrix(numeric(), nrow = 0, ncol = bm$dim),
+        inner.cube = list()
       )
     } else {
-      lyrs <- dplyr::bind_rows(lapply(c(bm$Z.bm[[1]]$t[x], missing), function(t) { getlayersNd_(bm, t) }))
+      lyrs <- dplyr::bind_rows(lapply(c(bm$Z.bm[[1]]$t[x], missing), function(t) { transformlayersNd_(bm, t, do.transform = FALSE) }))
     }
     return(lyrs)
+  } else if(var == "labels") {
+    res.t <- c(unname(bm$Z.bm[[1]]$t[x]), missing)
+    res.labels <- lapply(bm$Z.bm[[1]]$labels, function(ts) { ts[ts %in% res.t] })
+
+    return(res.labels[lapply(res.labels, length)>0])
   }
 }
