@@ -13,12 +13,7 @@ add.points <- function(bm, t, W_t, label = names(t)) {
   UseMethod("add.points")
 }
 
-#' @export
-add.points.BrownianMotionNd <- function(bm, t, W_t, label = names(t)) {
-  if(!("BrownianMotionNd" %in% class(bm))) {
-    stop("bm argument must be a BrownianMotionNd object.")
-  }
-
+prep.add.points_ <- function(bm, t, W_t, label = names(t)) {
   # t checks
   if(!isTRUE(e <- checkmate::check_vector(t, strict = TRUE, any.missing = FALSE, min.len = 1, unique = TRUE, null.ok = FALSE))) {
     stop("Error with argument t: ", e)
@@ -53,8 +48,36 @@ add.points.BrownianMotionNd <- function(bm, t, W_t, label = names(t)) {
     }
   }
 
+  list(t = t, W_t = W_t, label = label)
+}
+
+#' @export
+add.points.BrownianMotionNd <- function(bm, t, W_t, label = names(t)) {
+  if(!("BrownianMotionNd" %in% class(bm))) {
+    stop("bm argument must be a BrownianMotionNd object.")
+  }
+
+  args <- prep.add.points_(bm, t, W_t, label)
+
+  W_t <- tcrossprod(args$W_t, bm$chol.inv)
+
+  add.points(bm$Z, args$t, W_t, args$label)
+
+  invisible(bm)
+}
+
+#' @export
+add.points.BrownianMotionNdZ <- function(bm, t, W_t, label = names(t)) {
+  if(!("BrownianMotionNdZ" %in% class(bm))) {
+    stop("bm argument must be a BrownianMotionNdZ object.")
+  }
+
+  bm <- bm[[1]]
+
+  args <- prep.add.points_(bm, t, W_t, label)
+
   for(d in 1:bm$dim) {
-    add.points(bm$Z.bm[[d]], t, W_t[,d])
+    add.points(bm$Z.bm[[d]], args$t, args$W_t[,d], args$label)
   }
 
   invisible(bm)
@@ -83,7 +106,7 @@ add.points.BrownianMotion <- function(bm, t, W_t, label = names(t)) {
   if(any(t %in% bm$t)) {
     stop("t is already a time in the skeleton. No times added.")
   }
-  if(any(sapply(t, function(x) { any(x >= bm$layers$t.l | x <= bm$layers$t.u) }))) {
+  if(any(sapply(t, function(x) { any(x >= bm$layers$t.l & x <= bm$layers$t.u) }))) {
     stop("t is within a layer (currently not supported, but may be added in future release). No times added.")
   }
 

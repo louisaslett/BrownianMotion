@@ -16,12 +16,7 @@ add.segment <- function(bm, l = -Inf, r = Inf, W_t = NULL, delta = NULL, label =
   UseMethod("add.segment")
 }
 
-#' @export
-add.segment.BrownianMotionNd <- function(bm, l = -Inf, r = Inf, W_t = NULL, delta = NULL, label = NULL) {
-  if(!("BrownianMotionNd" %in% class(bm))) {
-    stop("bm argument must be a BrownianMotionNd object.")
-  }
-
+prep.add.segment_ <- function(bm, l = -Inf, r = Inf, W_t = NULL, delta = NULL, label = NULL) {
   if(!is.realscalar(l)) {
     stop("l must be a scalar.")
   }
@@ -93,8 +88,42 @@ add.segment.BrownianMotionNd <- function(bm, l = -Inf, r = Inf, W_t = NULL, delt
     }
   }
 
+  list(l = l, r = r, W_t = W_t, delta = delta, label = label)
+}
+
+#' @export
+add.segment.BrownianMotionNd <- function(bm, l = -Inf, r = Inf, W_t = NULL, delta = NULL, label = NULL) {
+  if(!("BrownianMotionNd" %in% class(bm))) {
+    stop("bm argument must be a BrownianMotionNd object.")
+  }
+
+  args <- prep.add.segment_(bm, l, r, W_t, delta, label)
+
+  if(!is.null(W_t)) {
+    W_t <- tcrossprod(args$W_t, bm$chol.inv)
+  }
+  if(!is.null(delta)) {
+    delta <- tcrossprod(args$delta, bm$chol.inv)
+  }
+
+  add.segment(bm$Z, args$l, args$r, W_t, delta, args$label)
+
+  invisible(bm)
+}
+
+#' @export
+add.segment.BrownianMotionNdZ <- function(bm, l = -Inf, r = Inf, W_t = NULL, delta = NULL, label = NULL) {
+  if(!("BrownianMotionNdZ" %in% class(bm))) {
+    stop("bm argument must be a BrownianMotionNdZ object.")
+  }
+
+  bm <- bm[[1]]
+
+  args <- prep.add.segment_(bm, l, r, W_t, delta, label)
+
   for(d in 1:bm$dim) {
-    add.segment(bm$Z.bm[[d]], l, r, W_t[,d], delta[,d], label)
+    # add.segment(bm$Z.bm[[d]], l, r, W_t[,d], delta[,d], label)
+    add.segment(bm$Z.bm[[d]], args$l, args$r, args$W_t[,d], args$delta[,d], args$label)
   }
 
   invisible(bm)
