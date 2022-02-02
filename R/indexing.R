@@ -36,6 +36,7 @@
   # If so, find index and put in x,
   # otherwise, x must be an index already
   if(is.numeric(t)) {
+    t <- unique(t)
     reorder.t <- order(order(t))
     missing <- t[!(t %in% bm$t)]
     x <- which(bm$t %in% t)
@@ -184,6 +185,7 @@
   # If so, find index and put in x,
   # otherwise, x must be an index already
   if(is.numeric(t)) {
+    t <- unique(t)
     reorder.t <- order(order(t))
     # TODO: improve this? This gives correct result, but ...
     #       We've got $t duplicated in all Z.bm objects, but this
@@ -374,6 +376,7 @@
   # If so, find index and put in x,
   # otherwise, x must be an index already
   if(is.numeric(t)) {
+    t <- unique(t)
     reorder.t <- order(order(t))
     # TODO: improve this? This gives correct result, but ...
     #       We've got $t duplicated in all Z.bm objects, but this

@@ -57,16 +57,23 @@ plot.offdiag_ <- function(path, dim, t.lim, layers.2d, show.layers) {
         stop("The union layering option requires the suggested package sf. NB this option is more computationally intensive than default option.")
       }
 
-      poly <- lapply(path$layers$inner.cube, function(poly) {
-        poly <- poly[chull(poly[,dim[2:1]]),dim[2:1]]
-        poly <- rbind(poly, poly[1,])
-        sf::st_polygon(list(poly))
-      })
+      union.parts <- sort(unique(c(min(path$layers$t.l), max(path$layers$t.u), path$labels$seg.end)))
+     # union.parts <- sort(unique(c(t.lim, path$labels$seg.end)))
+      union.parts <- rbind(union.parts[1:(length(union.parts)-1)],union.parts[2:length(union.parts)])
 
-      cube <- sf::st_union(sf::st_buffer(sf::st_sfc(poly), 0.000001))
-      # p <- p + geom_sf(data=cube, fill=NA, colour="red")
-      cube2 <- as.data.frame(cube[[1]][[1]])
-      p <- p + geom_polygon(aes(x = V1, y = V2), cube2, alpha = 0, colour = "red")
+      for(i in 1:nrow(union.parts)) {
+        poly.lyrs <- which(path$layers$t.l >= union.parts[i,1] & path$layers$t.u <= union.parts[i,2])
+        poly <- lapply(path$layers[poly.lyrs,]$inner.cube, function(poly) {
+          poly <- poly[chull(poly[,dim[2:1]]),dim[2:1]]
+          poly <- rbind(poly, poly[1,])
+          sf::st_polygon(list(poly))
+        })
+
+        cube <- sf::st_union(sf::st_buffer(sf::st_sfc(poly), 0.000001));
+        # p <- p + geom_sf(data=cube, fill=NA, colour="red")
+        cube2 <- as.data.frame(cube[[1]][[1]]); names(cube2) <- c("V1", "V2")
+        p <- p + geom_polygon(aes(x = V1, y = V2), cube2, alpha = 0, colour = "red")
+      }
 
       lyrs <- data.frame(L1 = min(lyrs$L1),
                          L2 = min(lyrs$L2),
@@ -102,6 +109,9 @@ plot.offdiag_ <- function(path, dim, t.lim, layers.2d, show.layers) {
   for(j in 2:length(jd)) {
     if(jd[j]-jd[j-1] > 0)
       p <- p + geom_path(aes(x = x2, y = x1), tibble(x1 = c(path$W_t[jd[j-1]:(jd[j]-1),dim[1]], path$W_tm[jd[j],dim[1]]), x2 = c(path$W_t[jd[j-1]:(jd[j]-1),dim[2]], path$W_tm[jd[j],dim[2]])), colour = "grey")
+  }
+  for(t.segend in path$labels$seg.end) {
+    p <- p + geom_path(aes(x = x2, y = x1), tibble(x1 = c(path$W_tm[path$t %in% t.segend,dim[1]], path$W_t[path$t %in% t.segend,dim[1]]), x2 = c(path$W_tm[path$t %in% t.segend,dim[2]], path$W_t[path$t %in% t.segend,dim[2]])), colour = "grey", linetype = "dotted")
   }
 
   p <- p + geom_point(aes(x = x2, y = x1), tibble(x1 = path$W_t[,dim[1]], x2 = path$W_t[,dim[2]]), colour = "black", size = 0.1)
@@ -139,8 +149,8 @@ plot.BrownianMotionNd <- function(x, y, ...) {
   path.2d <- bm[t=t.lim[1]:t.lim[2],]
   not.na <- !is.na(path.2d$W_t[,1])
   path.2d$t <- path.2d$t[not.na]
-  path.2d$W_t <- path.2d$W_t[not.na,]
-  path.2d$W_tm <- path.2d$W_tm[not.na,]
+  path.2d$W_t <- path.2d$W_t[not.na,,drop = FALSE]
+  path.2d$W_tm <- path.2d$W_tm[not.na,,drop = FALSE]
   # Correct inclusion of layers at the right end of interval
   # path.2d$layers <- path.2d$layers[path.2d$layers$t.l < t.lim[2],]
 
@@ -161,6 +171,8 @@ plot.BrownianMotionNd <- function(x, y, ...) {
       warning("an interval within the plot time limits requested has no layer information, so all layers suppressed on 2D plots.")
       show.layers <- FALSE
     }
+  } else {
+    show.layers <- FALSE
   }
 
   # Pairs or not
