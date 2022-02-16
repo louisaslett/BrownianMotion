@@ -61,8 +61,8 @@ plot.offdiag_ <- function(path, dim, t.lim, layers.2d, show.layers) {
      # union.parts <- sort(unique(c(t.lim, path$labels$seg.end)))
       union.parts <- rbind(union.parts[1:(length(union.parts)-1)],union.parts[2:length(union.parts)])
 
-      for(i in 1:nrow(union.parts)) {
-        poly.lyrs <- which(path$layers$t.l >= union.parts[i,1] & path$layers$t.u <= union.parts[i,2])
+      for(i in 1:ncol(union.parts)) {
+        poly.lyrs <- which(path$layers$t.l >= union.parts[1,i] & path$layers$t.u <= union.parts[2,i])
         poly <- lapply(path$layers[poly.lyrs,]$inner.cube, function(poly) {
           poly <- poly[chull(poly[,dim[2:1]]),dim[2:1]]
           poly <- rbind(poly, poly[1,])
