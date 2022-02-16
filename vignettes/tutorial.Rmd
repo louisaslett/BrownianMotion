@@ -26,6 +26,10 @@ library(BrownianMotion)
 set.seed(212)
 ```
 
+This tutorial will begin by considering one dimensional standard Brownian motion. In [Multiple Dimensions](#multi) we consider multi-dimensional Brownian motion with user-specified covariance matrix. Unless otherwise stated, all syntax introduced in the one-dimensional case, and the output types, matches that of multi-dimensional Brownian motion.
+
+# One Dimension
+
 The first task is to create an object which will contain the Brownian motion path and layer information. This is accomplished using the `create.bm()` function. It is possible to call with all default options, but here for demonstration purposes we will force the path to start at $W_{-1} = 100$ (the default is $W_0 = 0$).
 
 ```{r}
@@ -53,9 +57,9 @@ bm <- create.bm(c(-1, 0, 1), c(100, 101, 99))
 plot(bm)
 ```
 
-# Standard simulation
+## Standard simulation
 
-## Unconditional simulation
+### Unconditional simulation
 
 The simplest operation is unconditional simulation of the path at future times (beyond the end time of the existing path). To do this we use the function `sim()`, and supply a vector of times. Any of the times supplied which are in excess of the current end point will be simulated in order unconditionally (and all other times will be dealt with appropriately automatically, as discussed later). For instance, noting for our object `bm` the current end point is $t = 1$, suppose we wish to simulate the path at the times $t = (2,3,4)$, we have:
 
@@ -72,7 +76,7 @@ plot(bm)
 ```
 
 
-## Brownian bridge simulation
+### Brownian bridge simulation
 
 The simplest step beyond unconditional simulation would be to simulate times which are intermediate to already observed time points. This can be achieved using Brownian bridge simulation. As before, we can simply use the function `sim()`: all time points in a vector supplied to the function which fall between existing times in the existing `bm` path will be appropriately simulated. The handling of the function `sim()` intuitively deals with a mixed vector of times which require unconditioned and conditioned simulation. For example, suppling the vector $t = (0.5, 1.5, 2.5, 3.5, 4.5)$ (and noting that the current end point of `bm` is $t = 4$), we have:
 
@@ -90,18 +94,16 @@ plot(bm)
 
 The above will simulate at 5 times randomly chosen between the start and end times of the existing path. Note this highlights that the vector of times passed to `sim()` need not be sorted: (non-standard) sorting of required times is handled by the package to ensure robustness of functionals.
 
-## A peek under the hood
+### A peek under the hood
 
-At this point it is instructive to look at the stored path:
+At this point it is instructive to look at the stored path, which can be achieved by using the standard R element indexing syntax, as though the object was a data frame.  Therefore,
 
--   `$t` contains the times of observations, $t$;
--   `$W_t` contains the value of the path at those times, $W_t$.
-
-For ease of reading, the following example takes these two slots of the Brownian motion object and places them in a data frame, though this is not necessary:
+-   `bm[,"t"]` contains the times of observations, $t$;
+-   `bm[,"W_t"]` contains the value of the path at those times, $W_t$.
 
 ```{r}
-data.frame(t   = bm$t,
-           W_t = bm$W_t)
+bm[,"t"]
+bm[,"W_t"]
 ```
 
 In this simple setting $t$ and $W_t$ comprise the *"path skeleton"*: they are a finite dimensional representation of the Brownian motion path, which can be used to reconstruct the path at any other time point of interest. The indices of the vectors `t` and `W_t` match one another, and so (for instance) the value taken by the path at time $t = 1$ is $W_t = 99$. To avoid the user having to do complicated matching of the indices in order to extract the value of the path at a given time, one can instead index the `bm` object as follows, specifying in the `t` argument what time (or vector of times) they require, together with the part of the object they require (here, `"W_t"`, which must be quoted): 
@@ -109,8 +111,8 @@ In this simple setting $t$ and $W_t$ comprise the *"path skeleton"*: they are a 
 ```{r}
 bm[t = 1, "W_t"]
 ```
-Note that by default calls to the `bm` environment without specifying the `t` argument will instead assume the user wants the associated index. For instance:
 
+Note that by default calls to the `bm` environment without specifying the `t` argument will instead assume the user wants the associated index. For instance, the following retrieves the path location at the *first* time, whatever that may be (here, the first time is $t=-1$):
 
 ```{r}
 bm[1, "W_t"]
@@ -119,14 +121,14 @@ bm[1, "W_t"]
 As an illustration of using this "under the hood" information, we can simulate an Exponential($\lambda = W_{4.5} / 10$) time past the end of the path, without having had to track in our code that $t=4.5$ is the end of the path what this current end time is:
 
 ```{r}
-bm |> sim(max(bm$t) + rexp(1, bm[t = 4.5, "W_t"]/10))
+bm |> sim(max(bm[,"t"]) + rexp(1, bm[t = 4.5, "W_t"]/10))
 plot(bm)
 ```
 
 Of course, the specification of the above time to simulate is rather clunky. To aid the user the package provides default `labels` to the time points which constitute the path skeleton (with each point possibly having multiple labels). We further give the user the option to add in their own labels. For instance, we can see the currently defined labels as a named list of times:
 
 ```{r}
-bm$labels
+bm[,"labels"]
 ```
 
 Note that each list item name corresponds to the times that have been assigned a particular label (and note that some times have multiple labels, for instance $t=1$). For our existing path `bm` all existing labels are those automatically assigned by the package. All automatically assigned labels are dynamically updated as the path changes. In particular:
@@ -136,21 +138,35 @@ Note that each list item name corresponds to the times that have been assigned a
 -   `forced` is applied to any point introduced by the user by specifying not just the time, but also the position of the path. Recall, when we initialised the path (at $t = -1$), we introduced "forced" points at $t = 0$ and $t = 1$.
 -   `user` is applied to any time for which the path has been simulated by the user using the `sim()` function.
 
+To access the vector of times associated with a label then this can be achieved as follows (for instance, supposing we wanted the `user` times)
+
+```{r}
+bm[,"labels"]$user
+```
+
+Alternatively this can be achievied by simply passing a label (for instance, `user`) as the index in a call to `bm` and requesting the associated times `t`:
+
+```{r}
+bm["user","t"]
+```
+
 There is considerable flexibility for the user to introduce their own labelling. Existing times associated with a user specified label are fixed (and do not get dynamically updated in the same manner as the automatic labels above). This can be done as the path is generated by using the optionally available argument `label` in either the `add.points()` or `sim()` function we have introduced thus far. `label` if specified should be a vector of length $1$ (in which case the same label is applied to all elements of the vector suppled), or of length equal to that of the supplied vector. For instance, suppose we wanted to simulate the path at times $t = (6, 7)$ and give them the label `special.time.1` and `special.time.2` respectively then:
 
 ```{r}
 bm |> sim(c(6, 7), label = c("special.time.1", "special.time.2"))
-bm$labels
+bm[,"labels"]
 ```
 
 Note now the addition of the new labels and associated times. We may wish to specify an additional user label to existing times with existing labels. This can be done by simply supplying a vector of the existing times to the `sim()` function (noting that applying `sim()` to an existing path does not alter the existing path). For instance, we may wish the times with the label `forced` to be be given the label `special.time.1`, and those with the label `user` to be given the additional label `special.time.2`:
 
 ```{r}
-bm |> sim(bm$labels$forced, label = c("special.time.1")) |> sim(bm$labels$user, label = c("special.time.2"))
-bm$labels
+bm |>
+  sim(bm["forced","t"], label = c("special.time.1")) |>
+  sim(bm["user","t"], label = c("special.time.2"))
+bm[,"labels"]
 ```
 
-Of course, we may also wish to know what value(s) the path took at time(s) given by a specific label. This can be achievied by simply passing a label (for instance, `special.time.1`) as the index in a call to `bm`:
+Of course, we may also wish to know what value(s) the path took at time(s) given by a specific label. Again, this can be achievied by simply passing a label (for instance, `special.time.1`) as the index in a call to `bm`:
 
 ```{r}
 bm["special.time.1", "W_t"]
@@ -163,7 +179,7 @@ bm |> sim(bm["end", "t"] + rexp(1, bm["end", "W_t"]/10))
 plot(bm)
 ```
 
-# Manipulating and existing skeleton
+## Manipulating and existing skeleton
 
 Having initialised the path at $W_{-1}=100$ we may naturally wish to simulate a time prior to the time the path was intisialised. Simulating prior to the initialised time is ambiguous once the path also includes `layers` (see [Layers, layers, everywhere!](#layers)). As a result, directly using the `sim()` function (for instance, simulating the path at time $t=-2$) will result in an error:
 
@@ -171,7 +187,7 @@ Having initialised the path at $W_{-1}=100$ we may naturally wish to simulate a 
 bm |> sim(-2)
 ```
 
-As indicated in the error message, one apporach to handling this is to manually add in a point. For instance, if we were unconditionally simulating the path to the left of the initialisation time:
+As indicated in the error message, one apporach to handling this is to manually add in a point. For instance, if we were unconditionally simulating the path to the left of the initial time:
 
 ```{r}
 bm |> add.points(-2, rnorm(1, bm["start", "W_t"], sqrt(abs(-2 - bm["start", "t"]))))
@@ -182,46 +198,46 @@ Of course, we may wish to now artificially "adjust" the path by shifting the pat
 ```{r}
 bm.adjust <- concat.bm(bm, t0 = 0)
 plot(bm.adjust)
-bm.adjust$labels
+bm.adjust[,"labels"]
 ```
 
 Note that for the `bm.adjust` path all associated labels have also been shifted.
 
-# Cautionary note on `bm` objects
+## Cautionary note on `bm` objects
 
 It is important for package users to understand that all Brownian motion path objects, such as `bm` and `bm.adjust` in the above, are internally stored as R environments. This means that attempting to assign from one variable name to another **does not** result in a copy of the object as one might expect with idomatic R: instead, you end up with two variable names referencing the same environment so that calls on one variable appear to update both. For example,
 
 ```{r}
 # Current end time of path in bm
-bm$labels$end
+bm["end","t"]
 # Assign bm to a new variable called bm.x
 bm.x <- bm
 # Check end time of bm.x
-bm.x$labels$end
+bm.x["end","t"]
 # Extend bm.x path
-bm.x |> sim(bm.x$labels$end + 100)
+bm.x |> sim(bm.x["end","t"] + 100)
 # Observe both have updated since these are just handles to the same environment
-bm$labels$end
-bm.x$labels$end
+bm["end","t"]
+bm.x["end","t"]
 ```
 
 If you do in fact wish to create a copy rather than an additional handle to the same path, then a simple call to `concat.bm()` without providing any other path to concatenate with will trigger a copy:
 
 ```{r}
 # Current end time of path in bm
-bm$labels$end
+bm["end","t"]
 # Use concat to trigger a copy
 bm.x <- concat.bm(bm)
 # Check end time of bm.x
-bm.x$labels$end
+bm.x["end","t"]
 # Extend bm.x path
-bm.x |> sim(bm.x$labels$end + 100)
+bm.x |> sim(bm.x["end","t"] + 100)
 # Observe this time that both have not updated since we obtained a copy
-bm$labels$end
-bm.x$labels$end
+bm["end","t"]
+bm.x["end","t"]
 ```
 
-# Layers, layers, everywhere! {#layers}
+## Layers, layers, everywhere! {#layers}
 
 In many settings we want to simulate Brownian motion together with *"layer"* information. Layer information determines a compact (spatial) interval which constrains the path over a given time interval. This can be achieved using this package in three broad ways:
 
@@ -233,7 +249,7 @@ There are merits to using each of these approaches, and so the user has the flex
 
 If a layer is simulated then this forms part of the *path skeleton*. Once a layer is simulated, then simulating further points of the path is more involved: again, these fall into the category of unconditional and conditional simulation.
 
-## Bessel
+### Bessel
 
 We begin by specifying that we want to simulate a Bessel layer over the interval $t = [10,12]$ for our path `bm.adjust`. This can be achieved by using the (simply named!) function `layers()`. Note that $t = 10$ is beyond the existing terminal time of the path, and so the path will first be (unconditionally) simulated to this time:
 
@@ -276,9 +292,9 @@ Note that as the `bm.adjust` object becomes larger, calling the `plot` command c
 plot(bm.adjust, t.lim = c(5, 10))
 ```
 
-## Localised
+### Localised
 
-### First passage times
+#### First passage times
 
 The second layer type we will consider is based around first passage times of Brownian motion.
 
@@ -291,7 +307,9 @@ First passage times are the basis of the "localised layers" we introduce fully i
 To better illustrate this we begin by simulating the existing path unconditionally at time $t=15$ by again calling `sim()` before then simulating a first passage to a symmetric interval $\pm 1$ from $W_{10}$. Notice that commands can be chained together using the pipe `|>` operator:
 
 ```{r}
-bm.adjust |> sim(15) |> first.passage(delta = 1)
+bm.adjust |>
+  sim(15) |>
+  first.passage(delta = 1)
 plot(bm.adjust)
 ```
 
@@ -334,7 +352,9 @@ plot(bm.adjust)
 
 Note conditional simulations within a localised layer can give rise to a change in layer type, in this instance resulting in the first part of the localised layer becoming of Bessel type (recalling that for localised layers the layer coincides with the the end-point).
 
-### Localised layer over a specified interval
+Further note that first passage times can only be requested for one-dimensional Brownian motion. For multi-dimensional Brownian motion it is more natural to consider the approach outlined in the next section: 
+
+#### Localised layer over a specified interval
 
 Simulating localised layers by means of first passage times can be advantageous in some settings, although the time the first passage occurs is random, and this randomness can introduce its own complications.
 
@@ -371,11 +391,11 @@ As the horizontal layers do not strictly form part of the path skeleton, these c
 plot(bm.adjust, t.lim = c(140, 180), hide.user = TRUE)
 ```
 
-### (Another) peek under the hood
+#### (Another) peek under the hood
 
 In addition to the earlier discussion on the slots `$t` and `$W_t`, there are slots which contain the layering information, both for the main path and those in the transformed space just discussed above.
 
--   `$layers` is a data frame containing the layering information of the main path, including variables:
+-   `bm[,"layers"]` is a data frame (tibble) containing the layering information of the main path, including variables:
 
     -   `type` to indicate the layer type, one of:
 
@@ -402,6 +422,8 @@ In addition to the earlier discussion on the slots `$t` and `$W_t`, there are sl
 
     -   `Ud.hard` indicating whether the upper interior line coincides with the end point;
 
+- *Note:* The output in multiple dimensions will vary, as discussed in [Multiple Dimensions](#multi).
+
 -   `$user.layers` is a data frame containing the information on which first passage layers were requested by You (resulting in the green lines on the plot). This contains
 
     -   `t.l` and `t.u` giving the temporal interval (left and right time points) to which the layer applies;
@@ -409,14 +431,16 @@ In addition to the earlier discussion on the slots `$t` and `$W_t`, there are sl
 
 -   `$bb.local` is a nested Brownian motion object used in the construction of the localised layer bridges. Note this will only contain intervals pertaining to the localised layer bridge intervals of `$layers` (those ending `-bb`), but otherwise follows the same form.
 
+- *Note:* `$user.layers` and `$bb.local` are only specified for one-dimensional Browian motion
+
 For example, the path produced to date in this vignette has the following internal layering representation:
 
 ```{r,eval=FALSE}
-bm.adjust$layers
+bm.adjust[,"layers"]
 ```
 
 ```{r,echo=FALSE}
-rmarkdown::paged_table(bm.adjust$layers)
+rmarkdown::paged_table(bm.adjust[,"layers"])
 ```
 
 ```{r,eval=FALSE}
@@ -428,11 +452,11 @@ knitr::kable(bm.adjust$user.layers)
 ```
 
 ```{r,eval=FALSE}
-bm.adjust$bb.local$layers
+bm.adjust$bb.local[,"layers"]
 ```
 
 ```{r,echo=FALSE,results='asis'}
-knitr::kable(bm.adjust$bb.local$layers)
+knitr::kable(bm.adjust$bb.local[,"layers"])
 ```
 
 Again, we might naturally be more interested in the layers associated with a specific time. A given time may not lie within the current skeleton of the path, and if it does (for reasons discussed later), then of the two possible layers (to the left and right of that point) we are naturally more interested in the right hand layer. Note that there may be *no layer* associated with a given time (in which case it is supressed). For instance, suppose we were interested with path layers at the times $t = \{4.5, 4.6 \dots, 5.5\}$:
@@ -442,7 +466,7 @@ bm.adjust[t = seq(4.5, 5.5, by = 0.1), "layers"]
 ```
 
 
-## Intersection
+### Intersection
 
 Now suppose we want an Intersection layer over the interval $t = [50,60]$, this can be done by calling the function `layers()` with the argument `type = "intersection"`. The structure of introducing Intersection layers follows that of Bessel layers. Note that $t = 280$ is beyond the current terminal point of the path:
 
@@ -462,7 +486,7 @@ plot(bm.adjust)
 
 Note that on simulating an intermediary point(s) a number of Bessel (purple) or Intersection layers may arise. Intersection layers have the same interpretation as the parent Intersection layer, and Bessel layers are the same as in the earlier section. By default, the package will if possible attempt to "convert" Intersection layers to Bessel layers: we will address this default in the next subsection. Any further simulation will be handled appropriately (for the given layer type) by using the `sim()` function.
 
-### (Yet Another) peek under the hood
+#### (Yet Another) peek under the hood
 
 As demonstrated in the previous section, by default the package has a preference for using Bessel layers over Intersection layers wherever possible. It is typical that the user will want to only consider one layer type, and the Bessel layer type has been selected as default as this is most likely to be the one practitioners will use. We do however want the flexibility to use multiple layer types, or change the default to Intersection.
 
@@ -496,7 +520,7 @@ bm2 |> sim(c(1.25, 2.5))
 plot(bm2)
 ```
 
-Note that we do not need to specify we have a preference for Intersection layers, as this preference is an attribute assigned to the path on its creation using `create.bm()`. In principle this could be changed for the path globally (for instance, `bm2$prefer <- "bessel"`), but this is not necessary as we will outline below.
+Note that we do not need to specify we have a preference for Intersection layers, as this preference is an attribute assigned to the path on its creation using `create.bm()`.
 
 It is not possible to convert from, or to, Localised layers from other layer types. However, once the path has been created with the attribute `prefer = "intersection"` then conditional simulation of localised layers will result in the appearance of Intersection layers (as opposed to Bessel layers). For instance, note that when simulating a Localised layer over the interval $t\in[4,5]$ that the final interval is an Intersection layer (and not a Bessel layer as before):
 
@@ -540,7 +564,7 @@ bm2 |> sim(3.75)
 plot(bm2)
 ```
 
-# Refinement
+## Refinement
 
 When simulating layers the package will by default control the size of the layer so it scales appropriately with the length of the interval being considered. In particular, by default, the package will attempt to ensure the difference between the upper solid and upper dashed/dotted lines *AND* the difference between the lower solid and upper dashed/dotted lines is no greater than $\sqrt{t-s}$ (where $s$ and $t$ are the left and right hand end-points of the interval respectively). This control on the layer size can be removed by changing the `refine = TRUE` attribute to `refine = FALSE` on creation of the path. Note that this is not recommended as it can introduce numerical instability, but to show its affect consider the following Bessel layer over the interval $[0,10]$:
 
@@ -562,12 +586,13 @@ Contrast this with a similar path where we haven't set `refine = FALSE`:
 
 ```{r}
 bm4 <- create.bm()
-bm4 |> layers(0, 10)
-bm4 |> sim(seq(0, 10, by = 0.5))
+bm4 |>
+  layers(0, 10) |>
+  sim(seq(0, 10, by = 0.5))
 plot(bm4)
 ```
 
-Whether the package does refinement by default is inherited from the attribute when the path is created. We can either change this at some future point globally (for instance, `bm3$refine <- TRUE`), or alternatively specify within the other functionals in the same manner as the `prefer` attribute discussed earlier. For instance, consider the introduction of mid-points to the existing path in the interval $[0,5]$:
+Whether the package does refinement by default is inherited from the attribute when the path is created. We can change this at some future point by appropriately specifying within the other functionals in the same manner as the `prefer` attribute discussed earlier. For instance, consider the introduction of mid-points to the existing path in the interval $[0,5]$:
 
 ```{r}
 bm3 |> sim(seq(0, 5, by = 0.25), refine = TRUE)
@@ -609,7 +634,7 @@ plot(bm5)
 
 The `mult = 1` argument has increased the resolution of existing layers in the interval $[5,10]$ by $3\times$, and will be comparable to the first half of the path.
 
-# Deletion
+## Deletion
 
 It is possible that the user wants to delete both the path observations and layers, or only the layers, of the skeleton over some specified interval. This can be achieved within the package by using the `delete.skeleton()` function, and specifying an open interval which you wish to delete from the skeleton. The left and right hand ends of the open interval are specified using the arguments `l` and `r` respectively. For instance, considering `bm5`, we may wish to delete the entire skeleton in the interval $(2.5,5)$:
 
@@ -628,7 +653,9 @@ plot(bm5)
 Note that as a safety precaution, `l` and `r` *must* co-incide with time points within the skeleton. As a consequence, if You want to delete an interval which does not co-incide with time points within the skeleton then You must first introduce those points using the `sim` function. For instance, consider deleting the skeleton entirely in the interval $(2.0001,7.9999)$ (noting these times do not currently appear in the skeleton) then this can be achieved as follows:
 
 ```{r}
-bm5 |> sim(c(2.0001, 7.9999)) |> delete.skeleton(l = 2.0001, r = 7.9999)
+bm5 |>
+  sim(c(2.0001, 7.9999)) |>
+  delete.skeleton(l = 2.0001, r = 7.9999)
 plot(bm5)
 ```
 
@@ -651,15 +678,16 @@ Note that (as a fail-safe) it is not possible to delete the entire path by leavi
 ```{r,error=TRUE,purl=FALSE}
 bm5 |> delete.skeleton()
 ```
-# Segments
 
-For many practical uses of the package, the user may wish to add in path discontinuities. In such settings we will have a number of path "segments" (the term we give for the continuous paths separated by the path discontinuities). To aid this, in addition to `$t` and `$W_t`, the stored path actually contains `$W_tm`:
+## Segments
 
--   `$W_tm` contains the value of the path at those times, $W_{t-}$.
+For many practical uses of the package, the user may wish to add in path discontinuities. In such settings we will have a number of path "segments" (the term we give for the continuous paths separated by the path discontinuities). To aid this, in addition to `"t"` and `"W_t"`, the stored path actually contains a `"W_tm"` object:
+
+-   `bm[,"W_tm"]` contains the value of the path at those times, $W_{t-}$.
 
 Note that when considering the simulation of any intermediary time for an existing path (using the `sim()` function), we treat the process as cadlag: for instance, consider simulation at time $t'$ for an existing path (using the `sim()` function), where $t_1 < t' < t_2$ and $t_1$ and $t_2$ are the closest realisations of the path on either side, then the simulation will be done conditional on $(t_1, W_{t_1})$ and $(t_2, W_{t_2-})$.
 
-To illustrate `$W_tm`, we begin by considering a new Brownian motion object, `bm6`, realised at a collection of times:
+To illustrate `"W_tm"`, we begin by considering a new Brownian motion object, `bm6`, realised at a collection of times:
 
 ```{r}
 bm6 <- create.bm()
@@ -670,10 +698,10 @@ plot(bm6)
 Note that if we look at the associated `$t`, `$W_t` and `$W_tm` for the `bm6` Brownian motion object, that (as suggested by our plot above) we have a single continuous path ($W_t = W_tm$ at all times the path has been realised):
 
 ```{r}
-data.frame(t        = bm6$t,
-           W_t      = bm6$W_t,
-           W_tm     = bm6$W_tm,
-           equality = bm6$W_t == bm6$W_tm)
+data.frame(t        = bm6[,"t"],
+           W_t      = bm6[,"W_t"],
+           W_tm     = bm6[,"W_tm"],
+           equality = bm6[,"W_t"] == bm6[,"W_tm"])
 ```
 
 Now, to add in a path discontinuity we can use the `add.segment()` function, which *moves* by some user specified amount the path between two times which appear in the path skeleton , *or* the entire path to the right of a given time, *or* the entire path to the left of a given time. There are a number of ways the user can specifiy the movement. 
@@ -683,10 +711,10 @@ For instance, suppose we wish to move the path between times in the interval $t\
 ```{r}
 bm6 |> add.segment(l = 1, r = 3, delta = 1, label = "path.move")
 plot(bm6)
-data.frame(t        = bm6$t,
-           W_t      = bm6$W_t,
-           W_tm     = bm6$W_tm,
-           equality = bm6$W_t == bm6$W_tm)
+data.frame(t        = bm6[,"t"],
+           W_t      = bm6[,"W_t"],
+           W_tm     = bm6[,"W_tm"],
+           equality = bm6[,"W_t"] == bm6[,"W_tm"])
 ```
 
 Note that the plot of the path has changed. Vertical, dotted, black lines at $t = 1$ and $t = 3$ indicate there are path discontinues at those times. As per convention with cadlag processes, at $t = 1$ (for instance) there is an open circle indicating the value the path take at the time ($W_{1-}$), and (as per the package convention) a block dot at $t = 1$ represented the value the path at $W_1$. This can be verified in our data frame. As discussed above, conditional simulation of the path at intermediary times is appropriately handled by the package. For instance, consider a sequence of times between $t = 0$ and $t = 4$:
@@ -699,13 +727,15 @@ plot(bm6)
 Further note that the automatic `labels` we introduced for user convenience are now additionally identifying the segment start and end times (`seg.start` and `seg.end` respectively), and those appear in addition to the labels we've passed into the `add.segment()` function:
 
 ```{r}
-bm6$labels
+bm6[,"labels"]
 ```
 
 Of course, shifting the path by some fixed amount may not be natural in all settings. Suppose instead we want to at $t = 10$ "jump" to some given point (for instance, $W_{10} = 0$), then this can again be done by "moving" the path fixed at the left by the current end point (i,e. $[10,\infty)$), to $0$, by means of the `W_t` optional argument in `add.segment()`.  To better illustrate this, following our "jump" to $0$ we will simulate the path to $t = 11$:
 
 ```{r}
-bm6 |> add.segment(l = 10, W_t = 0) |> sim(11)
+bm6 |>
+  add.segment(l = 10, W_t = 0) |>
+  sim(11)
 plot(bm6)
 ```
 
@@ -726,7 +756,9 @@ plot(bm6)
 Instead, we should omit both the `l` and `r` arguments (we will first undo the previous path move):
 
 ```{r}
-bm6 |> add.segment(l = bm6$labels$start, r = bm6$labels$end, delta = 1) |> add.segment(delta = -1)
+bm6 |>
+  add.segment(l = bm6["start", "t"], r = bm6["end", "t"], delta = 1) |>
+  add.segment(delta = -1)
 plot(bm6)
 ```
 
@@ -735,25 +767,25 @@ Further note that the syntax of the `delete.skeleton()` function matches that of
 ```{r}
 bm6 |> delete.skeleton(l = 1, r = 3)
 plot(bm6)
-data.frame(t        = bm6$t,
-           W_t      = bm6$W_t,
-           W_tm     = bm6$W_tm,
-           equality = bm6$W_t == bm6$W_tm)
+data.frame(t        = bm6[,"t"],
+           W_t      = bm6[,"W_t"],
+           W_tm     = bm6[,"W_tm"],
+           equality = bm6[,"W_t"] == bm6[,"W_tm"])
 ```
 
 Note that (as in the above example) the deletion of part of a path may result in a change to the number of segments: this will result in an updating of the associated automatic labelling (but not the user specified labelling).  
 
 ```{r}
-bm6$labels
+bm6[,"labels"]
 ```
 
-We can access the vector associated with `W_tm` by calling the environment in the same way as previously. Alternatively, by not specifying any argument then calling the enviroment returns `t`, `W_t`, `W_tm` and `layers`:
+We can access the vector associated with `W_tm` by calling the environment in the same way as previously. Alternatively, by not specifying any argument then calling the environment returns `t`, `W_t`, `W_tm` and `layers`:
 
 ```{r}
 bm6[t = 1]
 ```
 
-# Path Concatenation
+## Path Concatenation
 
 In some settings it may be useful to concatenate path skeletons. Seperate path skeletons can be considered as segments of a newly created Brownian motion object, and if the paths are align then be considered as single segments. This can be done using the `bm.concat()` function that we introduced earlier: but in addition to passing in a single `bm` together with the required `t0` argument specifying the start of the newly created path, *any* number of paths in the order they are to be concatenated. For instance, consider the concatenation of `bm6` together with `bm5`, and then again `bm6`, into a newly created `bm.concat` object initialised at $t = 10$
 
@@ -762,6 +794,8 @@ In some settings it may be useful to concatenate path skeletons. Seperate path s
 bm.concat <- concat.bm(bm6, bm5, bm6, t0 = 10)
 plot(bm.concat)
 ```
+
+# Multiple Dimensions {#multi}
 
 
 # Publication Graphics {#publication-graphics}
