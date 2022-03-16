@@ -94,7 +94,7 @@ plot(bm)
 
 The above will simulate at 5 times randomly chosen between the start and end times of the existing path. Note this highlights that the vector of times passed to `sim()` need not be sorted: (non-standard) sorting of required times is handled by the package to ensure robustness of functionals.
 
-### A peek under the hood
+### A peek under the hood {#peek1}
 
 At this point it is instructive to look at the stored path, which can be achieved by using the standard R element indexing syntax, as though the object was a data frame.  Therefore,
 
@@ -797,7 +797,209 @@ plot(bm.concat)
 
 # Multiple Dimensions {#multi}
 
+## Creation
 
-# Publication Graphics {#publication-graphics}
+Creating a multi-dimensional Brownian motion object is again accomplished using the `create.bm()` function, by specifying a number of different (optional) arguments. In addition to time `t` (defaulting to $t=0$) and position `W_t` (defaulting to vector $0$), we have `dim` which specifies the number of dimensions (default dim $=1$) and covariance matrix `cov` (defaulting to the identity matrix). For instance, a standard three-dimensional Brownian motion may be created as follows:
+
+```{r}
+bm.d <- create.bm(dim=3)
+bm.d$dim
+bm.d[t=0, "W_t"]
+```
+
+Some care has to be made in specifying `W_t` in multiple dimensions. If the specified vector is of length one, then that position is used to specify all coordinates of the path at the initial time. For instance,
+
+```{r}
+bm.d <- create.bm(W_t = 3, dim=3)
+bm.d[t=0, "W_t"]
+```
+
+Whereas to initialize the path at the position $(0,1,2)$ we simply provide a vector to the `W_t` argument:
+
+```{r}
+bm.d <- create.bm(W_t = c(0,1,2), dim=3)
+bm.d[t=0, "W_t"]
+```
+
+As before, we can specify on the path creation multiple points in the path. Here we supply a vector to `t` and a matrix of dimension the length of `t` times `dim`. For instance, consider the path at $t=1$ at $W_1=(0,1,2)$ and at $t=2$ at $W_2 = (2,0,1)$
+
+```{r}
+bm.d <- create.bm(t = c(1,2), W_t = matrix(c(0,1,2,2,0,1),nrow = 2, ncol = 3, byrow = TRUE), dim=3)
+bm.d[t=c(1,2), "W_t"]
+```
+
+
+The function `add.points` can be used directly in multiple dimensions. For instance, if we want to add the point $W_0 = (-1,-1,-1)$.:
+
+```{r}
+bm.d |> add.points(t = 0, W_t = c(-1, -1, -1))
+bm.d[t=c(0,1,2), "W_t"]
+```
+
+Similar care has to be taken in specifiying the covariance matrix `cov`. `cov` if specified as a scalar is interpreted as a multiplier of the identity matrix, if it is specified as a vector of length `dim` then it is interpreted as diagonal with the vector as the diagonal elements, or it can be specified as a matrix. For instance, 
+
+```{r}
+bm.d <- create.bm(dim = 3, cov = (diag(x= 0.5, nrow=3) + 0.5))
+bm.d$cov
+```
+
+The final arguments in `create.bm` -- namely `refine`, `mult` and  `prefer` -- have precisely the same interpretation as in the one dimensional setting (with the same defaults). The one difference is they can alternatively be specified as vectors of length `dim` if You wish different specification in each dimension. 
+
+## Other Functions
+
+Having created a `BrownianMotionNd` object, simulation of the path and layers is possible using exactly the same syntax as for the `sim` and `layers` functions before. For instance, suppose we simulate the path at times $t=(0.5,5)$ and add a layers over the interval $t=[0,10]$ then this is achieved simply by: 
+
+```{r}
+bm.d |> 
+  sim(c(0.5,5)) |>
+  layers(0,10)
+```
+
+Note that additional arguments for `layers` operate in exactly the same fashion in multiple dimensions. Note however `first.passage` is not possible in multiple dimensions as it does not have the same clear interpretation as in one dimension (although `"localised"` can be specified for the argument `type` in `layers`). 
+
+At this point we can see a plot of our nascent path, by simply using the `plot()` function:
+
+```{r}
+plot(bm.d)
+```
+
+In multiple dimensions the plotting is somewhat different. By default a 'pairwise' plot is produced: each component is plotted along the diagonal and labelled appropriately. Note in the diagonal plots there only exists "black" layers in addition to the plotted path: this indicates intervals in which the entire path is constrained, but due to the covariance structure of the path, this does not have the more nuanced interpretation possible in the one-dimensional case (this is discussed more in the [later plotting section](#multidplot)).  The off-diagonal plot on row $i$ column $j$ simply shows coordinate $i$ plotted against coordinate $j$ (with no axis for time). The red lines demarcate a region of the two dimensional space that the entire path is constrained in for the entire interval. Whereas the black demarcates a region parallel to the axis which constrains the red region. Again, more discussion on plotting in multiple dimensions is given in the [later plotting section](#multidplot).
+
+Refinement and Deletion also use the same functions (`refine` and `delete.skeleton` respectively) and syntax as in one dimension. For instance, suppose we wish to refine the entire path using the `mult` argument with mult $=0.1$, and delete the entire path to the right of $t=5$, then we can do this as follows: 
+
+```{r}
+bm.d |> 
+  refine(s=0, t= 10, mult = 0.1) |>
+  delete.skeleton(l = 5)
+plot(bm.d)
+```
+
+A little more care has to be taken in adding in segments using the `add.segment` function. Although the arguments are the same as in one dimension, specifying the argument `W_t` instead follows the same conventions as in in the `create.bm` function discussed earlier. In particular, if `W_t` is a scalar then then point is repeated in every component, else a vector has to be specified of length `dim`. For instance, consider adding a new segment at $t=5$ by jumping to the point $W_5 = (10,11,12)$ can be achieved as follows (extended to $t=10$ with layers to more clearly show the discontinuity): 
+
+```{r}
+bm.d |> 
+  add.segment(l=5, W_t = c(12,10,10)) |>
+  layers(5, 10)
+plot(bm.d)
+```
+
+Note that the discontinuity in the diagonal pairwise plots is indicated using a dashed line (as in the one-dimensional setting). Similarly, in the off-diagonal plots the point of discontinuity (from $W_{t-}$ to $W_t$) is joined using a dashed line. 
+
+Path concatenation is also possible, but care has to be taken to concatenate paths of both the same dimension and covariance structure (there are a number of checks carried out in this scenario to ensure this is the case). For instance, consider concatenating `bm.d` with itself into a new object named `concat.bm.d`, initialised at $t = 5$:
+
+```{r}
+concat.bm.d <- concat.bm(bm.d, bm.d, t0 = 5)
+plot(concat.bm.d)
+```
+
+Of course, the off-diagonal plots don't appear to have changed due to overplotting.
+
+## A final peek under the hood
+
+There were some examples above of indexing into the Brownian Motion object which show that the interface in multiple dimensions is in harmony with that of univariate paths. Therefore, all the standard indexing behavior described in [the earlier section](#peek1) applies, with the obvious changes to multi-dimensional outputs for `W_t` and `W_tm`.
+
+Repeating the earlier examples on a multi-dimensional path:
+
+```{r}
+bm.d[,"t"]
+bm.d[,"W_t"]
+bm.d[t = 0.5, "W_t"]
+bm.d[4, "W_t"]
+```
+
+The simulation of a path with non-identity covariance matrices relies upon transforming the path to one with identity covariance matrix, simulating in this transformed space, and then doing the reverse transformation as required. In particular, we consider the transformation $Z_t = W_t (\Lambda^{-1/2})'$, where $W_t$ is our original path and $\Lambda$ is our specified  covariance matrix, `cov`.
+
+It is possible to access the transformed (standard) Brownian motion path by accessing the `$Z` member and using this in the usual way (ie to access times, positions etc), noting that the position is now denoted `Z_t` rather than `W_t` in this space:
+
+```{r}
+bm.d$Z[,"t"]
+bm.d$Z[,"Z_t"]
+bm.d$Z[t = 0.5, "Z_t"]
+bm.d$Z[4, "Z_t"]
+```
+
+Layer information can be obtained in the standard way: 
+
+
+```{r}
+bm.d$Z[,"layers"]
+```
+Again, each row of the tibble specifies layers information for an interval of time (between `t.l` and `t.u`). Note however that the formatting of the layer information in each row, in multiple dimensions, is slightly different. Here, for ease of representation, we only supply the outer most layer for each component (`Ld` and `Uu`). This is then composed in vectors of length `dim` in `outer.L` (the lower bounds) and `outer.U` (the upper bounds) respectively. For instance, element 2 of `outer.L` is `Ld` in component 2 of $Z$. `inner.cube` is a matrix of size $2^{\text{dim}} \times \text{dim}$ specifying the vertices of the hypercube obtained by composing for each component of $Z$ the vectors `outer.L` and `outer.U`.
+
+To access the full detail (including full layer information) for each component of $Z$ (for instance, component $2$), this can be achieved as follows: 
+
+```{r}
+bm.d$Z.bm[[2]][]
+```
+
+Note that this is in exactly the same format as the discussion in the one-dimensional setting (indeed, it is a one-dimensional Brownian motion).
+
+The full $Z$ object can be plotted as follows:
+
+```{r}
+plot(bm.d$Z)
+```
+
+Notice that the diagonal plots are now demarked $Z$ (as opposed to $W$), and again are coloured (following the same convention as the one dimensional plotting). The off-diagonal plots have the same interpretation as previously discussed in the $W$ setting.
+
+Now, returning to the original (untransformed) path, $W$. In addition to using indexing to obtain `t`, `W_t`, and `labels`, we can also obtain layer information in the usual way: 
+
+```{r}
+bm.d[,"layers"]
+```
+
+Here, the layer convention follows that discussed for $Z$ above. The `inner.cube` is obtained by doing the reverse transformation of each of the $2^{\text{dim}} \times \text{dim}$ vertices of the  `inner.cube` in the transformed $Z$ object. As such, it specifies a region of $W$ space which contains the entire path over an interval of time. `outer.L` (resp. `outer.U`) is then composed by taking the minimum (resp. maximum) over each coordinate of the vertices. As such, `outer.L` and `outer.U` specify  an outer bounding hyper-cube, parallel to the axis in the $W$ space. 
+
+## Plotting {#multidplot}
+
+We return to plotting now we more fully understand the layers of the Brownian motion object. Consider the $W$ plot:
+
+```{r}
+plot(bm.d)
+```
+
+Here, in the off-diagonal plots to construct the region demarcated by the red lines, we have simply taken the convex hull of all vertices given by the `inner cube` over the specified time window, and projected the hyper cube onto the relevant two dimensional components. The interpretation is that the entire path is constrained in the inner red region for the entire time requested. The region given by the black lines is simply an outer hypercube parallel to all axis which bounds the red region (again, composed by taking the minimums and maximums over every component), which in practice will be somewhat easier to use. 
+
+Of course, we may wish to only plot over a shorter period of time, for instance $t=[0,0.5]$, which can be achieved using the `t.lim` argument as before: 
+
+```{r}
+plot(bm.d, t.lim = c(0,0.5))
+```
+Notice, if we plot for $Z$ the same time interval, then as the time interval only comprises a single layer, then both red and black demarked regions overlap, and they are parallel to the axis: 
+
+```{r}
+plot(bm.d$Z, t.lim = c(0,0.5))
+```
+
+Of course, we may wish a more refined look at the layer information. This can be achieved using the argument `layers.2d` and specifying `"convex"` (the default, described above), `"detailed"`, or `"union"`. `"detailed"` simply plots each layer seperately. For instance (returning to the entire interval $t=[0,10]$):
+
+```{r}
+plot(bm.d, layers.2d = "detailed")
+```
+Note here red and black demarked regions are drawn for every layer in the requested time interval. Visually it is clear in this instance that there are two regions in which the path is constrained -- corresponding to the interval prior to the addition of a path segment, and after. 
+
+In cases of paths with lots of layer information, `"detailed"` can become cluttered. Instead, here we can use `"union"` which takes the union of all red demarked regions. Note that (i) this depends on an external package, `sf`, which is very large; and (ii) is more computationally expensive to compute. Hence, although it is a more accurate portrayal of the layer information, it is not the default option (and `sf` is only a "Suggested" not required package).
+
+```{r}
+plot(bm.d, layers.2d = "union")
+```
+
+Here, we have identified the two red demarked regions corresponding to the union of two dimensional projections of the hypercubes in every interval prior to the discontinuity, and every interval after. As before, the black demarked region identifies a bounding hypercube parallel to the axis. 
+
+The remaining plotting options are:
+
+- `pairs` (`TRUE`/`FALSE`) to indicate whether to produce the full pairwise plots (`TRUE`), or only off-diagonal plots (`FALSE`).
+- `dims` which enables listing only a subset of dimensions to plot.
+
+Together, `pairs` and `dims` allow You to plot any part of the pairwise plots. For instance, if we wanted to plot only the one-dimensional component 2, then this achieved by: 
+
+```{r}
+plot(bm.d, dims = 2)
+```
+Whereas, if we wanted a `"union"` plot of  component 3 against component 2, then this is possible as follows: 
+
+```{r}
+plot(bm.d, layers.2d = "union", dims = c(3,2), pairs = FALSE)
+```
 
 # References
