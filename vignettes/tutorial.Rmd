@@ -157,19 +157,37 @@ bm |> sim(c(6, 7), label = c("special.time.1", "special.time.2"))
 bm[,"labels"]
 ```
 
-Note now the addition of the new labels and associated times. We may wish to specify an additional user label to existing times with existing labels. This can be done by simply supplying a vector of the existing times to the `sim()` function (noting that applying `sim()` to an existing path does not alter the existing path). For instance, we may wish the times with the label `forced` to be be given the label `special.time.1`, and those with the label `user` to be given the additional label `special.time.2`:
+Note now the addition of the new labels and associated times. We may wish to specify an additional user label to existing times with existing labels. This can be done by simply supplying a vector of the existing times to the function `add.labels()`.  For instance, we may wish the times with the label `forced` to be be given the label `special.time.1`, and those with the label `user` to be given the additional label `special.time.2`:
 
 ```{r}
 bm |>
-  sim(bm["forced","t"], label = c("special.time.1")) |>
-  sim(bm["user","t"], label = c("special.time.2"))
+  add.labels(t = bm["forced","t"], label = c("special.time.1")) |>
+  add.labels(t = bm["user","t"], label = c("special.time.2"))
 bm[,"labels"]
 ```
 
-Of course, we may also wish to know what value(s) the path took at time(s) given by a specific label. Again, this can be achievied by simply passing a label (for instance, `special.time.1`) as the index in a call to `bm`:
+Note that the above could be achieved by using the `sim()` function (noting that applying `sim()` to an existing path does not alter the existing path).
+
+Of course, we may wish to delete labels: this can be done using the `delete.labels()` function. For instance, now removing the `special.time.1` label, and removing the `special.time.2` label from the times $t = (7, 2, 3)$: 
 
 ```{r}
-bm["special.time.1", "W_t"]
+bm |>
+  delete.labels(label = c("special.time.1")) |>
+  delete.labels(t = c(7, 2, 3), label = c("special.time.2"))
+bm[,"labels"]
+```
+
+Note that it is only possible to `add.labels` and `delete.labels` for user labels, and not any automatic labels. For instance, 
+
+```{r,error=TRUE,purl=FALSE}
+bm |> add.labels(t = 6, label = "end")
+```
+
+
+Of course, we may also wish to know what value(s) the path took at time(s) given by a specific label. Again, this can be achievied by simply passing a label (for instance, `special.time.2`) as the index in a call to `bm`:
+
+```{r}
+bm["special.time.2", "W_t"]
 ```
 
 Note the flexibility labelling offers, as we can use labels themselves as arguments in function calls. For instance, returning to our earlier example which motivated our labelling, we could simulate the path at an Exponential($\lambda = W_{4.5} / 10$) time past the end of the path, without having had to track in our code that $t=7$:
@@ -193,6 +211,7 @@ As indicated in the error message, one apporach to handling this is to manually 
 bm |> add.points(-2, rnorm(1, bm["start", "W_t"], sqrt(abs(-2 - bm["start", "t"]))))
 plot(bm)
 ```
+
 Of course, we may wish to now artificially "adjust" the path by shifting the path to the right so it is initialised at $t=0$. This is easily achieved by creating a new path (say, `bm.adjust`) using the `concat.bm()` function and specifying the time the adjusted path should be initialised (although for full details of the `concat.bm()` function see [Path Concatenation](#concat))
 
 ```{r}
@@ -650,6 +669,14 @@ bm5 |> delete.skeleton(l = 5, r = 7.5, type = "layer")
 plot(bm5)
 ```
 
+It is also possible to delete all user labels (mirroring the functionality of `delete.labels` discussed earlier, automatic labels are not deleted). For instance, when running the following code, note that the automatically generated labels between `l` and `r` are retained:
+
+```{r}
+bm5 |> delete.skeleton(l = 5, r = 7.5, type = "label")
+bm5[,"labels"]
+```
+
+
 Note that as a safety precaution, `l` and `r` *must* co-incide with time points within the skeleton. As a consequence, if You want to delete an interval which does not co-incide with time points within the skeleton then You must first introduce those points using the `sim` function. For instance, consider deleting the skeleton entirely in the interval $(2.0001,7.9999)$ (noting these times do not currently appear in the skeleton) then this can be achieved as follows:
 
 ```{r}
@@ -753,6 +780,7 @@ A cautionary note is that if we shift the entire path by specifying `l` and `r` 
 bm6 |> add.segment(l = bm6["start", "t"], r = bm6["end", "t"], delta = -1)
 plot(bm6)
 ```
+
 Instead, we should omit both the `l` and `r` arguments (we will first undo the previous path move):
 
 ```{r}
@@ -827,7 +855,6 @@ As before, we can specify on the path creation multiple points in the path. Here
 bm.d <- create.bm(t = c(1,2), W_t = matrix(c(0,1,2,2,0,1),nrow = 2, ncol = 3, byrow = TRUE), dim=3)
 bm.d[t=c(1,2), "W_t"]
 ```
-
 
 The function `add.points` can be used directly in multiple dimensions. For instance, if we want to add the point $W_0 = (-1,-1,-1)$.:
 
@@ -920,10 +947,10 @@ bm.d$Z[4, "Z_t"]
 
 Layer information can be obtained in the standard way: 
 
-
 ```{r}
 bm.d$Z[,"layers"]
 ```
+
 Again, each row of the tibble specifies layers information for an interval of time (between `t.l` and `t.u`). Note however that the formatting of the layer information in each row, in multiple dimensions, is slightly different. Here, for ease of representation, we only supply the outer most layer for each component (`Ld` and `Uu`). This is then composed in vectors of length `dim` in `outer.L` (the lower bounds) and `outer.U` (the upper bounds) respectively. For instance, element 2 of `outer.L` is `Ld` in component 2 of $Z$. `inner.cube` is a matrix of size $2^{\text{dim}} \times \text{dim}$ specifying the vertices of the hypercube obtained by composing for each component of $Z$ the vectors `outer.L` and `outer.U`.
 
 To access the full detail (including full layer information) for each component of $Z$ (for instance, component $2$), this can be achieved as follows: 
@@ -965,6 +992,7 @@ Of course, we may wish to only plot over a shorter period of time, for instance 
 ```{r}
 plot(bm.d, t.lim = c(0,0.5))
 ```
+
 Notice, if we plot for $Z$ the same time interval, then as the time interval only comprises a single layer, then both red and black demarked regions overlap, and they are parallel to the axis: 
 
 ```{r}
@@ -976,6 +1004,7 @@ Of course, we may wish a more refined look at the layer information. This can be
 ```{r}
 plot(bm.d, layers.2d = "detailed")
 ```
+
 Note here red and black demarked regions are drawn for every layer in the requested time interval. Visually it is clear in this instance that there are two regions in which the path is constrained -- corresponding to the interval prior to the addition of a path segment, and after. 
 
 In cases of paths with lots of layer information, `"detailed"` can become cluttered. Instead, here we can use `"union"` which takes the union of all red demarked regions. Note that (i) this depends on an external package, `sf`, which is very large; and (ii) is more computationally expensive to compute. Hence, although it is a more accurate portrayal of the layer information, it is not the default option (and `sf` is only a "Suggested" not required package).
@@ -996,6 +1025,7 @@ Together, `pairs` and `dims` allow You to plot any part of the pairwise plots. F
 ```{r}
 plot(bm.d, dims = 2)
 ```
+
 Whereas, if we wanted a `"union"` plot of  component 3 against component 2, then this is possible as follows: 
 
 ```{r}

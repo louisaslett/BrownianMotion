@@ -48,6 +48,9 @@ assert.bmlabel <- function(x, t) {
   if(!checkmate::test_character(x)) {
     stop("invalid labels provided")
   }
+  if(any(x %in% c("start", "end", "user", "seg.start", "seg.end", "fpt", "internal", "forced"))) {
+    stop("one of the specified labels clashes with an internal label naming scheme: label not added, please change.")
+  }
 }
 
 add.labels_ <- function(bm, labels, t) {

@@ -33,8 +33,8 @@ delete.skeleton.BrownianMotion <- function(bm, l = -Inf, r = Inf, type = "all") 
   if(!("BrownianMotion" %in% class(bm))) {
     stop("bm argument must be a BrownianMotion object.")
   }
-  if(length(type) != 1 || !(type %in% c("all", "layer"))) {
-    stop('type must be either "all" or "layer"')
+  if(length(type) != 1 || !(type %in% c("all", "layer", "label"))) {
+    stop('type must be either "all", "layer" or "label"')
   }
   if(!is.realscalar(l)) {
     stop("l must be a scalar.")
@@ -53,6 +53,11 @@ delete.skeleton.BrownianMotion <- function(bm, l = -Inf, r = Inf, type = "all") 
   }
   if(r!=Inf && !(r %in% bm$t)) {
     stop("r must be a sampled path point")
+  }
+
+  if(type == "label") {
+    delete.labels(bm, t = bm$t[which(bm$t>=l & bm$t<r)])
+    invisible(bm)
   }
 
   ### User layers (complex case) first ###

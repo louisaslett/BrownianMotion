@@ -1,7 +1,7 @@
 Package: BrownianMotion
 Type: Package
 Title: Brownian Motion Simulations
-Version: 0.2.0
+Version: 0.3.0
 Authors@R: c(person("Louis", "Aslett", role = c("aut", "cre"),
                     email = "louis.aslett@durham.ac.uk"),
              person("Murray", "Pollock", role = "aut",
