@@ -52,7 +52,9 @@
       if(nrow(bm$layers) == 0) {
         lyrs.x <- NULL
       } else {
-        lyrs.x <- (rowSums(sapply(c(bm$t[x], missing), function(t) { bm$layers$t.l <= t & bm$layers$t.u > t })) > 0)
+        # 20/11/23: If there is exactly one layer, the next line is a bug, fixed (I think) by the line after
+        #lyrs.x <- (rowSums(sapply(c(bm$t[x], missing), function(t) { bm$layers$t.l <= t & bm$layers$t.u > t })) > 0)
+        lyrs.x <- (rowSums(simplify2array(lapply(c(bm$t[x], missing), function(t) { bm$layers$t.l <= t & bm$layers$t.u > t }), except = 0)) > 0)
       }
       return(list(t = t,
                   W_t = rep(NA, length(t)),
@@ -73,7 +75,9 @@
       if(nrow(bm$layers) == 0) {
         lyrs.x <- NULL
       } else {
-        lyrs.x <- (rowSums(sapply(c(bm$t[x], missing), function(t) { bm$layers$t.l <= t & bm$layers$t.u > t })) > 0)
+        # 20/11/23: If there is exactly one layer, the next line is a bug, fixed (I think) by the line after
+        #lyrs.x <- (rowSums(sapply(c(bm$t[x], missing), function(t) { bm$layers$t.l <= t & bm$layers$t.u > t })) > 0)
+        lyrs.x <- (rowSums(simplify2array(lapply(c(bm$t[x], missing), function(t) { bm$layers$t.l <= t & bm$layers$t.u > t }), except = 0)) > 0)
       }
       return(bm$layers[lyrs.x,])
     } else if(var == "labels") {
@@ -95,7 +99,9 @@
       lyrs.x <- NULL
     } else {
       # Extract layers at both skeleton times and non-skeleton times
-      lyrs.x <- (rowSums(as.matrix(sapply(c(bm$t[x], missing), function(t) { bm$layers$t.l <= t & bm$layers$t.u > t }))) > 0)
+      # 20/11/23: If there is exactly one layer, the next line is a bug, fixed (I think) by the line after
+      #lyrs.x <- (rowSums(as.matrix(sapply(c(bm$t[x], missing), function(t) { bm$layers$t.l <= t & bm$layers$t.u > t }))) > 0)
+      lyrs.x <- (rowSums(simplify2array(lapply(c(bm$t[x], missing), function(t) { bm$layers$t.l <= t & bm$layers$t.u > t }), except = 0)) > 0)
     }
 
     res <- matrix(c(unname(bm$t[x]), missing,
@@ -129,7 +135,9 @@
     if(nrow(bm$layers) == 0) {
       lyrs.x <- NULL
     } else {
-      lyrs.x <- (rowSums(sapply(c(bm$t[x], missing), function(t) { bm$layers$t.l <= t & bm$layers$t.u > t })) > 0)
+      # 20/11/23: If there is exactly one layer, the next line is a bug, fixed (I think) by the line after
+      #lyrs.x <- (rowSums(sapply(c(bm$t[x], missing), function(t) { bm$layers$t.l <= t & bm$layers$t.u > t })) > 0)
+      lyrs.x <- (rowSums(simplify2array(lapply(c(bm$t[x], missing), function(t) { bm$layers$t.l <= t & bm$layers$t.u > t }), except = 0)) > 0)
     }
     return(bm$layers[lyrs.x,])
   } else if(var == "labels") {
