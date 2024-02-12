@@ -8,9 +8,12 @@
 #' @param dim scalar corresponding to the dimension of the Brownian motion.
 #' @param cov covariance matrix of the Brownian motion. If scalar corresponds to a multiple of the identity matrix. If matrix should be of size dim x dim.
 #' @param refine indicates whether refinement should be by default carried out. If of length 1, then this specifies refinement for every dimension. If of length dim, then this specifies refinement for each dimension (in order).
-#' @param mult indicates in the case of refinement the threshold layer size before refinement is carried out. If of length 1, then the default layer size is \code{sqrt(t-s)}, and you can scale this by specifying the \code{mult} argument which will result in layer sizes of \code{mult*sqrt(t-s)}, and this is common for every dimension. If of length dim, then this specifies the \code{mult} for each dimension (in order).
+#' @param sp.mult indicates in the case of refinement the threshold layer size before refinement is carried out. If of length 1, then the default layer size is \code{sqrt(t-s)}, and you can scale this by specifying the \code{mult} argument which will result in layer sizes of \code{mult*sqrt(t-s)}, and this is common for every dimension. If of length dim, then this specifies the \code{mult} for each dimension (in order).
+#' @param te.mult
 #' @param prefer indicates whether there is a preference for "bessel" or "intersection" layers where possible. If of length 1, then this specifies the preference for every dimension. If of length dim, then this specifies preference for each dimension (in order).
-#'
+#' create.bm(....., refine = TRUE)
+#' create.bm(....., refine = FALSE)
+#' create.bm(....., refine = list(spatial = TRUE, temporal = FALSE))
 #' @export
 create.bm <- function(t = 0, W_t = 0, dim = 1, cov = 1, refine = TRUE, mult = 1, prefer = "bessel") {
   # t checks
