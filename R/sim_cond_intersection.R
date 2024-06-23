@@ -242,6 +242,7 @@ sim.condintersection.simpt_ <- function(s, q, t, x, y, Ll, Lu, Ul, Uu) {
     colnames(dmat) <- c("mean", "weight")
     colnames(nmat) <- c("weight", "mean")
     while(dim(dmat)[1] > 0) {
+      # OPTIMISE ME!
       eqmat <- rbind(1:dim(dmat)[1],
                      mapply(function(ub, b) { if(isTRUE(all.equal(ub, b)) == TRUE) { 1 } else { 0 } }, rep(dmat[1,"mean"], dim(dmat)[1]), dmat[,"mean"]))
       commat <- dmat[eqmat[1, eqmat[2,] == 1],, drop = FALSE]

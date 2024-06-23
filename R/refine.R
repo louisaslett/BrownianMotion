@@ -10,7 +10,8 @@
 #'
 #' @export
 refine <- function(bm, s, t, mult = bm$mult) {
-  UseMethod("refine")
+#refine <- function(bm, s, t, mult = ifelse(bm$sp.refine, bm$sp.refine, 1)) {
+    UseMethod("refine")
 }
 
 #' @export

@@ -15,6 +15,7 @@ eaphib <- function(P,z,A,si) {
 }
 
 eabetaC_ <- function(m,s,t,x,y,Ll,Lu,Ul,Uu) { #Ensure the argument m is >>3
+  #if(m > 1000) browser()
   # s1: [Ll,Uu]
   s1mult <- if(x >= Ll & y >= Ll & x <= Uu & y <= Uu){1}else{0}
   # s2: [Ll,Ul]
