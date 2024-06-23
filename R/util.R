@@ -1,6 +1,12 @@
-#' @importFrom tibble tibble add_row
+#' @import ggplot2
+#' @import patchwork
 #' @importFrom glue glue
+#' @importFrom graphics points
+#' @importFrom grDevices chull
 #' @importFrom Rmpfr mpfr
+#' @importFrom stats dnorm pnorm qnorm rbinom rexp rnorm runif
+#' @importFrom tibble tibble add_row
+#' @importFrom utils combn head installed.packages tail
 
 is.realscalar <- function(x) {
   is.atomic(x) && (length(x) == 1L) && !is.character(x) && !is.raw(x) && !is.logical(x) && (Im(x) == 0)

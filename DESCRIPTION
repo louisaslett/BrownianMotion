@@ -14,9 +14,13 @@ Depends: R (>= 4.0.1),
   ggplot2,
   patchwork
 Imports: glue,
+  graphics,
+  grDevices,
   Rmpfr,
-  statmod,
+  stats,
   tibble,
+  utils,
+  statmod,
   dplyr,
   checkmate
 Encoding: UTF-8
