@@ -3,9 +3,10 @@
 #' @importFrom glue glue
 #' @importFrom graphics points
 #' @importFrom grDevices chull
+#' @importFrom rlang .data
 #' @importFrom Rmpfr mpfr
 #' @importFrom stats dnorm pnorm qnorm rbinom rexp rnorm runif
-#' @importFrom tibble tibble add_row
+#' @importFrom tibble tibble add_row is_tibble
 #' @importFrom utils combn head installed.packages tail
 
 is.realscalar <- function(x) {
@@ -18,7 +19,7 @@ is.realvector <- function(x) {
   is.atomic(x) && !is.character(x) && !is.raw(x) && !is.logical(x) && all(Im(x) == 0)
 }
 is.bm <- function(x) {
-  is.environment(x) && ("BrownianMotion" %in% class(bm))
+  is.environment(x) && ("BrownianMotion" %in% class(x))
 }
 is.timevector <- function(x) {
   checkmate::test_numeric(x,
