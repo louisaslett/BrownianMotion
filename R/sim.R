@@ -17,6 +17,7 @@
 #'   conditional simulation bisects an existing layer (this will be respected
 #'   where possible, but it not always achievable).    Defaults to the option
 #'   specified at the time of creation of \code{bm}.
+#' @param label vector of length 1 or the length of t indicating the introduction of user specified labels (if any). By default, uses any names in the vector of times.
 #'
 #' @return the Brownian motion object which was passed in argument \code{bm} is
 #'   updated in place and returned, enabling chaining of commands with

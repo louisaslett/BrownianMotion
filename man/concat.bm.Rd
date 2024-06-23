@@ -7,10 +7,10 @@
 concat.bm(..., t0 = NULL)
 }
 \arguments{
-\item{t0}{scalar representing the time the new Brownian motion should be initialised.  Defaults to value of initial time of the first Brownian motion object to be concatenated.}
-
-\item{bm}{a Brownian motion object from which simulation should continue.
+\item{...}{multiple Brownian motion objects which will be concatenated together in the order provided into a new BrownianMotion object.
 Note the object is updated in place}
+
+\item{t0}{scalar representing the time the new Brownian motion should be initialised.  Defaults to value of initial time of the first Brownian motion object to be concatenated.}
 }
 \description{
 Copy / Concatenate Brownian motion objects

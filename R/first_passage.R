@@ -22,8 +22,10 @@
 #'   Note the object is updated in place.
 #' @param l scalar giving lower bound for first passage.
 #' @param u scalar giving upper bound for first passage.
-#' @param delta scalar providing the bounds by way of the positive/negative
-#'   change in the Brownian motion.
+#' @param delta scalar providing the bounds by way of the positive/negative change in the Brownian motion.
+#' @param delta.l provide bounds via the negative change in Brownian motion. May be specified together with \code{delta.u} to provide asymmetric first passage delta.
+#' @param delta.u provide bounds via the positive change in Brownian motion. May be specified together with \code{delta.l} to provide asymmetric first passage delta.
+#' @param label a user specified label for the first passage time created by this layer (optional).
 #'
 #' @return
 #' The Brownian motion object which was passed in argument \code{bm} is
