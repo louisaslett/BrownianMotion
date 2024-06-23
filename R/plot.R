@@ -147,6 +147,10 @@ plot.BrownianMotionNd <- function(x, y, ...) {
   path.1d <- bm[t=l:r,]
   #path.2d <- bm[t=max(t[t <= t.lim[1]]):min(t[t > t.lim[2]]),]
   path.2d <- bm[t=t.lim[1]:t.lim[2],]
+  # FIXME
+  for(iii in 1:length(path.2d$layers$inner.cube)) {
+    path.2d$layers$inner.cube[[iii]] <- unname(path.2d$layers$inner.cube[[iii]])
+  }
   not.na <- !is.na(path.2d$W_t[,1])
   path.2d$t <- path.2d$t[not.na]
   path.2d$W_t <- path.2d$W_t[not.na,,drop = FALSE]
