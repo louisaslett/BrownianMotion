@@ -121,6 +121,56 @@ sim.condintersection.simpt_ <- function(s, q, t, x, y, Ll, Lu, Ul, Uu) {
     nwei<-wei/Z; mat[,"nwei"]<-as.numeric(nwei); ntrwei<-nwei*trm; mat[,"ntrwei"]<-as.numeric(ntrwei); nwlip<-abs(nwei)*lipm; mat[,"nwlip"]<-as.numeric(nwlip); nglip<-sum(nwlip)
     list(mat=mat,Z=as.numeric(Z),glip=as.numeric(glip),nglip=as.numeric(nglip))}
 
+  brutemesh <- function(upper,depth=1) { # Caculate local Lipschitz constants and bounding uniforms
+    normm <- upper$normm
+    bbm <- upper$bbm
+    bbsd <- upper$bbsd
+    Z <- upper$Z
+    Ll <- upper$Ll
+    Lu <- upper$Lu
+    Ul <- upper$Ul
+    Uu <- upper$Uu
+    meshlen <- (ceiling((Uu-Ll)/bbsd)+50)*depth
+    f1 <- (Lu-Ll)/(Uu-Ll)
+    f2 <- (Ul-Lu)/(Uu-Ll)
+    f3 <- (Uu-Ul)/(Uu-Ll)
+    mesh <- c(seq(Ll, Lu, length = ceiling(meshlen*f1)+1),
+              seq(Lu, Ul, length = ceiling(meshlen*f2)+1),
+              seq(Ul, Uu, length = ceiling(meshlen*f3)+1))
+    lipV <- numeric(length(mesh)-1)
+    for(i in 1:(length(mesh)-1)) { # Calculate local lipschitz constants
+      Up <- mesh[i+1]
+      Lp <- mesh[i]
+      normmC <- normm[normm[,"L"]<=Lp,,drop = FALSE]
+      normmC <- normmC[normmC[,"U"]>=Up,,drop = FALSE]
+      lipsV <- numeric(dim(normmC)[1])
+      for(j in 1:dim(normmC)[1]) {
+        lipsV[j] <- brutelip(normmC[j,"mean"], normmC[j,"sd"], Lp, Up)*abs(normmC[j,"wei"])
+      }
+      lipV[i] <- sum(lipsV)
+    }
+    densV <- numeric(length(mesh))
+    for(i in 1:(length(mesh))) {
+      densV[i] <- highevalab(normm,mesh[i])*dnorm(mesh[i], mean = bbm, sd = bbsd)  # Calculate density at mesh points
+    }
+    bndV <- numeric(length(mesh)-1)
+    bndZ <- 0
+    for(i in 1:length(bndV)) { # Calculate bounding uniforms
+      bndV[i] <- max(densV[i], densV[i+1])+((mesh[i+1]-mesh[i])/2)*lipV[i]
+      bndZ <- bndZ+bndV[i]*(mesh[i+1]-mesh[i])
+    }
+    aprob <- Z/bndZ
+    pmat <- matrix(0, (length(mesh)-1), 5)
+    pmat[,1] <- mesh[1:(length(mesh)-1)]
+    pmat[,2] <- mesh[2:length(mesh)]
+    pmat[,3] <- mesh[2:length(mesh)]-mesh[1:(length(mesh)-1)]
+    pmat[,4] <- bndV
+    pmat[,5] <- pmat[,3]*pmat[,4]
+    pmat[,5] <- pmat[,5]/sum(pmat[,5])
+    colnames(pmat) <- c("s", "t", "t-s", "bnd", "prob")
+    list(pmat = pmat, aprob = aprob)
+  }
+
   bruterhopi <- function(n, s, q, t, x, y, Ll, Lu, Ul, Uu) { # Calculate full density matrix, normalising constant and Lipschitz constant for given parameters
     # Required fields
     mat <- bruterho(n,s,q,t,x,y,Ll,Lu,Ul,Uu)
