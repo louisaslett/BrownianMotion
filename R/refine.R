@@ -46,7 +46,7 @@ refine.BrownianMotion <- function(bm, s, t, mult = bm$mult) {
     } else if(bm$layers$type[l] == "bessel-bb") {
       refine_bbbessel_(bm, l, mult)
     } else {
-      warning("Cannot refine layer on interval [{bm$layers$t.l[l]},{bm$layers$t.u[l]}] of type {bm$layers$type[l]}.\n")
+      warning(glue("Cannot refine layer on interval [{bm$layers$t.l[l]},{bm$layers$t.u[l]}] of type {bm$layers$type[l]}."))
     }
   }
 
@@ -67,7 +67,7 @@ refine_ <- function(bm, lyr.idx, mult) {
   } else if(bm$layers$type[lyr.idx] == "bessel-bb") {
     refine_bbbessel_(bm, lyr.idx, mult)
   } else {
-    warning("Cannot refine layer on interval [{bm$layers$t.l[lyr.idx]},{bm$layers$t.u[lyr.idx]}] of type {bm$layers$type[lyr.idx]}.\n")
+    warning(glue("Cannot refine layer on interval [{bm$layers$t.l[lyr.idx]},{bm$layers$t.u[lyr.idx]}] of type {bm$layers$type[lyr.idx]}."))
   }
 
   invisible(bm)

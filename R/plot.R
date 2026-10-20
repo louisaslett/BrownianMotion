@@ -357,8 +357,8 @@ plot.BrownianMotion <- function(x, y, ...) {
   if(is.null(opts[["hide.user"]]) || !opts[["hide.user"]]) {
     if(nrow(bm$user.layers) > 0) {
       p <- p +
-        geom_segment(aes(x = .data$t.l, xend = .data$t.u, y = .data$L, yend = .data$L), bm$user.layers, colour = "green", size = 1.3) +
-        geom_segment(aes(x = .data$t.l, xend = .data$t.u, y = .data$U, yend = .data$U), bm$user.layers, colour = "green", size = 1.3)
+        geom_segment(aes(x = .data$t.l, xend = .data$t.u, y = .data$L, yend = .data$L), bm$user.layers, colour = "green", linewidth = 1.3) +
+        geom_segment(aes(x = .data$t.l, xend = .data$t.u, y = .data$U, yend = .data$U), bm$user.layers, colour = "green", linewidth = 1.3)
     }
   }
 

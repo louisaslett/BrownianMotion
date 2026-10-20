@@ -82,8 +82,6 @@ sim_condbessel_ <- function(bm, s_idx, q, t_idx, label, dr = NA) {
 sim_condbessel2_ <- function(q, s, t, x, y, Ll, Lu, Ul, Uu) {
   # Repeat until acceptance for the simulation of the mid-point
   cnt <- 0
-  cnt2 <- 0
-  cnt3 <- c()
   repeat{
     # Simulate min/max for Bessel process
     mnmx <- eaminmax_(s,t,x,y,Ll,Lu,Ul,Uu); m<-mnmx$m; tau<-mnmx$tau; minI<-mnmx$minI
@@ -93,13 +91,10 @@ sim_condbessel2_ <- function(q, s, t, x, y, Ll, Lu, Ul, Uu) {
     dr <- eabesmid_(q,s,tau,t,x,m,y,minI)$w
     # Determine accept reject
     cnt <- cnt+1
-    if((m<dr & dr>B2) | (m>dr & dr<B2))
-      cnt2 <- cnt2+1
     if(cnt > 1000000)
-      browser()
+      stop(glue("Conditional Bessel simulation failed to accept a proposal after 1e6 attempts (s={s}, q={q}, t={t}, x={x}, y={y}, Ll={Ll}, Lu={Lu}, Ul={Ul}, Uu={Uu})."))
     if(!((m<dr & dr>B2) | (m>dr & dr<B2))) {
       ar.prob <- eabesex_(c(s,q),c(q,t),c(x,dr),c(dr,y),m,B1,B2,minI)
-      cnt3 <- c(cnt3, prod(ar.prob$em[,8]))
       if(ar.prob$accI==1){break}
     }
   }
