@@ -1,4 +1,4 @@
-sim.condbblocal_ <- function(bm, s_idx, q, t_idx, label) {
+sim_condbblocal_ <- function(bm, s_idx, q, t_idx, label) {
   bb.s_idx <- match(bm$t[s_idx], bm$bb.local$t)
   bb.t_idx <- match(bm$t[t_idx], bm$bb.local$t)
 
@@ -13,9 +13,9 @@ sim.condbblocal_ <- function(bm, s_idx, q, t_idx, label) {
   soft <- any(!bm$layers[cur.layer, c("Lu.hard","Ud.hard")])
 
   if(soft) {
-    sim.condlocalsoft_(bm$bb.local, bb.s_idx, q, bb.t_idx, label)
+    sim_condlocalsoft_(bm$bb.local, bb.s_idx, q, bb.t_idx, label)
   } else {
-    sim.condlocal_(bm$bb.local, bb.s_idx, q, bb.t_idx, label)
+    sim_condlocal_(bm$bb.local, bb.s_idx, q, bb.t_idx, label)
   }
   Wq <- bm$bb.local$W_t[bb.s_idx+1]
   Bq <- Bs + (Wq-Ws) + (q-s)/(t-s)*((Bt-Bs)-(Wt-Ws))

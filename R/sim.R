@@ -96,7 +96,7 @@ sim.BrownianMotion <- function(bm, t, refine = bm$refine, mult = bm$mult, prefer
 
   # Do forward sims
   if(length(t.bmfwd) > 0) {
-    sim.uncond_(bm, t.bmfwd, names(t.bmfwd))
+    sim_uncond_(bm, t.bmfwd, names(t.bmfwd))
   }
   # Do BB sims
   if(length(t.bmbb) > 0) {
@@ -148,9 +148,9 @@ sim.BrownianMotion <- function(bm, t, refine = bm$refine, mult = bm$mult, prefer
         }
         for(qq in rev(t.local[3,i])) {
           if(soft) {
-            sim.condlocalsoft_(bm, l, qq, r, label[t %in% qq])
+            sim_condlocalsoft_(bm, l, qq, r, label[t %in% qq])
           } else {
-            sim.condlocal_(bm, l, qq, r, label[t %in% qq])
+            sim_condlocal_(bm, l, qq, r, label[t %in% qq])
           }
           if(prefer == "bessel") {
             intersection.to.bessel_(bm, match(qq, bm$layers$t.u))
@@ -178,7 +178,7 @@ sim.BrownianMotion <- function(bm, t, refine = bm$refine, mult = bm$mult, prefer
 
       # print(glue("intersection sim at {q} in interval ({bm$t[l.idx]},{bm$t[r.idx]})"))
 
-      sim.condintersection_(bm, l.idx, q, r.idx, label[t %in% q])
+      sim_condintersection_(bm, l.idx, q, r.idx, label[t %in% q])
       if(prefer == "bessel") {
         intersection.to.bessel_(bm, c(match(q, bm$layers$t.u), match(q, bm$layers$t.l)))
       }
@@ -202,7 +202,7 @@ sim.BrownianMotion <- function(bm, t, refine = bm$refine, mult = bm$mult, prefer
 
       # print(glue("bessel sim at {q} in interval ({bm$t[l.idx]},{bm$t[r.idx]})"))
 
-      sim.condbessel_(bm, l.idx, q, r.idx, label[t %in% q])
+      sim_condbessel_(bm, l.idx, q, r.idx, label[t %in% q])
       if(prefer == "intersection") {
         bessel.to.intersection_(bm, c(match(q, bm$layers$t.u), match(q, bm$layers$t.l)))
       }
@@ -229,7 +229,7 @@ sim.BrownianMotion <- function(bm, t, refine = bm$refine, mult = bm$mult, prefer
         #   soft <- FALSE
         # }
         for(qq in rev(t.bblocal[3,i])) {
-          sim.condbblocal_(bm, l, qq, r, label[t %in% qq])
+          sim_condbblocal_(bm, l, qq, r, label[t %in% qq])
           if(prefer == "bessel") {
             intersection.to.bessel_(bm, match(qq, bm$layers$t.u))
           }
@@ -255,7 +255,7 @@ sim.BrownianMotion <- function(bm, t, refine = bm$refine, mult = bm$mult, prefer
 
       # print(glue("bb-intersection sim at {q} in interval ({bm$t[l.idx]},{bm$t[r.idx]})"))
 
-      sim.condbbintersection_(bm, l.idx, q, r.idx, label[t %in% q])
+      sim_condbbintersection_(bm, l.idx, q, r.idx, label[t %in% q])
       if(prefer == "bessel") {
         intersection.to.bessel_(bm, c(match(q, bm$layers$t.u), match(q, bm$layers$t.l)))
       }
@@ -279,7 +279,7 @@ sim.BrownianMotion <- function(bm, t, refine = bm$refine, mult = bm$mult, prefer
 
       # print(glue("bb-bessel sim at {q} in interval ({bm$t[l.idx]},{bm$t[r.idx]})"))
 
-      sim.condbbbessel_(bm, l.idx, q, r.idx, label[t %in% q])
+      sim_condbbbessel_(bm, l.idx, q, r.idx, label[t %in% q])
       if(prefer == "intersection") {
         bessel.to.intersection_(bm, c(match(q, bm$layers$t.u), match(q, bm$layers$t.l)))
       }
@@ -299,7 +299,7 @@ sim.BrownianMotion <- function(bm, t, refine = bm$refine, mult = bm$mult, prefer
       for(l in unique(t.bmbb[1,])) {
         i <- which(t.bmbb[1,]==l)
         r <- t.bmbb[2,i[1]]
-        sim.bb_(bm, l, c(bm$t[l], rev(t.bmbb[3,i]), bm$t[r]), r, label[t %in% rev(t.bmbb[3,i])])
+        sim_bb_(bm, l, c(bm$t[l], rev(t.bmbb[3,i]), bm$t[r]), r, label[t %in% rev(t.bmbb[3,i])])
       }
     }
   }

@@ -1,4 +1,4 @@
-sim.uncond_ <- function(bm, t, label) {
+sim_uncond_ <- function(bm, t, label) {
   t_delta <- c(t[1] - tail(bm$t, 1), diff(t))
   bm$t <- c(bm$t, unname(t))
 

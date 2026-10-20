@@ -1,4 +1,4 @@
-sim.condintersection_ <- function(bm, s_idx, q, t_idx, label) {
+sim_condintersection_ <- function(bm, s_idx, q, t_idx, label) {
   s <- bm$t[s_idx]
   t <- bm$t[t_idx]
   x <- bm$W_t[s_idx]
@@ -6,7 +6,7 @@ sim.condintersection_ <- function(bm, s_idx, q, t_idx, label) {
   cur.layer <- which(bm$layers$t.l == s & bm$layers$t.u == t)
 
   # Simulate new point conditional on intersection layer
-  w <- sim.condintersection.simpt_(s, q, t, x, y,
+  w <- sim_condintersection_simpt_(s, q, t, x, y,
                                    Ll = bm$layers$Ld[cur.layer],
                                    Lu = bm$layers$Lu[cur.layer],
                                    Ul = bm$layers$Ud[cur.layer],
@@ -24,7 +24,7 @@ sim.condintersection_ <- function(bm, s_idx, q, t_idx, label) {
   # Update layer info
   # We split the layer in two, adding left and right layers either side of the
   # newly simulated time, then remove the old layer
-  newlyrs <- sim.condintersection.simlyr_(s, q, t, x, w, y,
+  newlyrs <- sim_condintersection_simlyr_(s, q, t, x, w, y,
                                           Ll = bm$layers$Ld[cur.layer],
                                           Lu = bm$layers$Lu[cur.layer],
                                           Ul = bm$layers$Ud[cur.layer],
@@ -60,7 +60,7 @@ sim.condintersection_ <- function(bm, s_idx, q, t_idx, label) {
 
 
 
-sim.condintersection.simpt_ <- function(s, q, t, x, y, Ll, Lu, Ul, Uu) {
+sim_condintersection_simpt_ <- function(s, q, t, x, y, Ll, Lu, Ul, Uu) {
 
   even <- function(x) { x%%2 == 0 }
   odd <- function(x) { x%%2 == 1 }
@@ -492,7 +492,7 @@ sim.condintersection.simpt_ <- function(s, q, t, x, y, Ll, Lu, Ul, Uu) {
 
 
 
-sim.condintersection.simlyr_ <- function(s, q, t, x, w, y, Ll, Lu, Ul, Uu) {
+sim_condintersection_simlyr_ <- function(s, q, t, x, w, y, Ll, Lu, Ul, Uu) {
   Lmin <- min(x,w)
   Lmax <- max(x,w)
   Rmin <- min(w,y)

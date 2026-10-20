@@ -1,4 +1,4 @@
-sim.bb_ <- function(bm, s_idx, q, t_idx, label) {
+sim_bb_ <- function(bm, s_idx, q, t_idx, label) {
   n <- length(q)
 
   W_t <- rep(0, n)

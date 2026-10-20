@@ -89,25 +89,25 @@ update.lyr_ <- function(bm, idx, new) {
   NULL
 }
 
-split.lyr_ <- function(bm, idx, l, r) {
+split_lyr_ <- function(bm, idx, l, r) {
   if(!is.bm(bm))
-    stop("split.lyr_  received invalid bm argument")
+    stop("split_lyr_  received invalid bm argument")
   if(!is.layeridx(bm, idx))
-    stop("split.lyr_  received invalid idx argument")
+    stop("split_lyr_  received invalid idx argument")
   if(!is.layer(l))
-    stop("split.lyr_  received invalid l argument")
+    stop("split_lyr_  received invalid l argument")
   if(!is.layer(r))
-    stop("split.lyr_  received invalid r argument")
+    stop("split_lyr_  received invalid r argument")
 
   ## NOTE TO LOUIS: MAKE THIS WORK FOR VECTOR INDEX AND MATRIX L AND R
   ## BY USING IDENTICAL() AND THEN LOOPED INSERTION
 
   if(l$t.l != bm$layers$t.l[idx])
-    stop("split.lyr_ lower time of left layer in split does not match layer to be replaced")
+    stop("split_lyr_ lower time of left layer in split does not match layer to be replaced")
   if(r$t.u != bm$layers$t.u[idx])
-    stop("split.lyr_ upper time of right layer in split does not match layer to be replaced")
+    stop("split_lyr_ upper time of right layer in split does not match layer to be replaced")
   if(l$t.u != r$t.l)
-    stop("split.lyr_ replacement left/right layers do not meet")
+    stop("split_lyr_ replacement left/right layers do not meet")
 
   bm$layers <- rbind(bm$layers[1:(idx-1),],
                      l,

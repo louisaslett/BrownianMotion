@@ -1,4 +1,4 @@
-sim.condbbintersection_ <- function(bm, s_idx, q, t_idx, label) {
+sim_condbbintersection_ <- function(bm, s_idx, q, t_idx, label) {
   bb.s_idx <- match(bm$t[s_idx], bm$bb.local$t)
   bb.t_idx <- match(bm$t[t_idx], bm$bb.local$t)
 
@@ -9,7 +9,7 @@ sim.condbbintersection_ <- function(bm, s_idx, q, t_idx, label) {
   s <- bm$t[s_idx]
   t <- bm$t[t_idx]
 
-  sim.condintersection_(bm$bb.local, bb.s_idx, q, bb.t_idx, label)
+  sim_condintersection_(bm$bb.local, bb.s_idx, q, bb.t_idx, label)
   Wq <- bm$bb.local$W_t[bb.s_idx+1]
   Bq <- Bs + (Wq-Ws) + (q-s)/(t-s)*((Bt-Bs)-(Wt-Ws))
 

@@ -1,4 +1,4 @@
-sim.condlocal_ <- function(bm, s_idx, q, t_idx, label) {
+sim_condlocal_ <- function(bm, s_idx, q, t_idx, label) {
 
   # TODO: tidy this up, vectorise wrt q and remove dependency on scale pkg C++ code!
 
@@ -26,7 +26,7 @@ sim.condlocal_ <- function(bm, s_idx, q, t_idx, label) {
     stop("Error: min/max mismatch at tau")
   }
 
-  # sim.condlocal_ <- function(q, s, tau, x, y, minI, bdry) {
+  # sim_condlocal_ <- function(q, s, tau, x, y, minI, bdry) {
 
 
   ## Repeat until acceptance
@@ -102,7 +102,7 @@ sim.condlocal_ <- function(bm, s_idx, q, t_idx, label) {
   bm
 }
 
-sim.condlocalsoft_ <- function(bm, s_idx, q, t_idx, label) {
+sim_condlocalsoft_ <- function(bm, s_idx, q, t_idx, label) {
   s <- bm$t[s_idx]
   t <- bm$t[t_idx]
   x <- bm$W_t[s_idx]

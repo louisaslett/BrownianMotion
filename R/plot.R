@@ -1,4 +1,4 @@
-plot.diag_ <- function(path, dim, t.lim) {
+plot_diag_ <- function(path, dim, t.lim) {
   p <- ggplot()
 
   jd <- c(1, which(path$W_t[,dim] != path$W_tm[,dim]), length(path$t))
@@ -29,7 +29,7 @@ plot.diag_ <- function(path, dim, t.lim) {
   p + coord_cartesian(xlim = t.lim) + xlab("t") + ylab(paste0("W(",dim,")")) #, ylim = c(ymin,ymax))
 }
 
-plot.offdiag_ <- function(path, dim, t.lim, layers.2d, show.layers) {
+plot_offdiag_ <- function(path, dim, t.lim, layers.2d, show.layers) {
   p <- ggplot()
 
   lyrs <- data.frame(t.l = path$layers$t.l,
@@ -187,29 +187,29 @@ plot.BrownianMotionNd <- function(x, y, ...) {
   }
 
   if(length(dims) == 1) {
-    return(plot.diag_(path.1d, dims[1], t.lim))
+    return(plot_diag_(path.1d, dims[1], t.lim))
   } else if(pairs) {
-    p <- plot.diag_(path.1d, dims[1], t.lim)
+    p <- plot_diag_(path.1d, dims[1], t.lim)
     for(i in 1:length(dims)) {
       for(j in 1:length(dims)) {
         if(i == 1 && j == 1) {
           next
         }
         if(i != j) {
-          p <- p + plot.offdiag_(path.2d, dims[c(i,j)], t.lim, layers.2d, show.layers)
+          p <- p + plot_offdiag_(path.2d, dims[c(i,j)], t.lim, layers.2d, show.layers)
         } else {
-          p <- p + plot.diag_(path.1d, dims[i], t.lim)
+          p <- p + plot_diag_(path.1d, dims[i], t.lim)
         }
       }
     }
   } else {
     combs <- combn(dims, 2)
-    p <- plot.offdiag_(path.2d, combs[,1], t.lim, layers.2d, show.layers) +
+    p <- plot_offdiag_(path.2d, combs[,1], t.lim, layers.2d, show.layers) +
       xlab(paste0("W(",combs[2,1],")")) +
       ylab(paste0("W(",combs[1,1],")"))
     if(length(dims) > 2) {
       for(i in 2:ncol(combs)) {
-        p <- p + plot.offdiag_(path.2d, combs[,i], t.lim, layers.2d, show.layers) +
+        p <- p + plot_offdiag_(path.2d, combs[,i], t.lim, layers.2d, show.layers) +
           xlab(paste0("W(",combs[2,i],")")) +
           ylab(paste0("W(",combs[1,i],")"))
       }
@@ -288,7 +288,7 @@ plot.BrownianMotionNdZ <- function(x, y, ...) {
           next
         }
         if(i != j) {
-          p <- p + plot.offdiag_(path.2d, dims[c(i,j)], t.lim, layers.2d, show.layers)
+          p <- p + plot_offdiag_(path.2d, dims[c(i,j)], t.lim, layers.2d, show.layers)
         } else {
           p <- p + (plot(bm$Z.bm[[dims[i]]], t.lim = t.lim) + ylab(paste0("Z(",dims[i],")")))
         }
@@ -296,12 +296,12 @@ plot.BrownianMotionNdZ <- function(x, y, ...) {
     }
   } else {
     combs <- combn(dims, 2)
-    p <- plot.offdiag_(path.2d, combs[,1], t.lim, layers.2d, show.layers) +
+    p <- plot_offdiag_(path.2d, combs[,1], t.lim, layers.2d, show.layers) +
       xlab(paste0("Z(",combs[2,1],")")) +
       ylab(paste0("Z(",combs[1,1],")"))
     if(length(dims) > 2) {
       for(i in 2:ncol(combs)) {
-        p <- p + plot.offdiag_(path.2d, combs[,i], t.lim, layers.2d, show.layers) +
+        p <- p + plot_offdiag_(path.2d, combs[,i], t.lim, layers.2d, show.layers) +
           xlab(paste0("Z(",combs[2,i],")")) +
           ylab(paste0("Z(",combs[1,i],")"))
       }

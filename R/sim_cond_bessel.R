@@ -1,5 +1,5 @@
 # Old version converts to intersection and then simulates
-# sim.condbesselOLD_ <- function(bm, s_idx, q, t_idx) {
+# sim_condbesselOLD_ <- function(bm, s_idx, q, t_idx) {
 #   s <- bm$t[s_idx]
 #   t <- bm$t[t_idx]
 #
@@ -10,9 +10,9 @@
 #
 #   if(bm$layers$type[cur.layer] == "bessel") {
 #     bm <- intersection.layers.IL_(bm, s, t, 1)
-#     bm <- sim.condintersection_(bm, s_idx, q, t_idx)
+#     bm <- sim_condintersection_(bm, s_idx, q, t_idx)
 #   } else if(bm$layers$type[cur.layer] == "intersection") {
-#     bm <- sim.condintersection_(bm, s_idx, q, t_idx)
+#     bm <- sim_condintersection_(bm, s_idx, q, t_idx)
 #   } else {
 #     stop("Error: must have bessel or intersection layer at this point.")
 #   }
@@ -20,7 +20,7 @@
 #   bm
 # }
 
-sim.condbessel_ <- function(bm, s_idx, q, t_idx, label, dr = NA) {
+sim_condbessel_ <- function(bm, s_idx, q, t_idx, label, dr = NA) {
 
   s <- bm$t[s_idx]
   t <- bm$t[t_idx]
@@ -33,9 +33,9 @@ sim.condbessel_ <- function(bm, s_idx, q, t_idx, label, dr = NA) {
   Uu <- bm$layers$Uu[cur.layer]
 
   if(is.na(dr)) {
-    res <- sim.condbessel2_(q, s, t, x, y, Ll, Lu, Ul, Uu)
+    res <- sim_condbessel2_(q, s, t, x, y, Ll, Lu, Ul, Uu)
   } else {
-    res <- sim.condbessel3_(dr, q, s, t, x, y, Ll, Lu, Ul, Uu)
+    res <- sim_condbessel3_(dr, q, s, t, x, y, Ll, Lu, Ul, Uu)
   }
 
   bm$t <- c(bm$t[1:s_idx],
@@ -79,7 +79,7 @@ sim.condbessel_ <- function(bm, s_idx, q, t_idx, label, dr = NA) {
   bm
 }
 
-sim.condbessel2_ <- function(q, s, t, x, y, Ll, Lu, Ul, Uu) {
+sim_condbessel2_ <- function(q, s, t, x, y, Ll, Lu, Ul, Uu) {
   # Repeat until acceptance for the simulation of the mid-point
   cnt <- 0
   cnt2 <- 0
@@ -124,10 +124,10 @@ sim.condbessel2_ <- function(q, s, t, x, y, Ll, Lu, Ul, Uu) {
   }
 
   list(w=dr, layer.sq=layer.sq, layer.sq.type="Bessel", layer.qt=layer.qt, layer.qt.type="Bessel")
-  # sim.condbessel3_(dr, q, s, t, x, y, Ll, Lu, Ul, Uu)
+  # sim_condbessel3_(dr, q, s, t, x, y, Ll, Lu, Ul, Uu)
 }
 
-sim.condbessel3_ <- function(dr, q, s, t, x, y, Ll, Lu, Ul, Uu) {
+sim_condbessel3_ <- function(dr, q, s, t, x, y, Ll, Lu, Ul, Uu) {
   # Modification of Ul / Lu given new intermediate point
   nLuu.left <- min(x,dr)
   nLuu.right <- min(dr,y)
