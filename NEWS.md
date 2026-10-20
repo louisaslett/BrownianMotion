@@ -21,6 +21,9 @@
 
 ## Bug fixes
 
+* Simulating or refining within localised layers requested via
+  `layers(type = "localised")` no longer fails with "missing value where
+  TRUE/FALSE needed".
 * Indexing a `BrownianMotion` object with exactly one layer now works both at
   and off skeleton points.
 * Conditional simulation within intersection layers no longer fails due to a

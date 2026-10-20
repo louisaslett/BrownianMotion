@@ -29,21 +29,31 @@ bb.localise_ <- function(bm, s, t, refine, mult, prefer) {
   if(s %in% bm$bb.local$t) {
     new.bm$layers[,4:7] <- new.bm$layers[,4:7] + bm$bb.local$W_t[match(s, bm$bb.local$t)]
     new.bm$W_t <- new.bm$W_t + bm$bb.local$W_t[match(s, bm$bb.local$t)]
+    new.bm$W_tm <- new.bm$W_tm + bm$bb.local$W_t[match(s, bm$bb.local$t)]
     # remove s from new bm so we don't now duplicate this obs
     new.bm$t <- new.bm$t[-1]
     new.bm$W_t <- new.bm$W_t[-1]
+    new.bm$W_tm <- new.bm$W_tm[-1]
   }
   if(t %in% bm$bb.local$t) {
-    bm$bb.local$layers[bm$bb.local$layers$t.l >= t,4:7] <- bm$bb.local$layers[bm$bb.local$layers$t.l >= t,4:7] + (new.bm$W_t[match(t, new.bm$t)] - bm$bb.local$W_t[match(t, bm$bb.local$t)])
-    bm$bb.local$W_t[bm$bb.local$t >= t] <- bm$bb.local$W_t[bm$bb.local$t >= t] + (new.bm$W_t[match(t, new.bm$t)] - bm$bb.local$W_t[match(t, bm$bb.local$t)])
+    delta <- new.bm$W_t[match(t, new.bm$t)] - bm$bb.local$W_t[match(t, bm$bb.local$t)]
+    bm$bb.local$layers[bm$bb.local$layers$t.l >= t,4:7] <- bm$bb.local$layers[bm$bb.local$layers$t.l >= t,4:7] + delta
+    bm$bb.local$W_t[bm$bb.local$t >= t] <- bm$bb.local$W_t[bm$bb.local$t >= t] + delta
+    # Left limits after t move with the path; the left limit at t is where the new piece arrives
+    bm$bb.local$W_tm[bm$bb.local$t > t] <- bm$bb.local$W_tm[bm$bb.local$t > t] + delta
+    bm$bb.local$W_tm[match(t, bm$bb.local$t)] <- new.bm$W_tm[match(t, new.bm$t)]
     # remove t from new bm so we don't now duplicate this obs
     new.bm$t <- head(new.bm$t, -1)
     new.bm$W_t <- head(new.bm$W_t, -1)
+    new.bm$W_tm <- head(new.bm$W_tm, -1)
   }
   # Now do the copy, maintaining temporal ordering of all objects
   bm$bb.local$W_t <- c(bm$bb.local$W_t[bm$bb.local$t<=s],
                        new.bm$W_t,
                        bm$bb.local$W_t[bm$bb.local$t>=t])
+  bm$bb.local$W_tm <- c(bm$bb.local$W_tm[bm$bb.local$t<=s],
+                        new.bm$W_tm,
+                        bm$bb.local$W_tm[bm$bb.local$t>=t])
   bm$bb.local$t <- c(bm$bb.local$t[bm$bb.local$t<=s],
                      new.bm$t,
                      bm$bb.local$t[bm$bb.local$t>=t])
