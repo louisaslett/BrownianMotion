@@ -59,7 +59,7 @@ sim.BrownianMotion <- function(bm, t, refine = bm$refine, mult = bm$mult, prefer
     stop("prefer must be one of 'bessel' or 'intersection'")
   }
   if(any(t < min(bm$t))) {
-    stop(paste0("cannot simulate path at times before the path was initialised (at time ", min(bm$t), ") -- to add in points prior to the beginning of path use add.points()"))
+    stop(paste0("cannot simulate path at times before the path was initialised (at time ", min(bm$t), ") -- to add in points prior to the beginning of path use add_points()"))
   }
   assert.bmlabel(label, t)
   if(!is.null(label) && length(label) == 1) {
@@ -77,7 +77,7 @@ sim.BrownianMotion <- function(bm, t, refine = bm$refine, mult = bm$mult, prefer
   t2 <- t[!(t %in% bm$t)]
   # Add labels to times we're eliminating
   if(length(t2) != length(t)) {
-    add.labels_(bm, label[!(t %in% t2)], t[!(t %in% t2)])
+    add_labels_(bm, label[!(t %in% t2)], t[!(t %in% t2)])
   }
   label <- label[t %in% t2]
   t <- t2

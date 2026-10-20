@@ -5,22 +5,22 @@
 #' @param t0 scalar representing the time the new Brownian motion should be initialised.  Defaults to value of initial time of the first Brownian motion object to be concatenated.
 #'
 #' @export
-concat.bm <- function(..., t0 = NULL) {
+concat_bm <- function(..., t0 = NULL) {
   bms <- list(...)
 
   if(length(bms) == 1 && is.list(bms[[1]]) && length(bms[[1]]) > 1) {
-    return(do.call(concat.bm, c(bms[[1]], t0 = t0)))
+    return(do.call(concat_bm, c(bms[[1]], t0 = t0)))
   } else {
-    UseMethod("concat.bm")
+    UseMethod("concat_bm")
   }
 }
 
 #' @export
-concat.bm.BrownianMotionNd <- function(..., t0 = NULL) {
+concat_bm.BrownianMotionNd <- function(..., t0 = NULL) {
   bms <- list(...)
 
   if(length(bms) == 1 && is.list(bms[[1]]) && length(bms[[1]]) > 1) {
-    return(do.call(concat.bm, c(bms[[1]], t0 = t0)))
+    return(do.call(concat_bm, c(bms[[1]], t0 = t0)))
   }
 
   if(length(bms) > 1) {
@@ -48,9 +48,9 @@ concat.bm.BrownianMotionNd <- function(..., t0 = NULL) {
   res$Z.bm <- list()
   for(d in 1:res$dim) {
     if(length(bms) == 1) {
-      res$Z.bm[[d]] <- concat.bm(bms[[1]]$Z.bm[[d]], t0 = t0)
+      res$Z.bm[[d]] <- concat_bm(bms[[1]]$Z.bm[[d]], t0 = t0)
     } else {
-      res$Z.bm[[d]] <- concat.bm(lapply(bms, function(bm) { bm$Z.bm[[d]] }), t0 = t0)
+      res$Z.bm[[d]] <- concat_bm(lapply(bms, function(bm) { bm$Z.bm[[d]] }), t0 = t0)
     }
   }
 
@@ -58,11 +58,11 @@ concat.bm.BrownianMotionNd <- function(..., t0 = NULL) {
 }
 
 #' @export
-concat.bm.BrownianMotion <- function(..., t0 = NULL) {
+concat_bm.BrownianMotion <- function(..., t0 = NULL) {
   bms <- list(...)
 
   if(length(bms) == 1 && is.list(bms[[1]]) && length(bms[[1]]) > 1) {
-    return(do.call(concat.bm, c(bms[[1]], t0 = t0)))
+    return(do.call(concat_bm, c(bms[[1]], t0 = t0)))
   }
 
   if(length(bms) > 1) {

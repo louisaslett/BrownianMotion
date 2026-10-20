@@ -60,7 +60,7 @@ assert.bmlabel <- function(x, t) {
   }
 }
 
-add.labels_ <- function(bm, labels, t) {
+add_labels_ <- function(bm, labels, t) {
   if(is.null(labels)) {
     return()
   } else if(length(labels) == 1) {
@@ -70,6 +70,6 @@ add.labels_ <- function(bm, labels, t) {
       bm$labels[[l]] <- unique(c(bm$labels[[l]], unname(t[labels==l])))
     }
   } else {
-    stop("invalid specification to add.labels_")
+    stop("invalid specification to add_labels_")
   }
 }

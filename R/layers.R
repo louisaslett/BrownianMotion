@@ -99,14 +99,14 @@ layers.BrownianMotion <- function(bm, s, t, type = bm$prefer, refine = bm$refine
         s.tmp <- max(bm$t)
         theta <- mult*sqrt(t-s.tmp)
         while(max(bm$t) < t) {
-          first.passage(bm, delta = theta/2)
+          first_passage(bm, delta = theta/2)
         }
         # Remove green user layers as these first passages were not a result of a user first passage request
         bm$user.layers <- bm$user.layers[!(bm$user.layers$t.l >= s.tmp & bm$user.layers$t.u <= max(bm$t)),]
         if(!(t %in% bm$t)) {
           # t is not the end point, so conditionally simulate at t and then chop off the end
           sim(bm, t, refine, mult, prefer)
-          delete.skeleton(bm, l = t)
+          delete_skeleton(bm, l = t)
         }
       }
     }

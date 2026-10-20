@@ -5,7 +5,7 @@ bb.localise_ <- function(bm, s, t, refine, mult, prefer) {
   y <- bm$W_tm[match(t, bm$t)]
 
   # Force points in auxiliary path
-  new.bm <- create.bm_(s,
+  new.bm <- create_bm_(s,
                        0,
                        refine,
                        mult,
@@ -13,14 +13,14 @@ bb.localise_ <- function(bm, s, t, refine, mult, prefer) {
 
 
   # Sim aux first passages until exceed t-s, then infill @ t-s
-  first.passage(new.bm, delta = theta/2)
+  first_passage(new.bm, delta = theta/2)
   while(max(new.bm$t) < t) {
-    first.passage(new.bm, delta = theta/2)
+    first_passage(new.bm, delta = theta/2)
   }
   if(!(t %in% new.bm$t)) {
     # t is not the end point, so conditionally simulate at t and then chop off the end
     sim(new.bm, t, refine, mult, prefer)
-    delete.skeleton(new.bm, l = t)
+    delete_skeleton(new.bm, l = t)
   }
 
   # Copy the aux path into the master path bb localisation store

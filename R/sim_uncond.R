@@ -7,8 +7,8 @@ sim_uncond_ <- function(bm, t, label) {
   bm$W_t <- c(bm$W_t, cumsum(W_delta))
   bm$W_tm <- c(bm$W_tm, cumsum(W_delta))
 
-  add.labels_(bm, "user", t)
-  add.labels_(bm, label, t)
+  add_labels_(bm, "user", t)
+  add_labels_(bm, label, t)
   bm$labels[["end"]] <- max(t)
   bm$labels[["seg.end"]][length(bm$labels[["seg.end"]])] <- bm$labels[["end"]]
   bm

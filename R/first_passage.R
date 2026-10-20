@@ -33,7 +33,7 @@
 #' dplyr (and other) style pipes.
 #'
 #' @export
-first.passage <- function(bm, l = NULL, u = NULL, delta.l = NULL, delta.u = NULL, delta = NULL, label = NULL) {
+first_passage <- function(bm, l = NULL, u = NULL, delta.l = NULL, delta.u = NULL, delta = NULL, label = NULL) {
   if("BrownianMotionNd" %in% class(bm)) {
     stop("only 1-dimensional BrownianMotion objects support first passage times.")
   }
@@ -93,10 +93,10 @@ first.passage <- function(bm, l = NULL, u = NULL, delta.l = NULL, delta.u = NULL
     stop("u must be greater than the current endpoint state of the Brownian motion.")
   }
 
-  invisible(first.passage_(bm, l, u, label))
+  invisible(first_passage_(bm, l, u, label))
 }
 
-first.passage_ <- function(bm, l, u, label) {
+first_passage_ <- function(bm, l, u, label) {
   # Get current time/position
   t <- max(bm$t)
   x <- bm$W_t[match(t, bm$t)]
@@ -117,7 +117,7 @@ first.passage_ <- function(bm, l, u, label) {
 
   if(isTRUE(all.equal(abs(l), u))) {
     # Symmetric interval, so go straight to simulate passage time + location and done
-    t.new <- t + stdbm.first.passage_()*u^2
+    t.new <- t + stdbm_first_passage_()*u^2
     x.new <- sample(c(l, u), 1)
 
     t.l.new <- t
@@ -134,7 +134,7 @@ first.passage_ <- function(bm, l, u, label) {
 
     # Loop until BM reaches either upper or lower boundary
     while(!isTRUE(all.equal(l, tail(x.new, 1), check.attributes = FALSE)) && !isTRUE(all.equal(u, tail(x.new, 1), check.attributes = FALSE))) {
-      t.new2 <- tail(t.l.new, 1) + stdbm.first.passage_()*delta^2
+      t.new2 <- tail(t.l.new, 1) + stdbm_first_passage_()*delta^2
       x.new2 <- sample(c(+delta, -delta), 1) + tail(x.new, 1)
 # cat(glue::glue("Hitting time {t.new2}, at {x.new2}.\n\n"))
 
@@ -178,9 +178,9 @@ first.passage_ <- function(bm, l, u, label) {
                             L = l+x,
                             U = u+x)
 
-  add.labels_(bm, "fpt", t.new)
-  add.labels_(bm, "internal", t.new)
-  add.labels_(bm, label, t.new)
+  add_labels_(bm, "fpt", t.new)
+  add_labels_(bm, "internal", t.new)
+  add_labels_(bm, label, t.new)
   bm$labels[["end"]] <- max(t.new)
   bm$labels[["seg.end"]][length(bm$labels[["seg.end"]])] <- bm$labels[["end"]]
 
@@ -199,7 +199,7 @@ first.passage_ <- function(bm, l, u, label) {
 # identical(p/(p+q), 1-q/(p+q))
 
 # Adapted from Scale.R (git:mpoll/scale:93fcd7f) dev.pr:159
-stdbm.first.passage.proposal_ <- function() {
+stdbm_first_passage_proposal_ <- function() {
   p.over.pplusq <- 0.5776968790939969178311
 
   U <- runif(1)
@@ -216,10 +216,10 @@ stdbm.first.passage.proposal_ <- function() {
 }
 
 # Adapted from Scale.R (git:mpoll/scale:93fcd7f) dev.ref:167
-stdbm.first.passage_ <- function() {
+stdbm_first_passage_ <- function() {
   accept <- FALSE
   while(!accept) {
-    t <- stdbm.first.passage.proposal_()
+    t <- stdbm_first_passage_proposal_()
     if(t <= 0.64) { # Series sampler 1, used around critical point 0.64 (t*<= 0.64, see Appendix C ScaLE)
       S <- exp(-1/(2*t))/2
       n <- -1

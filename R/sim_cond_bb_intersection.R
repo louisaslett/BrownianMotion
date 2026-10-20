@@ -60,8 +60,8 @@ sim_condbbintersection_ <- function(bm, s_idx, q, t_idx, label) {
   # externally
   bm$bb.local$layers <- bm$bb.local$layers[order(bm$bb.local$layers$t.l),]
 
-  add.labels_(bm, "user", q)
-  add.labels_(bm, label, q)
+  add_labels_(bm, "user", q)
+  add_labels_(bm, label, q)
 
   bm
 }

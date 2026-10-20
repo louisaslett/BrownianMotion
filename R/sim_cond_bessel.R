@@ -73,8 +73,8 @@ sim_condbessel_ <- function(bm, s_idx, q, t_idx, label, dr = NA) {
                        Ud.hard = ifelse(res$layer.qt[7] == max(res$w,y), TRUE, FALSE))
   bm$layers <- bm$layers[-cur.layer,]
 
-  add.labels_(bm, "user", q)
-  add.labels_(bm, label, q)
+  add_labels_(bm, "user", q)
+  add_labels_(bm, label, q)
 
   bm
 }

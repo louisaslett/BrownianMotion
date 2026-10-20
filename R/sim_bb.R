@@ -20,8 +20,8 @@ sim_bb_ <- function(bm, s_idx, q, t_idx, label) {
               head(tail(W_t, -1), -1),
               bm$W_tm[t_idx:length(bm$W_tm)])
 
-  add.labels_(bm, "user", q[2:(n-1)])
-  add.labels_(bm, label, q[2:(n-1)])
+  add_labels_(bm, "user", q[2:(n-1)])
+  add_labels_(bm, label, q[2:(n-1)])
 
   bm
 }

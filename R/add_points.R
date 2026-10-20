@@ -9,11 +9,11 @@
 #' @param label vector of length 1 or the length of t indicating the introduction of user specified labels (if any). By default, uses any names in the vector of times.
 #'
 #' @export
-add.points <- function(bm, t, W_t, label = names(t)) {
-  UseMethod("add.points")
+add_points <- function(bm, t, W_t, label = names(t)) {
+  UseMethod("add_points")
 }
 
-prep.add.points_ <- function(bm, t, W_t, label = names(t)) {
+prep_add_points_ <- function(bm, t, W_t, label = names(t)) {
   # t checks
   if(!isTRUE(e <- checkmate::check_vector(t, strict = TRUE, any.missing = FALSE, min.len = 1, unique = TRUE, null.ok = FALSE))) {
     stop("Error with argument t: ", e)
@@ -52,39 +52,39 @@ prep.add.points_ <- function(bm, t, W_t, label = names(t)) {
 }
 
 #' @export
-add.points.BrownianMotionNd <- function(bm, t, W_t, label = names(t)) {
+add_points.BrownianMotionNd <- function(bm, t, W_t, label = names(t)) {
   if(!("BrownianMotionNd" %in% class(bm))) {
     stop("bm argument must be a BrownianMotionNd object.")
   }
 
-  args <- prep.add.points_(bm, t, W_t, label)
+  args <- prep_add_points_(bm, t, W_t, label)
 
   W_t <- tcrossprod(args$W_t, bm$chol.inv)
 
-  add.points(bm$Z, args$t, W_t, args$label)
+  add_points(bm$Z, args$t, W_t, args$label)
 
   invisible(bm)
 }
 
 #' @export
-add.points.BrownianMotionNdZ <- function(bm, t, W_t, label = names(t)) {
+add_points.BrownianMotionNdZ <- function(bm, t, W_t, label = names(t)) {
   if(!("BrownianMotionNdZ" %in% class(bm))) {
     stop("bm argument must be a BrownianMotionNdZ object.")
   }
 
   bm <- bm[[1]]
 
-  args <- prep.add.points_(bm, t, W_t, label)
+  args <- prep_add_points_(bm, t, W_t, label)
 
   for(d in 1:bm$dim) {
-    add.points(bm$Z.bm[[d]], args$t, args$W_t[,d], args$label)
+    add_points(bm$Z.bm[[d]], args$t, args$W_t[,d], args$label)
   }
 
   invisible(bm)
 }
 
 #' @export
-add.points.BrownianMotion <- function(bm, t, W_t, label = names(t)) {
+add_points.BrownianMotion <- function(bm, t, W_t, label = names(t)) {
   if(!("BrownianMotion" %in% class(bm))) {
     stop("bm argument must be a BrownianMotion object.")
   }
@@ -148,9 +148,9 @@ add.points.BrownianMotion <- function(bm, t, W_t, label = names(t)) {
   }
 
   # Labels
-  add.labels_(bm, "user", t)
-  add.labels_(bm, "forced", t)
-  add.labels_(bm, label, t)
+  add_labels_(bm, "user", t)
+  add_labels_(bm, "forced", t)
+  add_labels_(bm, label, t)
   if(any(bm$t < bm$labels[["start"]] | bm$t > bm$labels[["end"]])) {
     bm$labels[["start"]] <- min(bm$t)
     bm$labels[["end"]] <- max(bm$t)

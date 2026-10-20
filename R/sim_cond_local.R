@@ -96,8 +96,8 @@ sim_condlocal_ <- function(bm, s_idx, q, t_idx, label) {
                        Ud.hard = TRUE) # Always hard ... "conditional simulation is the viagra of Brownian motion" - M Pollock, 3/2/2021
   bm$layers <- bm$layers[-cur.layer,]
 
-  add.labels_(bm, "user", q)
-  add.labels_(bm, label, q)
+  add_labels_(bm, "user", q)
+  add_labels_(bm, label, q)
 
   bm
 }
@@ -242,8 +242,8 @@ sim_condlocalsoft_ <- function(bm, s_idx, q, t_idx, label) {
                        Ud.hard = ifelse(minI!=1 | layer.qt[7]==W_t, TRUE, FALSE))
   bm$layers <- bm$layers[-cur.layer,]
 
-  add.labels_(bm, "user", q)
-  add.labels_(bm, label, q)
+  add_labels_(bm, "user", q)
+  add_labels_(bm, label, q)
 
   # minimum & Ud==w
   # want: - Lu.hard = T, Ud.hard = T

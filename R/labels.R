@@ -8,25 +8,25 @@
 #' @param label vector of length 1 or the length of t indicating the introduction of user specified labels (if any). By default, uses any names in the vector of times.
 #'
 #' @export
-add.labels <- function(bm, t, label = names(t)) {
-  UseMethod("add.labels")
+add_labels <- function(bm, t, label = names(t)) {
+  UseMethod("add_labels")
 }
 
 #' @export
-add.labels.BrownianMotionNd <- function(bm, t, label = names(t)) {
+add_labels.BrownianMotionNd <- function(bm, t, label = names(t)) {
   if(!("BrownianMotionNd" %in% class(bm))) {
     stop("bm argument must be a BrownianMotionNd object.")
   }
 
   for(d in 1:bm$dim) {
-    add.labels(bm$Z.bm[[d]], t, label)
+    add_labels(bm$Z.bm[[d]], t, label)
   }
 
   invisible(bm)
 }
 
 #' @export
-add.labels.BrownianMotion <- function(bm, t, label = names(t)) {
+add_labels.BrownianMotion <- function(bm, t, label = names(t)) {
   if(!("BrownianMotion" %in% class(bm))) {
     stop("bm argument must be a BrownianMotion object.")
   }
@@ -38,7 +38,7 @@ add.labels.BrownianMotion <- function(bm, t, label = names(t)) {
 
   assert.bmlabel(label, t)
 
-  add.labels_(bm, label, t)
+  add_labels_(bm, label, t)
 
   invisible(bm)
 }
@@ -55,25 +55,25 @@ add.labels.BrownianMotion <- function(bm, t, label = names(t)) {
 #' @param label vector of length 1 or the length of t indicating the introduction of user specified labels (if any). By default, uses any names in the vector of times.
 #'
 #' @export
-delete.labels <- function(bm, t = NA, label = NA) {
-  UseMethod("delete.labels")
+delete_labels <- function(bm, t = NA, label = NA) {
+  UseMethod("delete_labels")
 }
 
 #' @export
-delete.labels.BrownianMotionNd <- function(bm, t = NA, label = NA) {
+delete_labels.BrownianMotionNd <- function(bm, t = NA, label = NA) {
   if(!("BrownianMotionNd" %in% class(bm))) {
     stop("bm argument must be a BrownianMotionNd object.")
   }
 
   for(d in 1:bm$dim) {
-    delete.labels(bm$Z.bm[[d]], t, label)
+    delete_labels(bm$Z.bm[[d]], t, label)
   }
 
   invisible(bm)
 }
 
 #' @export
-delete.labels.BrownianMotion <- function(bm, t = NA, label = NA) {
+delete_labels.BrownianMotion <- function(bm, t = NA, label = NA) {
   if(!("BrownianMotion" %in% class(bm))) {
     stop("bm argument must be a BrownianMotion object.")
   }

@@ -2,7 +2,7 @@
 is.layeridx <- function(bm, x) {
   checkmate::test_integerish(x,
                              lower = 1,
-                             upper = n.lyr_(bm),
+                             upper = n_lyr_(bm),
                              any.missing = FALSE,
                              min.len = 1,
                              unique = TRUE)
@@ -28,11 +28,11 @@ is.layer <- function(x) {
 
 # Retrieve layer index and info for any layers covering a vector of times in t
 # NB: the interval is half open [) favouring t.l
-get.lyr_ <- function(bm, t) {
+get_lyr_ <- function(bm, t) {
   if(!is.bm(bm))
-    stop("get.lyr_ received invalid bm argument")
+    stop("get_lyr_ received invalid bm argument")
   if(!is.timevector(t))
-    stop("get.lyr_ received invalid t argument")
+    stop("get_lyr_ received invalid t argument")
 
   # outer provides a row per observation in t, with a column for each layer,
   # indicating whether the condition is met
@@ -53,19 +53,19 @@ get.lyr_ <- function(bm, t) {
 }
 
 # Return number of layers in the Brownian motion
-n.lyr_ <- function(bm) {
+n_lyr_ <- function(bm) {
   if(!is.bm(bm))
-    stop("get.lyr_ received invalid bm argument")
+    stop("get_lyr_ received invalid bm argument")
 
   nrow(bm$layers)
 }
 
 # Eliminate layer(s) by index
-rm.lyr_ <- function(bm, idx) {
+rm_lyr_ <- function(bm, idx) {
   if(!is.bm(bm))
-    stop("get.lyr_ received invalid bm argument")
+    stop("get_lyr_ received invalid bm argument")
   if(!is.layeridx(bm, idx))
-    stop("get.lyr_ received invalid idx argument")
+    stop("get_lyr_ received invalid idx argument")
 
   bm$layers <- bm$layers[-idx,]
 
@@ -73,16 +73,16 @@ rm.lyr_ <- function(bm, idx) {
 }
 
 # Update layer(s) by idx with bound information in new
-update.lyr_ <- function(bm, idx, new) {
+update_lyr_ <- function(bm, idx, new) {
   if(!is.bm(bm))
-    stop("update.lyr_ received invalid bm argument")
+    stop("update_lyr_ received invalid bm argument")
   if(!is.layeridx(bm, idx))
-    stop("update.lyr_ received invalid idx argument")
+    stop("update_lyr_ received invalid idx argument")
   if(!is.layerbounds(new))
-    stop("update.lyr_ received invalid new argument")
+    stop("update_lyr_ received invalid new argument")
 
   if(length(idx) != nrow(new))
-    stop("update.lyr_ differing number of layers and new layer rows provided")
+    stop("update_lyr_ differing number of layers and new layer rows provided")
 
   bm$layers[idx,4:9] <- new
 
@@ -117,6 +117,6 @@ split_lyr_ <- function(bm, idx, l, r) {
   NULL
 }
 
-add.lyr_ <- function() {
+add_lyr_ <- function() {
 
 }

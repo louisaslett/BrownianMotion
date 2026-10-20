@@ -10,11 +10,11 @@
 #' @param refine indicates whether refinement should be by default carried out. If of length 1, then this specifies refinement for every dimension. If of length dim, then this specifies refinement for each dimension (in order).
 #' @param mult set the default mult parameter to be used for any layer operations on this path, including for the level of refinement if \code{refine=TRUE}.
 #' @param prefer indicates whether there is a preference for "bessel" or "intersection" layers where possible. If of length 1, then this specifies the preference for every dimension. If of length dim, then this specifies preference for each dimension (in order).
-#' create.bm(....., refine = TRUE)
-#' create.bm(....., refine = FALSE)
-#' create.bm(....., refine = list(spatial = TRUE, temporal = FALSE))
+#' create_bm(....., refine = TRUE)
+#' create_bm(....., refine = FALSE)
+#' create_bm(....., refine = list(spatial = TRUE, temporal = FALSE))
 #' @export
-create.bm <- function(t = 0, W_t = 0, dim = 1, cov = 1, refine = TRUE, mult = 1, prefer = "bessel") {
+create_bm <- function(t = 0, W_t = 0, dim = 1, cov = 1, refine = TRUE, mult = 1, prefer = "bessel") {
   # t checks
   if(!isTRUE(e <- checkmate::check_vector(t, strict = TRUE, any.missing = FALSE, min.len = 1, unique = TRUE, null.ok = FALSE))) {
     stop("Error with argument t: ", e)
@@ -125,7 +125,7 @@ create.bm <- function(t = 0, W_t = 0, dim = 1, cov = 1, refine = TRUE, mult = 1,
     bm$Z.bm <- list()
     Z_t <- tcrossprod(W_t, bm$chol.inv)
     for(d in 1:dim) {
-      bm$Z.bm[[d]] <- create.bm_(t, Z_t[,d], refine[d], mult[d], prefer[d])
+      bm$Z.bm[[d]] <- create_bm_(t, Z_t[,d], refine[d], mult[d], prefer[d])
     }
     # Dummy for accessing untransformed path
     bm$Z <- list(bm)
@@ -136,13 +136,13 @@ create.bm <- function(t = 0, W_t = 0, dim = 1, cov = 1, refine = TRUE, mult = 1,
     # when requested again
     class(bm) <- "BrownianMotionNd"
   } else {
-    bm <- create.bm_(t, W_t[,1], refine[1], mult[1], prefer[1])
+    bm <- create_bm_(t, W_t[,1], refine[1], mult[1], prefer[1])
   }
 
   bm
 }
 
-create.bm_ <- function(t, W_t, refine, mult, prefer, nested = FALSE) {
+create_bm_ <- function(t, W_t, refine, mult, prefer, nested = FALSE) {
   bm <- new.env(parent = emptyenv())
   bm$W_t <- W_t[order(t)]
   bm$W_tm <- W_t[order(t)]
@@ -170,7 +170,7 @@ create.bm_ <- function(t, W_t, refine, mult, prefer, nested = FALSE) {
                            L = numeric(),
                            U = numeric()) # What was user specified vs what was actually computed to achieve the simulation
   if(!nested) {
-    bm$bb.local <- create.bm_(t, W_t, refine, mult, prefer, nested = TRUE) # Auxilliary info for Brownian bridge localised layers
+    bm$bb.local <- create_bm_(t, W_t, refine, mult, prefer, nested = TRUE) # Auxilliary info for Brownian bridge localised layers
   }
   class(bm) <- "BrownianMotion"
   bm
