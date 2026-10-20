@@ -42,6 +42,11 @@ bb.localise_ <- function(bm, s, t, refine, mult, prefer) {
     # Left limits after t move with the path; the left limit at t is where the new piece arrives
     bm$bb.local$W_tm[bm$bb.local$t > t] <- bm$bb.local$W_tm[bm$bb.local$t > t] + delta
     bm$bb.local$W_tm[match(t, bm$bb.local$t)] <- new.bm$W_tm[match(t, new.bm$t)]
+    # Bridge layers store the endpoint offsets B - W. Translating the auxiliary
+    # suffix by delta must subtract delta from these offsets to preserve its bounds.
+    shifted.bb <- bm$layers$t.l >= t &
+      bm$layers$type %in% c("localised-bb", "bessel-bb", "intersection-bb")
+    bm$layers[shifted.bb, c("Ld", "Uu")] <- bm$layers[shifted.bb, c("Ld", "Uu")] - delta
     # remove t from new bm so we don't now duplicate this obs
     new.bm$t <- head(new.bm$t, -1)
     new.bm$W_t <- head(new.bm$W_t, -1)

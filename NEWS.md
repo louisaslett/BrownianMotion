@@ -21,6 +21,8 @@
 
 ## Bug fixes
 
+* Adding localised layers before existing localised bridge intervals now
+  preserves the existing intervals' transformed layer bounds.
 * Simulating or refining within localised layers requested via
   `layers(type = "localised")` no longer fails with "missing value where
   TRUE/FALSE needed".
