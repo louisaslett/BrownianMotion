@@ -1,2 +1,3 @@
 # BrownianMotion
-An R package for exact simulation of Brownian motion
+
+An R package for exact simulation of (conditioned) Brownian motion.
