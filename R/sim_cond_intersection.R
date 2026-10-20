@@ -432,17 +432,15 @@ sim_condintersection_simpt_ <- function(s, q, t, x, y, Ll, Lu, Ul, Uu) {
   umat2<-earplays(mwt[33:96], mmu[33:96])
   umat3<-earplays(mwt[97:128], mmu[97:128])
   nmat <- rbind(cbind(L = Ll, U = Lu, B = 1, umat1), cbind(L = Lu, U = Ul, B = 2, umat2), cbind(L = Ul, U = Uu, B = 3, umat3))
-  nmat <- nmat[nmat[,4] != 0,]
+  nmat <- nmat[nmat[,4] != 0,, drop = FALSE]
   eb <- (nmat[,5]-bbm)/(bbsd^2)
   ea <- log(abs(nmat[,4]))-0.5*(bbsd*eb)^2-bbm*eb
   esi <- sign(nmat[,4])
   Lp <- pnorm(nmat[,1], nmat[,5], sd = bbsd)
   Up <- pnorm(nmat[,2], nmat[,5], sd = bbsd)
   itwt <- nmat[,4]*(Up-Lp)
-  # nmat <- cbind(esi, ea, eb, wt = nmat[,4], itwt = (itwt)/sum(itwt), L = nmat[,1], Lp, U = nmat[,2], Up, mmu = nmat[,5], B = nmat[,3])
-  # Debugging 10/3/2021
   nmat <- cbind(esi, ea, eb, wt = nmat[,4], itwt = itwt, L = nmat[,1], Lp, U = nmat[,2], Up, mmu = nmat[,5], B = nmat[,3])
-  pmat <- nmat[nmat[,1] == 1,]
+  pmat <- nmat[nmat[,1] == 1,, drop = FALSE]
   if(any(pmat[,5] < 0)) {
     stop(glue("Negative proposal weights in conditional intersection layer simulation, indicating loss of numerical precision (s={s}, q={q}, t={t}, x={x}, y={y}, Ll={Ll}, Lu={Lu}, Ul={Ul}, Uu={Uu})."))
   }
@@ -454,8 +452,8 @@ sim_condintersection_simpt_ <- function(s, q, t, x, y, Ll, Lu, Ul, Uu) {
       cnt2I <- cnt2I+1
       sp <- pmat[sample(1:(dim(pmat)[1]), 1, replace = TRUE, prob = pmat[,5]),]
       dr <- qnorm(runif(1, sp[7], sp[9]), sp[10], bbsd)
-      pmt <- pmat[pmat[,11] == sp[11],]
-      nmt <- nmat[nmat[,11] == sp[11],]
+      pmt <- pmat[pmat[,11] == sp[11],, drop = FALSE]
+      nmt <- nmat[nmat[,11] == sp[11],, drop = FALSE]
       u <- runif(1, 0, sum(pmt[,1]*exp(pmt[,2]+pmt[,3]*dr)))
       if(u <= sum(nmt[,1]*exp(nmt[,2]+nmt[,3]*dr))) {
         dind2 <- 1
