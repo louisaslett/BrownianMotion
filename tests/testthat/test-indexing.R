@@ -1,0 +1,114 @@
+local_bm_indexed <- function() {
+  bm <- create_bm(c(-1, 0, 1), c(100, 101, 99))
+  add_points(bm, c(2, 3), c(98, 97))
+  layers(bm, 1, 3)
+  add_labels(bm, t = 2, label = "two")
+  bm
+}
+
+test_that("[ with no index returns every field", {
+  withr::local_seed(91)
+  bm <- local_bm_indexed()
+  res <- bm[]
+  expect_named(res, c("t", "W_t", "W_tm", "layers", "labels"))
+  expect_equal(res$t, bm$t)
+  expect_equal(res$W_t, unname(bm$W_t))
+})
+
+test_that("[ extracts t, W_t, W_tm, layers and labels by name", {
+  withr::local_seed(92)
+  bm <- local_bm_indexed()
+  expect_equal(bm[, "t"], c(-1, 0, 1, 2, 3))
+  expect_equal(bm[, "W_t"], c(100, 101, 99, 98, 97))
+  expect_equal(bm[, "W_tm"], c(100, 101, 99, 98, 97))
+  expect_equal(bm[, "layers"], bm$layers)
+  expect_equal(bm[, "labels"]$two, 2)
+  expect_equal(bm[, "labels"]$user, c(2, 3))
+})
+
+test_that("[ by time, by index and by unordered time", {
+  withr::local_seed(93)
+  bm <- local_bm_indexed()
+  expect_equal(bm[t = 1, "W_t"], 99)
+  expect_equal(bm[1, "W_t"], 100)
+  expect_equal(bm[c(2, 1), "W_t"], c(101, 100))
+  expect_equal(bm[t = c(2, 0), "W_t"], c(98, 101))
+  expect_equal(bm[t = 0, "t"], 0)
+})
+
+test_that("[ by time not in the skeleton returns NA and covering layers", {
+  withr::local_seed(94)
+  bm <- local_bm_indexed()
+  expect_equal(bm[t = 1.5, "W_t"], NA)
+  lyr <- bm[t = 1.5, "layers"]
+  expect_equal(nrow(lyr), 1)
+  expect_true(lyr$t.l <= 1.5 && lyr$t.u > 1.5)
+  expect_equal(bm[t = 0.5, "t"], 0.5)
+  expect_equal(nrow(bm[t = 0.5, "layers"]), 0)
+  expect_equal(bm[t = 0.5, "labels"], list())
+  # Mixture of skeleton and non-skeleton times keeps the requested order
+  expect_equal(bm[t = c(2, 1.5), "W_t"], c(98, NA))
+})
+
+test_that("[ by time range t = a:b includes all skeleton points in between", {
+  withr::local_seed(95)
+  bm <- local_bm_indexed()
+  sim(bm, c(1.25, 1.75))
+  res <- bm[t = 1:2]
+  expect_equal(res$t, c(1, 1.25, 1.75, 2))
+  expect_equal(res$W_t, unname(bm$W_t[match(res$t, bm$t)]))
+  # Layers covering any of the returned times (including [2, 3) at t = 2)
+  expect_true(all(res$layers$t.l <= 2 & res$layers$t.u > 1))
+  expect_true(any(res$layers$t.l == 1))
+})
+
+test_that("[ by label strings", {
+  withr::local_seed(96)
+  bm <- local_bm_indexed()
+  expect_equal(bm["two", "t"], 2)
+  expect_equal(bm["two", "W_t"], 98)
+  expect_equal(bm["user", "t"], c(2, 3))
+  expect_equal(bm["end", "t"], 3)
+  expect_equal(bm["start", "W_t"], 100)
+})
+
+test_that("[ rejects non-integer and out of bounds indices", {
+  withr::local_seed(97)
+  bm <- local_bm_indexed()
+  expect_error(bm[1.5, "W_t"], "must be an integer index")
+  expect_error(bm[10, "W_t"], "index out of bounds")
+})
+
+test_that("[ on N-d objects returns matrices for W_t", {
+  withr::local_seed(98)
+  bm <- local_bm_nd(3)
+  sim(bm, c(0.5, 5))
+  layers(bm, 0, 10)
+  W <- bm[, "W_t"]
+  expect_true(is.matrix(W))
+  expect_equal(ncol(W), 3)
+  expect_equal(nrow(W), length(bm[, "t"]))
+  expect_equal(bm[t = 0.5, "W_t"], W[bm[, "t"] == 0.5, , drop = FALSE])
+  expect_equal(bm[4, "W_t"], W[4, , drop = FALSE])
+  lyr <- bm[, "layers"]
+  expect_true(all(c("t.l", "t.u", "outer.L", "outer.U", "inner.cube") %in% names(lyr)))
+  expect_equal(ncol(lyr$outer.L), 3)
+  expect_true(all(lyr$outer.L <= lyr$outer.U))
+  expect_equal(bm[t = 0.25, "W_t"], matrix(NA, 1, 3))
+})
+
+test_that("bm$Z indexing returns the transformed path", {
+  withr::local_seed(99)
+  bm <- local_bm_nd(3)
+  sim(bm, c(0.5, 5))
+  layers(bm, 0, 10)
+  Z <- bm$Z[, "Z_t"]
+  W <- bm[, "W_t"]
+  expect_equal(dim(Z), dim(W))
+  expect_equal(bm$Z[, "t"], bm[, "t"])
+  expect_equal(bm$Z[t = 0.5, "Z_t"], Z[bm[, "t"] == 0.5, , drop = FALSE])
+  expect_equal(bm$Z[4, "Z_t"], Z[4, , drop = FALSE])
+  expect_equal(unname(bm$Z[, "Z_t"][, 2]), unname(bm$Z.bm[[2]]$W_t))
+  expect_s3_class(bm$Z[, "layers"], "tbl_df")
+  expect_named(bm$Z[], c("t", "Z_t", "Z_tm", "layers", "labels"))
+})
