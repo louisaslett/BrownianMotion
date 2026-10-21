@@ -19,6 +19,11 @@
 
   `sim()`, `layers()`, `refine()` and `plot()` are unchanged.
 
+## New features
+
+* `create_bm()` accepts `cov` as a vector of length `dim`, giving a diagonal
+  covariance matrix (as described in the tutorial vignette).
+
 ## Bug fixes
 
 * Multi-dimensional Brownian motion with a non-diagonal covariance matrix now

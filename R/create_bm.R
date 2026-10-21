@@ -6,7 +6,7 @@
 #' @param t vector of fixed times of the Brownian motion.  Defaults to value of 0.
 #' @param W_t matrix of size the length of t (rows) x dimension (column). If dim = 1, a vector of the length of t is acceptable. If dim > 1 and the length of t = 1, then a vector of length 1 is acceptable (corresponding to the same value at every co-ordinate), or length d is acceptable (corresponding to the d components). Defaults to 0 for every component.
 #' @param dim scalar corresponding to the dimension of the Brownian motion.
-#' @param cov covariance matrix of the Brownian motion. If scalar corresponds to a multiple of the identity matrix. If matrix should be of size dim x dim.
+#' @param cov covariance matrix of the Brownian motion. If scalar corresponds to a multiple of the identity matrix. If a vector of length dim, corresponds to a diagonal matrix with these diagonal elements. If matrix should be of size dim x dim.
 #' @param refine indicates whether refinement should be by default carried out. If of length 1, then this specifies refinement for every dimension. If of length dim, then this specifies refinement for each dimension (in order).
 #' @param mult set the default mult parameter to be used for any layer operations on this path, including for the level of refinement if \code{refine=TRUE}.
 #' @param prefer indicates whether there is a preference for "bessel" or "intersection" layers where possible. If of length 1, then this specifies the preference for every dimension. If of length dim, then this specifies preference for each dimension (in order).
@@ -77,12 +77,14 @@ create_bm <- function(t = 0, W_t = 0, dim = 1, cov = 1, refine = TRUE, mult = 1,
       stop("Error with argument cov: the covariance matrix is not positive definite")
     }
   } else {
-    if(!isTRUE(e <- checkmate::check_number(cov, finite = TRUE))) {
-      stop("Error with argument cov: must be either a scalar or matrix (dim x dim)")
+    if(!isTRUE(checkmate::check_numeric(cov, finite = TRUE, any.missing = FALSE)) ||
+       !(length(cov) %in% c(1, dim))) {
+      stop("Error with argument cov: must be a scalar, a vector of length dim, or a matrix (dim x dim)")
     }
-    if(cov <= 0) {
-      stop("Error with argument cov: scalar cov must be strictly positive")
+    if(any(cov <= 0)) {
+      stop("Error with argument cov: scalar or vector cov must be strictly positive")
     }
+    # A scalar gives a multiple of the identity; a vector gives the diagonal
     cov <- diag(cov, nrow = dim, ncol = dim)
   }
 

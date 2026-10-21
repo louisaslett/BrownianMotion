@@ -51,7 +51,7 @@ test_that("create_bm() validates t and W_t", {
 test_that("create_bm() validates dim and cov", {
   expect_error(create_bm(dim = 0), "Error with argument dim")
   expect_error(create_bm(dim = 1.5), "Error with argument dim")
-  expect_error(create_bm(cov = -1), "scalar cov must be strictly positive")
+  expect_error(create_bm(cov = -1), "cov must be strictly positive")
   expect_error(create_bm(dim = 2, cov = matrix(c(1, 2, 3, 4), 2)), "not symmetric")
   expect_error(create_bm(dim = 2, cov = matrix(c(1, 2, 2, 1), 2)),
                "not positive definite")
@@ -110,8 +110,29 @@ test_that("create_bm() rejects non-numeric and non-finite times and values", {
 })
 
 test_that("create_bm() rejects non-numeric and non-finite covariances", {
-  expect_error(create_bm(cov = "a"), "argument cov: must be either a scalar or matrix")
-  expect_error(create_bm(cov = Inf), "argument cov: must be either a scalar or matrix")
+  expect_error(create_bm(cov = "a"), "argument cov: must be a scalar, a vector of length dim, or a matrix")
+  expect_error(create_bm(cov = Inf), "argument cov: must be a scalar, a vector of length dim, or a matrix")
   expect_error(create_bm(dim = 2, cov = matrix(c("1", "0", "0", "1"), 2)),
                "argument cov: Must store numerics")
+})
+
+test_that("create_bm() accepts a vector cov of length dim as a diagonal covariance", {
+  bm <- create_bm(dim = 3, cov = c(1, 4, 9))
+  expect_s3_class(bm, "BrownianMotionNd")
+  expect_equal(bm$cov, diag(c(1, 4, 9)))
+  expect_equal(create_bm(dim = 2, cov = 2)$cov, diag(2, 2))
+  expect_error(create_bm(dim = 3, cov = c(1, 4)), "must be a scalar, a vector of length dim")
+  expect_error(create_bm(dim = 2, cov = c(1, -4)), "cov must be strictly positive")
+  expect_error(create_bm(dim = 2, cov = c(1, NA)), "must be a scalar, a vector of length dim")
+})
+
+test_that("a vector cov gives independent dimensions with those variances", {
+  skip_on_cran()
+  withr::local_seed(51)
+  n <- 1000
+  bm <- create_bm(dim = 2, cov = c(1, 4))
+  sim(bm, seq_len(n))
+  inc <- diff(bm[, "W_t"])
+  expect_equal(diag(stats::var(inc)), c(1, 4), tolerance = 0.18)
+  expect_lt(abs(stats::cor(inc[, 1], inc[, 2])), 4 / sqrt(n))
 })

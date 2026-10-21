@@ -21,7 +21,7 @@ create_bm(
 
 \item{dim}{scalar corresponding to the dimension of the Brownian motion.}
 
-\item{cov}{covariance matrix of the Brownian motion. If scalar corresponds to a multiple of the identity matrix. If matrix should be of size dim x dim.}
+\item{cov}{covariance matrix of the Brownian motion. If scalar corresponds to a multiple of the identity matrix. If a vector of length dim, corresponds to a diagonal matrix with these diagonal elements. If matrix should be of size dim x dim.}
 
 \item{refine}{indicates whether refinement should be by default carried out. If of length 1, then this specifies refinement for every dimension. If of length dim, then this specifies refinement for each dimension (in order).}
 
