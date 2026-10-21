@@ -31,6 +31,11 @@
   rather than before it, giving draws outside the layer bounds.
 * `add_segment()` now moves the bounds of localised bridge layers by the
   correct amount.
+* `create_bm()` now rejects non-numeric and non-finite `t`, `W_t` and `cov`
+  with a clear error, rather than failing later.
+* Times and values in a path no longer pick up stray names (e.g. `q`) from
+  simulation or from named times passed to `add_points()`. Names on times
+  are still used as labels.
 * Adding localised layers before existing localised bridge intervals now
   preserves the existing intervals' transformed layer bounds.
 * Simulating or refining within localised layers requested via

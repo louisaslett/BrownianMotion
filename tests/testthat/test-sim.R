@@ -133,3 +133,38 @@ test_that("unconditional increments have the Brownian variance", {
   expect_lt(abs(mean(inc)), 4 * sqrt(0.25 / n))
   expect_gt(stats::ks.test(inc / sqrt(0.25), "pnorm")$p.value, 0.001)
 })
+
+test_that("skeleton vectors stay unnamed through simulation and other operations", {
+  # Names used to leak onto bm$t, W_t and W_tm from sim() internals and from
+  # named times passed to add_points(); labels live only in bm$labels.
+  expect_unnamed <- function(b) {
+    expect_null(names(b$t))
+    expect_null(names(b$W_t))
+    expect_null(names(b$W_tm))
+    expect_null(names(b$bb.local$t))
+    expect_null(names(b$bb.local$W_t))
+    expect_null(names(b$bb.local$W_tm))
+  }
+  withr::local_seed(31)
+  bm <- create_bm()
+  sim(bm, c(2, 4, 6, 8))
+  sim(bm, 1)                                  # gap (bridge)
+  expect_unnamed(bm)
+  layers(bm, 2, 4, type = "bessel")
+  sim(bm, 3)                                  # Bessel layer
+  layers(bm, 4, 6, type = "intersection")
+  sim(bm, 5)                                  # intersection layer
+  layers(bm, 6, 8, type = "localised")
+  sim(bm, 7)                                  # localised bridge layer
+  expect_unnamed(bm)
+  sim(bm, c(a = 9))                           # named time becomes a label only
+  add_points(bm, c(b = 10), 1)                # likewise for add_points()
+  expect_unnamed(bm)
+  expect_equal(bm$labels$a, 9)
+  expect_equal(bm$labels$b, 10)
+  refine(bm, 0, 8)
+  first_passage(bm, delta = 1)
+  add_segment(bm, l = 9, delta = 1)
+  expect_unnamed(bm)
+  expect_unnamed(concat_bm(bm, bm))
+})

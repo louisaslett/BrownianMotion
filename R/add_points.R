@@ -102,6 +102,9 @@ add_points.BrownianMotion <- function(bm, t, W_t, label = names(t)) {
   if(!is.null(label) && length(label) == 1) {
     label <- rep(label, length(t))
   }
+  # Names on t have been taken as labels above; keep them off the skeleton vectors
+  t <- unname(t)
+  W_t <- unname(W_t)
 
   if(any(t %in% bm$t)) {
     stop("t is already a time in the skeleton. No times added.")

@@ -93,3 +93,9 @@ test_that("first passage exit side is fair for a symmetric band", {
   }, logical(1))
   expect_gt(stats::binom.test(sum(up), n)$p.value, 0.001)
 })
+
+test_that("first_passage() names the offending bound in its error", {
+  bm <- create_bm()
+  expect_error(first_passage(bm, l = c(-1, -2), u = 1), "^l must specify")
+  expect_error(first_passage(bm, l = -1, u = c(1, 2)), "^u must specify")
+})

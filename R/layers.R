@@ -143,10 +143,10 @@ layers.BrownianMotion <- function(bm, s, t, type = bm$prefer, refine = bm$refine
           stop("Error new.layers() #1")
         }
       } else if(all.types[i] == "intersection" || all.types[i] == "intersection-bb") {
-        intersection.to.bessel_(bm, which(bm$layers$t.l == all.pairs[i,1], bm$layers$t.u == all.pairs[i,2]))
+        intersection.to.bessel_(bm, which(bm$layers$t.l == all.pairs[i,1] & bm$layers$t.u == all.pairs[i,2]))
       } else if(all.types[i] == "bessel" || all.types[i] == "bessel-bb") {
         # intersection.layers.IL_(bm, all.pairs[i,1], all.pairs[i,2], mult) # Old way of doing
-        bessel.to.intersection_(bm, which(bm$layers$t.l == all.pairs[i,1], bm$layers$t.u == all.pairs[i,2]))
+        bessel.to.intersection_(bm, which(bm$layers$t.l == all.pairs[i,1] & bm$layers$t.u == all.pairs[i,2]))
       } else {
         stop("Error new.layers() #2")
       }

@@ -136,7 +136,7 @@ sim.BrownianMotion <- function(bm, t, refine = bm$refine, mult = bm$mult, prefer
       # Do simulation conditional on localised layers
       t.local <- sapply(t.local,
                         function(t) {
-                          c(l = tail(which(bm$t<t), 1), r = head(which(bm$t>t), 1), q = t)
+                          c(tail(which(bm$t<t), 1), head(which(bm$t>t), 1), t)
                         })
       for(l in unique(t.local[1,])) {
         i <- which(t.local[1,]==l)
@@ -169,7 +169,7 @@ sim.BrownianMotion <- function(bm, t, refine = bm$refine, mult = bm$mult, prefer
       # Do simulation conditional on intersection layers
       lrq <- sapply(t.intersection,
                     function(t) {
-                      c(l = tail(which(bm$t<t), 1), r = head(which(bm$t>t), 1), q = t)
+                      c(tail(which(bm$t<t), 1), head(which(bm$t>t), 1), t)
                     })
       i <- which.min(abs(abs(lrq[3,]-bm$t[lrq[1,]])/(bm$t[lrq[2,]]-bm$t[lrq[1,]])-0.5))
       l.idx <- lrq[1,i]
@@ -193,7 +193,7 @@ sim.BrownianMotion <- function(bm, t, refine = bm$refine, mult = bm$mult, prefer
       # Do simulation conditional on bessel layers
       lrq <- sapply(t.bessel,
                     function(t) {
-                      c(l = tail(which(bm$t<t), 1), r = head(which(bm$t>t), 1), q = t)
+                      c(tail(which(bm$t<t), 1), head(which(bm$t>t), 1), t)
                     })
       i <- which.min(abs(abs(lrq[3,]-bm$t[lrq[1,]])/(bm$t[lrq[2,]]-bm$t[lrq[1,]])-0.5))
       l.idx <- lrq[1,i]
@@ -217,7 +217,7 @@ sim.BrownianMotion <- function(bm, t, refine = bm$refine, mult = bm$mult, prefer
       # Do simulation conditional on bb-localised layers
       t.bblocal <- sapply(t.bblocal,
                           function(t) {
-                            c(l = tail(which(bm$t<t), 1), r = head(which(bm$t>t), 1), q = t)
+                            c(tail(which(bm$t<t), 1), head(which(bm$t>t), 1), t)
                           })
       for(l in unique(t.bblocal[1,])) {
         i <- which(t.bblocal[1,]==l)
@@ -246,7 +246,7 @@ sim.BrownianMotion <- function(bm, t, refine = bm$refine, mult = bm$mult, prefer
       # Do simulation conditional on BB intersection layers
       lrq <- sapply(t.bbintersection,
                     function(t) {
-                      c(l = tail(which(bm$t<t), 1), r = head(which(bm$t>t), 1), q = t)
+                      c(tail(which(bm$t<t), 1), head(which(bm$t>t), 1), t)
                     })
       i <- which.min(abs(abs(lrq[3,]-bm$t[lrq[1,]])/(bm$t[lrq[2,]]-bm$t[lrq[1,]])-0.5))
       l.idx <- lrq[1,i]
@@ -270,7 +270,7 @@ sim.BrownianMotion <- function(bm, t, refine = bm$refine, mult = bm$mult, prefer
       # Do simulation conditional on BB bessel layers
       lrq <- sapply(t.bbbessel,
                     function(t) {
-                      c(l = tail(which(bm$t<t), 1), r = head(which(bm$t>t), 1), q = t)
+                      c(tail(which(bm$t<t), 1), head(which(bm$t>t), 1), t)
                     })
       i <- which.min(abs(abs(lrq[3,]-bm$t[lrq[1,]])/(bm$t[lrq[2,]]-bm$t[lrq[1,]])-0.5))
       l.idx <- lrq[1,i]
@@ -294,7 +294,7 @@ sim.BrownianMotion <- function(bm, t, refine = bm$refine, mult = bm$mult, prefer
       # Do standard Brownian bridges
       t.bmbb <- sapply(t.bmbb,
                        function(t) {
-                         c(l = tail(which(bm$t<t), 1), r = head(which(bm$t>t), 1), q = t)
+                         c(tail(which(bm$t<t), 1), head(which(bm$t>t), 1), t)
                        })
       for(l in unique(t.bmbb[1,])) {
         i <- which(t.bmbb[1,]==l)

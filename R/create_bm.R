@@ -19,6 +19,9 @@ create_bm <- function(t = 0, W_t = 0, dim = 1, cov = 1, refine = TRUE, mult = 1,
   if(!isTRUE(e <- checkmate::check_vector(t, strict = TRUE, any.missing = FALSE, min.len = 1, unique = TRUE, null.ok = FALSE))) {
     stop("Error with argument t: ", e)
   }
+  if(!isTRUE(e <- checkmate::check_numeric(t, finite = TRUE))) {
+    stop("Error with argument t: ", e)
+  }
 
   # dim checks
   if(!isTRUE(e <- checkmate::check_int(dim, lower = 1))) {
@@ -29,6 +32,9 @@ create_bm <- function(t = 0, W_t = 0, dim = 1, cov = 1, refine = TRUE, mult = 1,
   # W_t checks
   if(dim == 1L) {
     if(!isTRUE(e <- checkmate::check_vector(W_t, strict = TRUE, any.missing = FALSE, len = length(t), null.ok = FALSE))) {
+      stop("Error with argument W_t: ", e)
+    }
+    if(!isTRUE(e <- checkmate::check_numeric(W_t, finite = TRUE))) {
       stop("Error with argument W_t: ", e)
     }
     if(!is.matrix(W_t)) {
@@ -42,6 +48,9 @@ create_bm <- function(t = 0, W_t = 0, dim = 1, cov = 1, refine = TRUE, mult = 1,
       if(!isTRUE(e <- checkmate::check_vector(W_t, strict = TRUE, any.missing = FALSE, null.ok = FALSE))) {
         stop("Error with argument W_t: ", e)
       }
+      if(!isTRUE(e <- checkmate::check_numeric(W_t, finite = TRUE))) {
+        stop("Error with argument W_t: ", e)
+      }
       if(length(W_t) == 1) {
         W_t <- rep(W_t, dim)
       } else if(length(W_t) != dim) {
@@ -49,7 +58,7 @@ create_bm <- function(t = 0, W_t = 0, dim = 1, cov = 1, refine = TRUE, mult = 1,
       }
       W_t <- matrix(W_t, nrow = 1)
     } else { # W_t must be matrix
-      if(!isTRUE(e <- checkmate::check_matrix(W_t, any.missing = FALSE, nrows = length(t), ncols = dim))) {
+      if(!isTRUE(e <- checkmate::check_matrix(W_t, mode = "numeric", any.missing = FALSE, nrows = length(t), ncols = dim))) {
         stop("Error with argument W_t: ", e)
       }
     }
@@ -57,7 +66,7 @@ create_bm <- function(t = 0, W_t = 0, dim = 1, cov = 1, refine = TRUE, mult = 1,
 
   # cov checks
   if(is.matrix(cov)) {
-    if(!isTRUE(e <- checkmate::check_matrix(cov, any.missing = FALSE, nrows = dim, ncols = dim))) {
+    if(!isTRUE(e <- checkmate::check_matrix(cov, mode = "numeric", any.missing = FALSE, nrows = dim, ncols = dim))) {
       stop("Error with argument cov: ", e)
     }
     if(!isSymmetric(cov)) {
@@ -68,7 +77,7 @@ create_bm <- function(t = 0, W_t = 0, dim = 1, cov = 1, refine = TRUE, mult = 1,
       stop("Error with argument cov: the covariance matrix is not positive definite")
     }
   } else {
-    if(!isTRUE(e <- checkmate::check_scalar(cov))) {
+    if(!isTRUE(e <- checkmate::check_number(cov, finite = TRUE))) {
       stop("Error with argument cov: must be either a scalar or matrix (dim x dim)")
     }
     if(cov <= 0) {

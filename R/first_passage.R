@@ -81,7 +81,7 @@ first_passage <- function(bm, l = NULL, u = NULL, delta.l = NULL, delta.u = NULL
     stop("l must specify a scalar lower first passage bound.")
   }
   if(!is.realscalar(u)) {
-    stop("l must specify a scalar upper first passage bound.")
+    stop("u must specify a scalar upper first passage bound.")
   }
   if(l >= u) {
     stop("l cannot be greater than or equal to u.")

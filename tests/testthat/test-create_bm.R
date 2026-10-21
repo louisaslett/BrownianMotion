@@ -98,3 +98,20 @@ test_that("create_bm() N-d with correlated cov stores Cholesky factors", {
   # The stored (untransformed) start point round-trips through Z
   expect_equal(bm[t = 0, "W_t"], matrix(c(1, -1, 2), 1, 3))
 })
+
+test_that("create_bm() rejects non-numeric and non-finite times and values", {
+  expect_error(create_bm(t = "a"), "argument t: Must be of type 'numeric'")
+  expect_error(create_bm(t = c(0, Inf), W_t = c(0, 0)), "argument t: Must be finite")
+  expect_error(create_bm(W_t = "a"), "argument W_t: Must be of type 'numeric'")
+  expect_error(create_bm(W_t = Inf), "argument W_t: Must be finite")
+  expect_error(create_bm(W_t = c("a", "b"), dim = 2), "argument W_t: Must be of type 'numeric'")
+  expect_error(create_bm(t = c(0, 1), W_t = matrix(c("a", "b", "c", "d"), 2), dim = 2),
+               "argument W_t: Must store numerics")
+})
+
+test_that("create_bm() rejects non-numeric and non-finite covariances", {
+  expect_error(create_bm(cov = "a"), "argument cov: must be either a scalar or matrix")
+  expect_error(create_bm(cov = Inf), "argument cov: must be either a scalar or matrix")
+  expect_error(create_bm(dim = 2, cov = matrix(c("1", "0", "0", "1"), 2)),
+               "argument cov: Must store numerics")
+})
