@@ -25,6 +25,10 @@
   has the requested covariance. Previously the transform used the transpose
   of the Cholesky factor, so paths had covariance `U %*% t(U)` instead of
   `cov = t(U) %*% U`.
+* Simulating or refining within a localised bridge layer that ends at a jump
+  (e.g. at a `concat_bm()` join) now draws from the correct distribution.
+  Previously the right end of the auxiliary path was taken after the jump
+  rather than before it, giving draws outside the layer bounds.
 * Adding localised layers before existing localised bridge intervals now
   preserves the existing intervals' transformed layer bounds.
 * Simulating or refining within localised layers requested via

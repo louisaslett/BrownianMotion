@@ -105,3 +105,40 @@ test_that("concat_bm() on N-d objects concatenates every dimension", {
   sim(cc, 20)
   expect_equal(max(bm[, "t"]), 2)
 })
+
+test_that("simulating in bridge layers either side of a concat_bm() join stays within bounds", {
+  # The join at t = 1 is a jump in both the main and auxiliary paths
+  # (W_tm = 1, W_t = 0), so the last bridge layer before the join must use
+  # the auxiliary left limit at its right end.
+  for (seed in 1:5) {
+    withr::local_seed(seed)
+    a <- create_bm(c(0, 1), c(0, 1))
+    layers(a, 0, 1, type = "localised", mult = 0.5)
+    aa <- concat_bm(a, a)
+    expect_valid_bm(aa)
+    before <- aa$layers[aa$layers$t.u == 1, ]
+    after <- aa$layers[aa$layers$t.l == 1, ]
+    sim(aa, c((before$t.l + before$t.u) / 2, (after$t.l + after$t.u) / 2))
+    expect_valid_bm(aa)
+    refine(aa, 0, 2, mult = 0.3)
+    expect_valid_bm(aa)
+  }
+})
+
+test_that("draws just before a concat_bm() join follow the Brownian bridge law", {
+  skip_on_cran()
+  # The first copy is a bridge from B(0) = 0 to B(1-) = 1, so B(q) ~ N(q, q(1 - q)).
+  # q = 0.99 usually lies in the last bridge layer before the jump at the join.
+  withr::local_seed(7)
+  q <- 0.99
+  d <- replicate(50, {
+    a <- create_bm(c(0, 1), c(0, 1))
+    layers(a, 0, 1, type = "localised", mult = 0.5)
+    aa <- concat_bm(a, a)
+    sim(aa, q)
+    unname(aa[t = q, "W_t"])
+  })
+  s <- sqrt(q * (1 - q))
+  expect_lt(abs(mean(d) - q), 4 * s / sqrt(length(d)))
+  expect_equal(stats::sd(d), s, tolerance = 0.35) # pre-fix sd was about 7x too large
+})

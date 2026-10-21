@@ -15,7 +15,8 @@ bridge_bounds <- function(bm) {
        right = sweep(bounds, 1, master$Uu, "+"))
 }
 
-# The stored offsets must equal B - W_aux at both ends of each bridge layer,
+# The stored offsets must equal B - W_aux at both ends of each bridge layer
+# (left limits B_tm and W_aux_tm at the right end, which differ at jumps),
 # and the auxiliary path must have consistent vectors.
 check_offsets <- function(bm) {
   master <- bm$layers[grepl("-bb$", bm$layers$type), ]
@@ -29,7 +30,7 @@ check_offsets <- function(bm) {
                tolerance = 1e-12, ignore_attr = TRUE)
   expect_equal(master$Uu,
                bm$W_tm[match(master$t.u, bm$t)] -
-                 aux$W_t[match(master$t.u, aux$t)],
+                 aux$W_tm[match(master$t.u, aux$t)],
                tolerance = 1e-12, ignore_attr = TRUE)
   invisible(bm)
 }

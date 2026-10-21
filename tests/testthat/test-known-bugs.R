@@ -13,21 +13,6 @@ test_that("intersection layer simulation never falls back to the broken Rmpfr pa
   expect_valid_bm(bm)
 })
 
-test_that("bridge layers before a concat_bm() join stay consistent", {
-  skip("Known bug: concat_bm() aux right endpoint uses W_t instead of W_tm")
-  # The join at t = 1 is a jump (W_tm = 1, W_t = 0). The stored offset of the
-  # last bridge layer before the join no longer matches the auxiliary path, so
-  # simulation inside that layer uses the wrong bounds.
-  withr::local_seed(1)
-  a <- create_bm(c(0, 1), c(0, 1))
-  layers(a, 0, 1, type = "localised")
-  aa <- concat_bm(a, a)
-  expect_bridge_offsets(aa)
-  last <- aa$layers[aa$layers$t.u == 1, ]
-  sim(aa, (last$t.l + last$t.u) / 2)
-  expect_valid_bm(aa)
-})
-
 test_that("add_segment() on localised paths shifts bridge offsets only once", {
   skip("Known bug: add_segment() double-shifts the -bb offsets")
   withr::local_seed(1)

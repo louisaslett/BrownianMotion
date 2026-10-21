@@ -60,8 +60,9 @@ expect_bridge_offsets <- function(bm, tol = 1e-10) {
   expect_equal(master$Ld,
                bm$W_t[match(master$t.l, bm$t)] - aux$W_t[match(master$t.l, aux$t)],
                tolerance = tol, ignore_attr = TRUE)
+  # Right ends use left limits on both paths, which differ from W_t at jumps
   expect_equal(master$Uu,
-               bm$W_tm[match(master$t.u, bm$t)] - aux$W_t[match(master$t.u, aux$t)],
+               bm$W_tm[match(master$t.u, bm$t)] - aux$W_tm[match(master$t.u, aux$t)],
                tolerance = tol, ignore_attr = TRUE)
   invisible(bm)
 }

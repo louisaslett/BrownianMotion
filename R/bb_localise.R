@@ -80,7 +80,7 @@ bb.localise_ <- function(bm, s, t, refine, mult, prefer) {
   B.last <- x
   t.last <- s
   W.last <- bm$bb.local$W_t[match(s, bm$bb.local$t)]
-  W.end <- bm$bb.local$W_t[match(t, bm$bb.local$t)]
+  W.end <- bm$bb.local$W_tm[match(t, bm$bb.local$t)]
   if(length(new.bm$t)>0) {
     for(i in 1:length(new.bm$t)) {
       trans.B_t[i] <- B.last +

@@ -150,7 +150,7 @@ refine_bbintersection_ <- function(bm, lyr.idx, mult) {
   Bs <- bm$W_t[s_idx]
   Bt <- bm$W_tm[t_idx]
   Ws <- bm$bb.local$W_t[bb.s_idx]
-  Wt <- bm$bb.local$W_t[bb.t_idx]
+  Wt <- bm$bb.local$W_tm[bb.t_idx]
 
   # bm$layers[lyr.idx,"Ld"] <- Bs + bm$bb.local$layers[bblyr.idx,"Ld"] - Ws
   # bm$layers[lyr.idx,"Lu"] <- Bs + bm$bb.local$layers[bblyr.idx,"Ld"] - Ws + ((Bt-Bs)-(Wt-Ws))
@@ -280,7 +280,7 @@ refine_bblocal_ <- function(bm, lyr.idx, mult) {
   Bs <- bm$W_t[s_idx]
   Bt <- bm$W_tm[t_idx]
   Ws <- bm$bb.local$W_t[bb.s_idx]
-  Wt <- bm$bb.local$W_t[bb.t_idx]
+  Wt <- bm$bb.local$W_tm[bb.t_idx]
 
   # bm$layers[lyr.idx,"Ld"] <- Bs + bm$bb.local$layers[bblyr.idx,"Ld"] - Ws
   # bm$layers[lyr.idx,"Lu"] <- Bs + bm$bb.local$layers[bblyr.idx,"Ld"] - Ws + ((Bt-Bs)-(Wt-Ws))
@@ -376,7 +376,7 @@ refine_bbbessel_ <- function(bm, lyr.idx, mult) {
   Bs <- bm$W_t[s_idx]
   Bt <- bm$W_tm[t_idx]
   Ws <- bm$bb.local$W_t[bb.s_idx]
-  Wt <- bm$bb.local$W_t[bb.t_idx]
+  Wt <- bm$bb.local$W_tm[bb.t_idx]
 
   # bm$layers[lyr.idx,"Ld"] <- Bs + bm$bb.local$layers[bblyr.idx,"Ld"] - Ws
   # bm$layers[lyr.idx,"Lu"] <- Bs + bm$bb.local$layers[bblyr.idx,"Ld"] - Ws + ((Bt-Bs)-(Wt-Ws))

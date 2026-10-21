@@ -5,7 +5,7 @@ sim_condbblocal_ <- function(bm, s_idx, q, t_idx, label) {
   Bs <- bm$W_t[s_idx]
   Bt <- bm$W_tm[t_idx]
   Ws <- bm$bb.local$W_t[bb.s_idx]
-  Wt <- bm$bb.local$W_t[bb.t_idx]
+  Wt <- bm$bb.local$W_tm[bb.t_idx]
   s <- bm$t[s_idx]
   t <- bm$t[t_idx]
 
