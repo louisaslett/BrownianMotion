@@ -41,7 +41,7 @@
     missing <- t[!(t %in% bm$t)]
     x <- which(bm$t %in% t)
   } else {
-    reorder.t <- order(x)
+    reorder.t <- order(order(x))
     t <- bm$t[x]
   }
 
@@ -202,7 +202,7 @@
     missing <- t[!(t %in% bm$Z.bm[[1]]$t)]
     x <- which(bm$Z.bm[[1]]$t %in% t)
   } else {
-    reorder.t <- order(x)
+    reorder.t <- order(order(x))
     t <- bm$Z.bm[[1]]$t[x]
   }
 
@@ -393,7 +393,7 @@
     missing <- t[!(t %in% bm$Z.bm[[1]]$t)]
     x <- which(bm$Z.bm[[1]]$t %in% t)
   } else {
-    reorder.t <- order(x)
+    reorder.t <- order(order(x))
     t <- bm$Z.bm[[1]]$t[x]
   }
 

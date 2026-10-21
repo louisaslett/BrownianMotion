@@ -112,3 +112,34 @@ test_that("bm$Z indexing returns the transformed path", {
   expect_s3_class(bm$Z[, "layers"], "tbl_df")
   expect_named(bm$Z[], c("t", "Z_t", "Z_tm", "layers", "labels"))
 })
+
+test_that("[ by unsorted indices returns every variable in request order", {
+  # Index results were permuted with order(x) rather than its inverse
+  # order(order(x)), which only coincide for two or fewer indices.
+  withr::local_seed(41)
+  idx <- c(4, 2, 5, 1, 3, 2)
+
+  bm <- create_bm(c(0, 1), c(0, 0))
+  sim(bm, c(2, 3, 4))
+  add_segment(bm, l = 2, delta = 1)          # a jump so W_t and W_tm differ
+  expect_equal(bm[idx, "t"], bm$t[idx])
+  expect_equal(bm[idx, "W_t"], bm$W_t[idx])
+  expect_equal(bm[idx, "W_tm"], bm$W_tm[idx])
+  full <- bm[idx]
+  expect_equal(full$t, bm$t[idx])
+  expect_equal(full$W_t, bm$W_t[idx])
+  expect_equal(full$W_tm, bm$W_tm[idx])
+  # Same answer as asking by (unsorted) time
+  expect_equal(bm[unique(idx), "W_t"], bm[t = bm$t[unique(idx)], "W_t"])
+
+  nd <- create_bm(dim = 2, cov = matrix(c(1, 0.5, 0.5, 2), 2))
+  sim(nd, 1:4)
+  all.W <- nd[, "W_t"]
+  expect_equal(nd[idx, "t"], (0:4)[idx])
+  expect_equal(nd[idx, "W_t"], all.W[idx, , drop = FALSE])
+  expect_equal(nd[idx]$W_t, all.W[idx, , drop = FALSE])
+  expect_equal(nd[idx, "W_tm"], nd[, "W_tm"][idx, , drop = FALSE])
+  all.Z <- nd$Z[, "Z_t"]
+  expect_equal(nd$Z[idx, "Z_t"], all.Z[idx, , drop = FALSE])
+  expect_equal(nd$Z[idx]$Z_t, all.Z[idx, , drop = FALSE])
+})

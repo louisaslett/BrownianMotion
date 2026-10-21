@@ -28,14 +28,6 @@ test_that("intersection layers on an interval with equal endpoint values termina
   expect_valid_bm(bm)
 })
 
-test_that("[ by three or more unsorted indices returns values in request order", {
-  skip("Suspected bug: `[` uses order(x) instead of order(order(x)) for index reordering")
-  bm <- create_bm(c(-1, 0, 1), c(100, 101, 99))
-  expect_equal(bm[c(2, 3, 1), "t"], c(0, 1, -1))
-  expect_equal(bm[c(2, 3, 1)]$t, c(0, 1, -1))
-  expect_equal(bm[c(2, 3, 1), "W_t"], c(101, 99, 100))
-})
-
 test_that("plot() of an N-d path without layers builds", {
   skip("Suspected bug: plot.BrownianMotionNd/NdZ error when there are no layers")
   withr::local_seed(1)

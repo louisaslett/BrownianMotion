@@ -31,6 +31,8 @@
   rather than before it, giving draws outside the layer bounds.
 * `add_segment()` now moves the bounds of localised bridge layers by the
   correct amount.
+* Indexing with three or more unsorted indices (e.g. `bm[c(2, 3, 1), "W_t"]`)
+  now returns values in the requested order.
 * `delete_skeleton(type = "label")` now deletes only user labels; previously
   it also deleted the layers in the interval.
 * `create_bm()` now rejects non-numeric and non-finite `t`, `W_t` and `cov`
