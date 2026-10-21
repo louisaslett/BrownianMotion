@@ -71,19 +71,6 @@ test_that("[ by three or more unsorted indices returns values in request order",
   expect_equal(bm[c(2, 3, 1), "W_t"], c(101, 99, 100))
 })
 
-test_that("correlated N-d increments have the requested covariance", {
-  skip("Suspected bug: W is computed as Z %*% t(chol(cov)), giving covariance chol %*% t(chol) not cov")
-  withr::local_seed(126)
-  n <- 400
-  cov <- matrix(c(1, 0.8, 0.8, 1), 2)
-  bm <- create_bm(dim = 2, cov = cov)
-  sim(bm, seq_len(n))
-  inc <- diff(bm[, "W_t"])
-  # Fisher z: se of atanh(r) is 1/sqrt(n - 3); variances within ~25%
-  expect_lt(abs(atanh(stats::cor(inc[, 1], inc[, 2])) - atanh(0.8)), 4 / sqrt(n - 3))
-  expect_equal(diag(stats::var(inc)), c(1, 1), tolerance = 0.25)
-})
-
 test_that("plot() of an N-d path without layers builds", {
   skip("Suspected bug: plot.BrownianMotionNd/NdZ error when there are no layers")
   withr::local_seed(1)

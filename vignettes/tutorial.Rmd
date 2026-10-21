@@ -934,7 +934,7 @@ bm.d[t = 0.5, "W_t"]
 bm.d[4, "W_t"]
 ```
 
-The simulation of a path with non-identity covariance matrices relies upon transforming the path to one with identity covariance matrix, simulating in this transformed space, and then doing the reverse transformation as required. In particular, we consider the transformation $Z_t = W_t (\Lambda^{-1/2})'$, where $W_t$ is our original path and $\Lambda$ is our specified  covariance matrix, `cov`.
+The simulation of a path with non-identity covariance matrices relies upon transforming the path to one with identity covariance matrix, simulating in this transformed space, and then doing the reverse transformation as required. In particular, writing $\Lambda = U'U$ for the Cholesky factorisation of our specified covariance matrix `cov` (with $U$ upper triangular), and treating $W_t$ as a row vector, we consider the transformation $Z_t = W_t U^{-1}$, so that $W_t = Z_t U$.
 
 It is possible to access the transformed (standard) Brownian motion path by accessing the `$Z` member and using this in the usual way (ie to access times, positions etc), noting that the position is now denoted `Z_t` rather than `W_t` in this space:
 

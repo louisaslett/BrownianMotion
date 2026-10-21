@@ -46,7 +46,7 @@ transformlayersNd_ <- function(bm, t, do.transform = TRUE) {
   LU <- rbind(lyr$L,lyr$U)
   Z.vertices <- as.matrix(do.call("expand.grid", lapply(1:bm$dim, function(d) { LU[,d] })))
   if(do.transform) {
-    inner.cube <- tcrossprod(Z.vertices, bm$chol)
+    inner.cube <- Z.vertices %*% bm$chol
   } else {
     inner.cube <- unname(Z.vertices)
   }
@@ -72,10 +72,10 @@ getZtmNd_ <- function(bm, i) {
 }
 
 getWtNd_ <- function(bm, i) {
-  tcrossprod(getZtNd_(bm, i), bm$chol)
+  getZtNd_(bm, i) %*% bm$chol
 }
 
 getWtmNd_ <- function(bm, i) {
-  tcrossprod(getZtmNd_(bm, i), bm$chol)
+  getZtmNd_(bm, i) %*% bm$chol
 }
 

@@ -64,6 +64,52 @@ test_that("independent N-d dimensions are each Brownian", {
   expect_gt(stats::ks.test(inc[, 2], "pnorm", sd = 2)$p.value, 0.001)
 })
 
+test_that("Z to W transform M satisfies t(M) %*% M == cov", {
+  # Placing standard basis vectors in Z space makes the W rows the transform
+  # matrix itself. A non-diagonal, unequal-variance cov distinguishes chol(cov)
+  # from its transpose (the transform was previously Z %*% t(chol(cov))).
+  cov <- matrix(c(1, 0.8, 0.8, 4), 2)
+  bm <- create_bm(dim = 2, cov = cov)
+  add_points(bm$Z, t = c(1, 2), W_t = diag(2))
+  M <- bm[t = c(1, 2), "W_t"]
+  expect_equal(crossprod(M), cov, ignore_attr = TRUE)
+})
+
+test_that("W values passed in round-trip through Z space", {
+  cov <- matrix(c(1, 0.8, 0.8, 4), 2)
+  w <- matrix(c(1, -2, 0.5, 3), 2, byrow = TRUE)
+  bm <- create_bm(t = c(0, 1), W_t = w, dim = 2, cov = cov)
+  expect_equal(bm[, "W_t"], w, ignore_attr = TRUE)
+  expect_equal(bm$Z[, "Z_t"] %*% chol(cov), w, ignore_attr = TRUE)
+})
+
+test_that("correlated N-d increments have the requested covariance", {
+  skip_on_cran()
+  withr::local_seed(126)
+  n <- 1000
+  cov <- matrix(c(1, 0.8, 0.8, 1), 2)
+  bm <- create_bm(dim = 2, cov = cov)
+  sim(bm, seq_len(n))
+  inc <- diff(bm[, "W_t"])
+  # Fisher z: se of atanh(r) is 1/sqrt(n - 3); var se is about sqrt(2/n) = 0.045
+  expect_lt(abs(atanh(stats::cor(inc[, 1], inc[, 2])) - atanh(0.8)), 4 / sqrt(n - 3))
+  expect_equal(diag(stats::var(inc)), c(1, 1), tolerance = 0.18)
+})
+
+test_that("W-space layer cubes are the Z-space boxes under the same transform", {
+  withr::local_seed(127)
+  cov <- matrix(c(1, 0.8, 0.8, 4), 2)
+  bm <- create_bm(dim = 2, cov = cov)
+  sim(bm, c(1, 2))
+  layers(bm, 0, 2)
+  w <- bm[, "layers"]
+  z <- bm$Z[, "layers"]
+  expect_equal(nrow(w), nrow(z))
+  for (i in seq_len(nrow(w))) {
+    expect_equal(w$inner.cube[[i]], z$inner.cube[[i]] %*% chol(cov), ignore_attr = TRUE)
+  }
+})
+
 test_that("N-d multi-dim objects reject per-dim settings of the wrong length", {
   expect_error(create_bm(dim = 3, refine = c(TRUE, FALSE)), "must be length 1 or dim")
   expect_error(create_bm(dim = 3, mult = c(1, 2)), "must be length 1 or dim")

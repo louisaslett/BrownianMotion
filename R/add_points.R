@@ -59,7 +59,7 @@ add_points.BrownianMotionNd <- function(bm, t, W_t, label = names(t)) {
 
   args <- prep_add_points_(bm, t, W_t, label)
 
-  W_t <- tcrossprod(args$W_t, bm$chol.inv)
+  W_t <- args$W_t %*% bm$chol.inv
 
   add_points(bm$Z, args$t, W_t, args$label)
 

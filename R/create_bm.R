@@ -123,7 +123,7 @@ create_bm <- function(t = 0, W_t = 0, dim = 1, cov = 1, refine = TRUE, mult = 1,
     bm$chol.inv <- solve(chol(bm$cov))
     bm$dim <- dim
     bm$Z.bm <- list()
-    Z_t <- tcrossprod(W_t, bm$chol.inv)
+    Z_t <- W_t %*% bm$chol.inv
     for(d in 1:dim) {
       bm$Z.bm[[d]] <- create_bm_(t, Z_t[,d], refine[d], mult[d], prefer[d])
     }

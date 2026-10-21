@@ -21,6 +21,10 @@
 
 ## Bug fixes
 
+* Multi-dimensional Brownian motion with a non-diagonal covariance matrix now
+  has the requested covariance. Previously the transform used the transpose
+  of the Cholesky factor, so paths had covariance `U %*% t(U)` instead of
+  `cov = t(U) %*% U`.
 * Adding localised layers before existing localised bridge intervals now
   preserves the existing intervals' transformed layer bounds.
 * Simulating or refining within localised layers requested via

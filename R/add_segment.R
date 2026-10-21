@@ -100,10 +100,10 @@ add_segment.BrownianMotionNd <- function(bm, l = -Inf, r = Inf, W_t = NULL, delt
   args <- prep_add_segment_(bm, l, r, W_t, delta, label)
 
   if(!is.null(W_t)) {
-    W_t <- tcrossprod(args$W_t, bm$chol.inv)
+    W_t <- args$W_t %*% bm$chol.inv
   }
   if(!is.null(delta)) {
-    delta <- tcrossprod(args$delta, bm$chol.inv)
+    delta <- args$delta %*% bm$chol.inv
   }
 
   add_segment(bm$Z, args$l, args$r, W_t, delta, args$label)
