@@ -29,6 +29,8 @@
   (e.g. at a `concat_bm()` join) now draws from the correct distribution.
   Previously the right end of the auxiliary path was taken after the jump
   rather than before it, giving draws outside the layer bounds.
+* `add_segment()` now moves the bounds of localised bridge layers by the
+  correct amount.
 * Adding localised layers before existing localised bridge intervals now
   preserves the existing intervals' transformed layer bounds.
 * Simulating or refining within localised layers requested via

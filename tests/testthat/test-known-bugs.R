@@ -13,15 +13,6 @@ test_that("intersection layer simulation never falls back to the broken Rmpfr pa
   expect_valid_bm(bm)
 })
 
-test_that("add_segment() on localised paths shifts bridge offsets only once", {
-  skip("Known bug: add_segment() double-shifts the -bb offsets")
-  withr::local_seed(1)
-  bm <- create_bm(c(0, 1, 2), c(0, 0, 0))
-  layers(bm, 0, 2, type = "localised")
-  add_segment(bm, l = 1, r = 2, delta = 1)
-  expect_bridge_offsets(bm)
-})
-
 # Suspected bugs found while writing this test suite. Each test asserts the
 # behaviour I believe is intended; they are skipped pending a decision.
 

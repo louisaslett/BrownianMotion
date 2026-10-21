@@ -99,3 +99,39 @@ test_that("add_segment() on N-d objects shifts every coordinate", {
   expect_valid_bm_nd(bm)
   expect_error(add_segment(bm, l = 2, delta = c(1, 2)), "length 1 or of length dim")
 })
+
+test_that("add_segment() moves localised bridge layer bounds by exactly delta", {
+  # Bridge (-bb) layers store offsets B - W_aux; add_segment() moves both paths,
+  # so physical bounds must move by delta inside [l, r] and stay put elsewhere
+  # (previously they moved by 2 * delta).
+  cases <- list(
+    list(l = 1, r = Inf, delta = 2),
+    list(l = 1, r = 2, delta = -1.5),
+    list(l = -Inf, r = 2, delta = 3),
+    list(l = -Inf, r = Inf, delta = 0.7),
+    list(l = 2, r = Inf, W_t = 5)
+  )
+  for (cs in cases) {
+    withr::local_seed(11)
+    bm <- create_bm(0:3, c(0, 0.3, -0.2, 0.4))
+    layers(bm, 0, 3, type = "localised", mult = 1.2)
+    before <- bridge_bounds(bm)
+    delta <- if (is.null(cs$W_t)) cs$delta else cs$W_t - unname(bm[t = cs$l, "W_t"])
+    args <- cs[c("l", "r", intersect(c("delta", "W_t"), names(cs)))]
+    do.call(add_segment, c(list(bm), args))
+    expect_valid_bm(bm)
+
+    after <- bridge_bounds(bm)
+    i <- match(before$t, after$t)
+    lyr <- bm$layers[match(before$t, bm$layers$t.l), ]
+    moved <- ifelse(lyr$t.l >= cs$l & lyr$t.u <= cs$r, delta, 0)
+    expect_equal(after$left[i, , drop = FALSE] - before$left, matrix(moved, nrow(before$left), 4),
+                 ignore_attr = TRUE, tolerance = 1e-10)
+    expect_equal(after$right[i, , drop = FALSE] - before$right, matrix(moved, nrow(before$right), 4),
+                 ignore_attr = TRUE, tolerance = 1e-10)
+
+    bb <- bm$layers[grepl("-bb$", bm$layers$type), ]
+    sim(bm, (bb$t.l + bb$t.u) / 2)
+    expect_valid_bm(bm)
+  }
+})
