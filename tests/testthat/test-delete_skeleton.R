@@ -97,3 +97,27 @@ test_that("delete_skeleton() on N-d objects applies to all dimensions", {
   expect_equal(max(bm[, "t"]), 5)
   expect_valid_bm_nd(bm)
 })
+
+test_that("delete_skeleton(type = 'label') removes only user labels in [l, r)", {
+  # Previously this fell through and also deleted the layers in the interval.
+  withr::local_seed(73)
+  bm <- create_bm(mult = 3)
+  sim(bm, seq(0.5, 10, by = 0.5))
+  layers(bm, 0, 5)                                  # standard layers
+  layers(bm, 5, 7.5, type = "localised")            # bridge layers (+ aux)
+  first_passage(bm, l = -10, u = 10)                # user layers beyond the end
+  add_labels(bm, t = c(4.5, 5, 6, 7.5), label = "mark")
+  before <- mget(c("t", "W_t", "W_tm", "layers", "user.layers"), envir = bm)
+  before.aux <- mget(c("t", "W_t", "layers"), envir = bm$bb.local)
+
+  delete_skeleton(bm, l = 5, r = 7.5, type = "label")
+
+  for (f in c("t", "W_t", "W_tm", "layers", "user.layers")) {
+    expect_identical(bm[[f]], before[[f]], label = f)
+  }
+  for (f in names(before.aux)) {
+    expect_identical(bm$bb.local[[f]], before.aux[[f]], label = paste0("bb.local$", f))
+  }
+  expect_equal(bm$labels$mark, c(4.5, 7.5))
+  expect_valid_bm(bm)
+})

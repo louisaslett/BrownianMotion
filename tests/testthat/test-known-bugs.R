@@ -28,17 +28,6 @@ test_that("intersection layers on an interval with equal endpoint values termina
   expect_valid_bm(bm)
 })
 
-test_that("delete_skeleton(type = 'label') leaves layers untouched", {
-  skip("Suspected bug: delete_skeleton() type = 'label' falls through and deletes layers")
-  withr::local_seed(73)
-  bm <- create_bm(mult = 3)
-  layers(bm, 0, 10)
-  sim(bm, seq(0, 10, by = 0.5))
-  lyr <- bm$layers
-  delete_skeleton(bm, l = 5, r = 7.5, type = "label")
-  expect_equal(bm$layers, lyr)
-})
-
 test_that("[ by three or more unsorted indices returns values in request order", {
   skip("Suspected bug: `[` uses order(x) instead of order(order(x)) for index reordering")
   bm <- create_bm(c(-1, 0, 1), c(100, 101, 99))

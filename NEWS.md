@@ -31,6 +31,8 @@
   rather than before it, giving draws outside the layer bounds.
 * `add_segment()` now moves the bounds of localised bridge layers by the
   correct amount.
+* `delete_skeleton(type = "label")` now deletes only user labels; previously
+  it also deleted the layers in the interval.
 * `create_bm()` now rejects non-numeric and non-finite `t`, `W_t` and `cov`
   with a clear error, rather than failing later.
 * Times and values in a path no longer pick up stray names (e.g. `q`) from

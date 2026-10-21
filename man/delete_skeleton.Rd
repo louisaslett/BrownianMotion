@@ -16,8 +16,8 @@ results in left truncation of the path up to `r`}
 \item{r}{open right end of interval to delete.  By default, `Inf` which
 results in right truncation of the path from `l`}
 
-\item{type}{one of `"all"` or `"layer"` to specify whether to delete both path
-observations and layers, or just layers in the open interval `(l,r)`}
+\item{type}{one of `"all"`, `"layer"` or `"label"` to specify whether to delete both path
+observations and layers, just layers, or just user labels in the interval}
 }
 \description{
 Eliminate parts of path, layer or both from the skeleton

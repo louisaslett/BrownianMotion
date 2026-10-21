@@ -6,8 +6,8 @@
 #'     results in left truncation of the path up to `r`
 #' @param r open right end of interval to delete.  By default, `Inf` which
 #'     results in right truncation of the path from `l`
-#' @param type one of `"all"` or `"layer"` to specify whether to delete both path
-#'     observations and layers, or just layers in the open interval `(l,r)`
+#' @param type one of `"all"`, `"layer"` or `"label"` to specify whether to delete both path
+#'     observations and layers, just layers, or just user labels in the interval
 #'
 #'
 #' @export
@@ -57,7 +57,7 @@ delete_skeleton.BrownianMotion <- function(bm, l = -Inf, r = Inf, type = "all") 
 
   if(type == "label") {
     delete_labels(bm, t = bm$t[which(bm$t>=l & bm$t<r)])
-    invisible(bm)
+    return(invisible(bm))
   }
 
   ### User layers (complex case) first ###
