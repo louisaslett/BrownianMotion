@@ -6,3 +6,5 @@ inst/doc
 .DS_Store
 /doc/
 /Meta/
+tests/testthat/_problems/
+tests/testthat/testthat-problems.rds
