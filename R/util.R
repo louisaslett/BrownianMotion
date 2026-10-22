@@ -1,7 +1,6 @@
 #' @import ggplot2
 #' @import patchwork
 #' @importFrom glue glue
-#' @importFrom graphics points
 #' @importFrom grDevices chull
 #' @importFrom rlang .data
 #' @importFrom Rmpfr mpfr

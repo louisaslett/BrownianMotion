@@ -42,6 +42,8 @@ Three types of layer are available (see \code{\link{layers}}), which follow
     Fearnhead, Johansen and Roberts (2020).}
   \item{Intersection}{Pollock, Johansen and Roberts (2016).}
 }
+Repeated symmetric first passages (see \code{\link{first_passage}}) build
+the path on a spatial grid, as in Burq and Jones (2008).
 
 A full introduction is given in the tutorial vignette:
 \code{vignette("tutorial", package = "BrownianMotion")}.
@@ -58,6 +60,10 @@ plot(bm)
 Beskos, A., Papaspiliopoulos, O. and Roberts, G.O. (2008). A factorisation
 of diffusion measure and finite sample path constructions.
 \emph{Methodology and Computing in Applied Probability}, 10, 85--104.
+
+Burq, Z.A. and Jones, O.D. (2008). Simulation of Brownian motion at
+first-passage times. \emph{Mathematics and Computers in Simulation}, 77,
+64--71.
 
 Devroye, L. (2009). On exact simulation algorithms for some distributions
 related to Jacobi theta functions. \emph{Statistics and Probability

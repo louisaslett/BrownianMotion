@@ -347,7 +347,7 @@ bm.adjust |> first_passage(delta.l = -1, delta.u = 3)
 plot(bm.adjust)
 ```
 
-The output in this case is slightly different as this is achieved algorithmically by decomposing the requested layers into iterative calls of the *symmetric* variant of the function.
+The output in this case is slightly different as this is achieved algorithmically by decomposing the requested layers into iterative calls of the *symmetric* variant of the function. Each symmetric first passage time is simulated exactly using the algorithm of [@DEV]. Chaining symmetric first passages builds the path at its successive first passage times, in the spirit of [@BURQ], who build the path at the first passage times of a regular spatial grid (as obtained here by repeated calls with a fixed `delta`).
 
 We may not be interested in the first passage time of a level offset by the current terminal time, but instead some specified level. This can be achieved by using the arguments `l` and `u` where these are the lower and upper layers requested. For instance, we may want the first passage time of the (spatial) interval $[90,100]$:
 

@@ -19,6 +19,11 @@
 
   `sim()`, `layers()`, `refine()` and `plot()` are unchanged.
 
+* The `points()` method for `BrownianMotion` objects, a leftover from an
+  earlier base-graphics version of the plotting, has been removed. Use
+  `plot()`, or `bm[, "t"]` and `bm[, "W_t"]` to draw the skeleton yourself.
+  The package no longer imports graphics.
+
 ## New features
 
 * `create_bm()` accepts `cov` as a vector of length `dim`, giving a diagonal

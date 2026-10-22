@@ -368,18 +368,6 @@ plot.BrownianMotionNdZ <- function(x, y, ...) {
 #' plot(bm2$Z)
 #' @export
 plot.BrownianMotion <- function(x, y, ...) {
-  # # TODO: update computing y.l and y.u to be over a restricted range is the ...
-  # #       variadic argument contains xlim for a restricted time range plot
-  # y.l <- min(x$W_t, x$bounds$l)
-  # y.u <- max(x$W_t, x$bounds$u)
-  # plot(x$t, x$W_t, type = "l", ylim = c(y.l, y.u), xlab = "Time", ylab = "State", ...)
-  # if(nrow(x$bounds) > 0) {
-  #   for(i in 1:nrow(x$bounds)) {
-  #     points(unlist(x$bounds[i,1:2]), rep(unlist(x$bounds[i,3]), 2), type = "l", col = "red")
-  #     points(unlist(x$bounds[i,1:2]), rep(unlist(x$bounds[i,4]), 2), type = "l", col = "red")
-  #   }
-  # }
-
   opts <- list(...)
 
   bm <- x
@@ -514,9 +502,4 @@ plot.BrownianMotion <- function(x, y, ...) {
   } else {
     return(p)
   }
-}
-
-#' @export
-points.BrownianMotion <- function(x, y, ...) {
-  points(x$t, x$W_t, type = "l", ...)
 }

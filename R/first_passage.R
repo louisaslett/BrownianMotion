@@ -18,6 +18,14 @@
 #' red lines nested within the solid red line constraint imposed by the overall first
 #' passage simulation.
 #'
+#' A symmetric first passage moves the path by \code{+delta} or \code{-delta},
+#' each with probability 1/2, at a time obtained by scaling the exit time of
+#' standard Brownian motion from \eqn{(-1, 1)}, which is sampled exactly using
+#' the algorithm of Devroye (2009) as implemented in Pollock et al. (2020).
+#' Repeated calls with a fixed \code{delta} therefore build the path on a
+#' regular spatial grid at its successive first passage times, as proposed by
+#' Burq and Jones (2008).
+#'
 #' @param bm a Brownian motion object (of dimension 1) from which simulation should continue.
 #'   Note the object is updated in place.
 #' @param l scalar giving lower bound for first passage.
@@ -28,6 +36,10 @@
 #' @param label a user specified label for the first passage time created by this layer (optional).
 #'
 #' @references
+#' Burq, Z.A. and Jones, O.D. (2008). Simulation of Brownian motion at
+#' first-passage times. \emph{Mathematics and Computers in Simulation}, 77,
+#' 64--71.
+#'
 #' Devroye, L. (2009). On exact simulation algorithms for some distributions
 #' related to Jacobi theta functions. \emph{Statistics and Probability
 #' Letters}, 79, 2251--2259.

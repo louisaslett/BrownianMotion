@@ -36,14 +36,6 @@ test_that("plot() of a 1D path with jumps builds", {
   expect_plot_ok(plot(bm))
 })
 
-test_that("points() adds a 1D path to a base graphics plot", {
-  withr::local_seed(105)
-  bm <- local_bm_1d()
-  withr::local_pdf(NULL)
-  plot(bm$t, bm$W_t, type = "n")
-  expect_no_error(points(bm))
-})
-
 test_that("plot() of an N-d path with layers builds in each layers.2d mode", {
   withr::local_seed(106)
   bm <- local_bm_nd(3)
