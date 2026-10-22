@@ -66,3 +66,19 @@ bm |> layers(4, 6, type = "localised")
 bm[, "layers"]
 plot(bm)
 }
+\references{
+Bessel layers: Beskos, A., Papaspiliopoulos, O. and Roberts, G.O. (2008). A
+factorisation of diffusion measure and finite sample path constructions.
+\emph{Methodology and Computing in Applied Probability}, 10, 85--104.
+
+Localised layers: Devroye, L. (2009). On exact simulation algorithms for
+some distributions related to Jacobi theta functions. \emph{Statistics and
+Probability Letters}, 79, 2251--2259; and Pollock, M., Fearnhead, P.,
+Johansen, A.M. and Roberts, G.O. (2020). Quasi-stationary Monte Carlo
+methods and the ScaLE algorithm (with discussion). \emph{Journal of the
+Royal Statistical Society, Series B (Statistical Methodology)}, 82, 1--59.
+
+Intersection layers: Pollock, M., Johansen, A.M. and Roberts, G.O. (2016).
+On the exact and \eqn{\varepsilon}-strong simulation of (jump) diffusions.
+\emph{Bernoulli}, 22(2), 794--856.
+}

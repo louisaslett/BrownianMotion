@@ -123,6 +123,7 @@ plot_offdiag_ <- function(path, dim, t.lim, layers.2d, show.layers) {
   p + xlab("") + ylab("")
 }
 
+#' @rdname plot.BrownianMotion
 #' @export
 plot.BrownianMotionNd <- function(x, y, ...) {
   opts <- list(...)
@@ -221,6 +222,7 @@ plot.BrownianMotionNd <- function(x, y, ...) {
 
 
 
+#' @rdname plot.BrownianMotion
 #' @export
 plot.BrownianMotionNdZ <- function(x, y, ...) {
   opts <- list(...)
@@ -315,6 +317,55 @@ plot.BrownianMotionNdZ <- function(x, y, ...) {
 
 
 
+#' Plot a Brownian motion path and its layers
+#'
+#' Plots the skeleton of a Brownian motion path with \pkg{ggplot2}. Black dots
+#' are the simulated points, joined by grey lines; these lines are only a guide
+#' and are not the path itself. Layers are drawn as horizontal bounds coloured
+#' by type (purple for Bessel, blue for intersection, red for localised), with
+#' solid lines for bounds the path stays within and dashed or dotted lines for
+#' inner bounds. Bounds given by the user to \code{\link{first_passage}} are
+#' drawn in green. Jumps (see \code{\link{add_segment}}) are shown with open
+#' circles at the left limit and a dotted vertical line.
+#'
+#' A multi-dimensional path is drawn as a grid of plots (combined with
+#' \pkg{patchwork}): each component against time on the diagonal, and each pair
+#' of components against each other off the diagonal, where the red region
+#' contains the path over the plotted time range and the black box bounds it.
+#' \code{plot(bm$Z)} draws the transformed, independent components instead.
+#'
+#' @param x a Brownian motion object.
+#' @param y unused.
+#' @param ... plotting options:
+#'   \describe{
+#'     \item{\code{t.lim}}{a time range \code{c(from, to)} to plot.}
+#'     \item{\code{hide.user}}{(one dimension) \code{TRUE} to hide the green
+#'       user-specified bounds.}
+#'     \item{\code{dims}}{(several dimensions) which components to plot.}
+#'     \item{\code{pairs}}{(several dimensions) \code{FALSE} to draw only the
+#'       pairwise plots, without the plots against time.}
+#'     \item{\code{layers.2d}}{(several dimensions) how to draw layers in the
+#'       pairwise plots: \code{"convex"} (default) for the convex hull over the
+#'       time range, \code{"detailed"} for each layer separately, or
+#'       \code{"union"} for their union (requires the \pkg{sf} package).}
+#'   }
+#'
+#' @return A \pkg{ggplot2} plot (a \pkg{patchwork} of plots for several
+#'   dimensions), which is drawn when printed.
+#'
+#' @examples
+#' set.seed(1)
+#' bm <- create_bm()
+#' bm |> sim(1:4) |> layers(0, 2, type = "bessel") |> first_passage(l = -3, u = 3)
+#' plot(bm)
+#' plot(bm, t.lim = c(0, 2))
+#' plot(bm, hide.user = TRUE)
+#'
+#' bm2 <- create_bm(dim = 2, cov = matrix(c(1, 0.5, 0.5, 1), 2))
+#' bm2 |> sim(1:2) |> layers(0, 2)
+#' plot(bm2)
+#' plot(bm2, layers.2d = "detailed", pairs = FALSE)
+#' plot(bm2$Z)
 #' @export
 plot.BrownianMotion <- function(x, y, ...) {
   # # TODO: update computing y.l and y.u to be over a restricted range is the ...

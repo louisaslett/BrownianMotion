@@ -1,8 +1,73 @@
+#' Extract parts of a Brownian motion object
+#'
+#' Brownian motion objects are indexed like a data frame, \code{bm[i, var]},
+#' where \code{i} selects skeleton points and \code{var} selects what to return.
+#'
+#' Points can be selected in three ways:
+#' \itemize{
+#'   \item by position, e.g. \code{bm[1, "W_t"]} for the first point;
+#'   \item by time, using the named argument \code{t}, e.g.
+#'     \code{bm[t = 1.5, "W_t"]}. A range \code{t = a:b} selects \code{a},
+#'     \code{b} and every skeleton time in between (it is not a sequence of
+#'     integers). Times not in the skeleton give \code{NA} values, but the
+#'     layers containing them are still returned;
+#'   \item by label, e.g. \code{bm["user", "t"]} (see \code{\link{add_labels}}).
+#' }
+#' Leaving \code{i} empty, as in \code{bm[, "W_t"]}, selects every point.
+#'
+#' \code{var} is one of \code{"t"}, \code{"W_t"} (the path), \code{"W_tm"}
+#' (the left limit of the path, which differs from \code{W_t} only at jumps
+#' created by \code{\link{add_segment}} or \code{\link{concat_bm}}),
+#' \code{"layers"} or \code{"labels"}. If it is omitted, a list of all of these
+#' is returned. For the transformed view \code{bm$Z} of a multi-dimensional
+#' path, use \code{"Z_t"} and \code{"Z_tm"} in place of \code{"W_t"} and
+#' \code{"W_tm"}.
+#'
+#' @param bm a Brownian motion object.
+#' @param i the points to select, as indices or labels. Leave empty to select
+#'   every point.
+#' @param var what to return (see Details). Omit to return a list of
+#'   everything.
+#' @param t times to select, in place of \code{i}; must be given by name, as
+#'   in \code{bm[t = 1.5, "W_t"]}.
+#'
+#' @return Depending on \code{var}: a numeric vector (\code{"t"}, and
+#'   \code{"W_t"}/\code{"W_tm"} in one dimension); a matrix with one column per
+#'   dimension (\code{"W_t"}/\code{"W_tm"} in several dimensions); a tibble of
+#'   layers (\code{"layers"}); a named list of label times (\code{"labels"});
+#'   or a list of all of these if \code{var} is omitted.
+#'
+#' @examples
+#' set.seed(1)
+#' bm <- create_bm(t = c(-1, 0, 1), W_t = c(100, 101, 99))
+#' bm |> sim(c(0.5, 2)) |> layers(0, 1, type = "bessel")
+#'
+#' bm[, "t"]
+#' bm[1, "W_t"]           # first point
+#' bm[t = 0.5, "W_t"]     # by time
+#' bm[t = 0:1, "W_t"]     # 0, 1 and all skeleton times in between
+#' bm["user", "t"]        # by label
+#' bm[, "labels"]
+#' bm[t = 0.25, "layers"] # layer containing a time not in the skeleton
+#' bm[2]                  # everything about the second point
+#' what <- "W_tm"
+#' bm[t = 0:1, what]      # var can be held in a variable
+#'
+#' # Multi-dimensional paths, and their transformed view
+#' bm2 <- create_bm(dim = 2, cov = matrix(c(1, 0.5, 0.5, 1), 2))
+#' bm2 |> sim(1:2)
+#' bm2[, "W_t"]
+#' bm2$Z[, "Z_t"]
+#' @aliases BrownianMotion-indexing
+#' @rdname indexing
 #' @export
-`[.BrownianMotion` <- function(bm, x = NULL, t = NULL) {
+`[.BrownianMotion` <- function(bm, i, var, t) {
+  # var is read from the call below; i and t are optional
+  x <- if(missing(i)) NULL else i
+  if(missing(t)) t <- NULL
   # Determine what variable has been requested (eg bm[1,"W_t"])
   # or is NA if not specified (eg bm[1])
-  var <- as.character(sys.call()[-1])[3]
+  var <- index_var_(sys.call(), parent.frame(), c("t", "W_t", "W_tm", "layers", "labels"))
 
   if(is.null(x)) {
     x <- 1:length(bm$t)
@@ -152,11 +217,15 @@
 
 
 
+#' @rdname indexing
 #' @export
-`[.BrownianMotionNd` <- function(bm, x = NULL, t = NULL) {
+`[.BrownianMotionNd` <- function(bm, i, var, t) {
+  # var is read from the call below; i and t are optional
+  x <- if(missing(i)) NULL else i
+  if(missing(t)) t <- NULL
   # Determine what variable has been requested (eg bm[1,"W_t"])
   # or is NA if not specified (eg bm[1])
-  var <- as.character(sys.call()[-1])[3]
+  var <- index_var_(sys.call(), parent.frame(), c("t", "W_t", "W_tm", "layers", "labels"))
 
   if(is.null(x)) {
     x <- 1:length(bm$Z.bm[[1]]$t)
@@ -341,13 +410,17 @@
 
 
 
+#' @rdname indexing
 #' @export
-`[.BrownianMotionNdZ` <- function(bm, x = NULL, t = NULL) {
+`[.BrownianMotionNdZ` <- function(bm, i, var, t) {
+  # var is read from the call below; i and t are optional
+  x <- if(missing(i)) NULL else i
+  if(missing(t)) t <- NULL
   bm <- bm[[1]]
 
   # Determine what variable has been requested (eg bm[1,"W_t"])
   # or is NA if not specified (eg bm[1])
-  var <- as.character(sys.call()[-1])[3]
+  var <- index_var_(sys.call(), parent.frame(), c("t", "Z_t", "Z_tm", "layers", "labels"))
 
   if(is.null(x)) {
     x <- 1:length(bm$Z.bm[[1]]$t)

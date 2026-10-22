@@ -70,3 +70,13 @@ bm |> first_passage(l = end - 2, u = end + 2, label = "exit")
 bm["exit", "t"]
 plot(bm)
 }
+\references{
+Devroye, L. (2009). On exact simulation algorithms for some distributions
+related to Jacobi theta functions. \emph{Statistics and Probability
+Letters}, 79, 2251--2259.
+
+Pollock, M., Fearnhead, P., Johansen, A.M. and Roberts, G.O. (2020).
+Quasi-stationary Monte Carlo methods and the ScaLE algorithm (with
+discussion). \emph{Journal of the Royal Statistical Society, Series B
+(Statistical Methodology)}, 82, 1--59.
+}

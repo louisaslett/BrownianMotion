@@ -23,6 +23,22 @@
 #' @param prefer indicates whether there is a preference for "bessel" or "intersection" layers where possible. If of length 1, then this specifies the preference for every dimension. If of length dim, then this specifies preference for each dimension (in order). By default uses the setting on creation of the Brownian motion object.
 #' @param label vector of length 1 or the length of t indicating the introduction of user specified labels (if any). By default, uses any names in the vector of times.
 #'
+#' @references
+#' Bessel layers: Beskos, A., Papaspiliopoulos, O. and Roberts, G.O. (2008). A
+#' factorisation of diffusion measure and finite sample path constructions.
+#' \emph{Methodology and Computing in Applied Probability}, 10, 85--104.
+#'
+#' Localised layers: Devroye, L. (2009). On exact simulation algorithms for
+#' some distributions related to Jacobi theta functions. \emph{Statistics and
+#' Probability Letters}, 79, 2251--2259; and Pollock, M., Fearnhead, P.,
+#' Johansen, A.M. and Roberts, G.O. (2020). Quasi-stationary Monte Carlo
+#' methods and the ScaLE algorithm (with discussion). \emph{Journal of the
+#' Royal Statistical Society, Series B (Statistical Methodology)}, 82, 1--59.
+#'
+#' Intersection layers: Pollock, M., Johansen, A.M. and Roberts, G.O. (2016).
+#' On the exact and \eqn{\varepsilon}-strong simulation of (jump) diffusions.
+#' \emph{Bernoulli}, 22(2), 794--856.
+#'
 #' @return The Brownian motion object \code{bm}, updated in place and returned
 #'   invisibly so that calls can be chained with pipes.
 #'

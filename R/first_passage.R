@@ -27,6 +27,16 @@
 #' @param delta.u provide bounds via the positive change in Brownian motion. May be specified together with \code{delta.l} to provide asymmetric first passage delta.
 #' @param label a user specified label for the first passage time created by this layer (optional).
 #'
+#' @references
+#' Devroye, L. (2009). On exact simulation algorithms for some distributions
+#' related to Jacobi theta functions. \emph{Statistics and Probability
+#' Letters}, 79, 2251--2259.
+#'
+#' Pollock, M., Fearnhead, P., Johansen, A.M. and Roberts, G.O. (2020).
+#' Quasi-stationary Monte Carlo methods and the ScaLE algorithm (with
+#' discussion). \emph{Journal of the Royal Statistical Society, Series B
+#' (Statistical Methodology)}, 82, 1--59.
+#'
 #' @return The Brownian motion object \code{bm}, updated in place and returned
 #'   invisibly so that calls can be chained with pipes.
 #'

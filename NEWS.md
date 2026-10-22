@@ -41,6 +41,12 @@
   `chol_inv` variables not being copied.
 * `plot()` of a multi-dimensional path, or of its `$Z` view, now works when
   the path has no layers.
+* The variable to extract when indexing can now be held in a variable, as in
+  `what <- "W_t"; bm[1, what]`; previously only a literal string worked, and
+  anything else (including indexing from inside a function) returned `NULL`.
+* Indexing now gives an error for calls that do not match `bm[i, var]` or
+  `bm[t = times, var]`, or for an unknown `var`, instead of returning `NULL`
+  or silently ignoring an index.
 * Indexing with three or more unsorted indices (e.g. `bm[c(2, 3, 1), "W_t"]`)
   now returns values in the requested order.
 * `delete_skeleton(type = "label")` now deletes only user labels; previously

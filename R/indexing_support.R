@@ -79,3 +79,27 @@ getWtmNd_ <- function(bm, i) {
   getZtmNd_(bm, i) %*% bm$chol
 }
 
+
+# Check the indices of a call bm[...] and return the requested variable, or NA
+# if none was given. The allowed forms are bm[i, var] and bm[t = times, var].
+index_var_ <- function(call, env, allowed) {
+  args <- as.list(call)[-(1:2)]
+  nms <- names(args)
+  if(is.null(nms)) {
+    nms <- rep("", length(args))
+  }
+  if(length(args) > 2) {
+    stop('too many indices: use bm[i, var] or bm[t = times, var]')
+  }
+  if(any(!(nms %in% c("", "t"))) || ("t" %in% nms && nms[1] != "t")) {
+    stop('times must be given by name as the first index, as in bm[t = 1.5, "W_t"], and other indices must not be named')
+  }
+  if(length(args) < 2 || identical(args[[2]], quote(expr = ))) {
+    return(NA_character_)
+  }
+  var <- eval(args[[2]], env)
+  if(!(is.character(var) && length(var) == 1 && var %in% allowed)) {
+    stop("var must be one of ", paste0('"', allowed, '"', collapse = ", "))
+  }
+  var
+}

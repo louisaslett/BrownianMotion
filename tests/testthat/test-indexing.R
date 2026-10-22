@@ -143,3 +143,49 @@ test_that("[ by unsorted indices returns every variable in request order", {
   expect_equal(nd$Z[idx, "Z_t"], all.Z[idx, , drop = FALSE])
   expect_equal(nd$Z[idx]$Z_t, all.Z[idx, , drop = FALSE])
 })
+
+test_that("[ evaluates var, so it can be held in a variable", {
+  # var used to be taken from the call unevaluated, so this returned NULL
+  withr::local_seed(42)
+  bm <- create_bm()
+  sim(bm, 1:3)
+  what <- "W_t"
+  expect_equal(bm[2, what], bm[2, "W_t"])
+  expect_equal(bm[t = 2, what], bm[t = 2, "W_t"])
+  get_var <- function(b, v) b[, v]
+  expect_equal(get_var(bm, "W_tm"), bm[, "W_tm"])
+  expect_equal(get_var(bm, "labels"), bm[, "labels"])
+
+  nd <- create_bm(dim = 2)
+  sim(nd, 1:2)
+  expect_equal(nd[t = 1, what], nd[t = 1, "W_t"])
+  zwhat <- "Z_t"
+  expect_equal(nd$Z[2, zwhat], nd$Z[2, "Z_t"])
+})
+
+test_that("[ rejects indices that do not match bm[i, var] or bm[t = times, var]", {
+  # These used to be silently ignored or return NULL
+  withr::local_seed(43)
+  bm <- create_bm()
+  sim(bm, 1:3)
+  expect_error(bm[1, "W_t", t = 2], "too many indices")
+  expect_error(bm[1, "W_t", 2], "too many indices")
+  expect_error(bm[1, t = 2], "times must be given by name as the first index")
+  expect_error(bm["W_t", t = 2], "times must be given by name as the first index")
+  expect_error(bm[i = 1, "W_t"], "other indices must not be named")
+  expect_error(bm[t = 2, 1], "var must be one of")
+  expect_error(bm[2, "foo"], 'var must be one of "t", "W_t", "W_tm", "layers", "labels"')
+  expect_error(bm[2, c("t", "W_t")], "var must be one of")
+
+  nd <- create_bm(dim = 2)
+  sim(nd, 1:2)
+  expect_error(nd[1, "W_t", t = 1], "too many indices")
+  expect_error(nd[2, "Z_t"], "var must be one of")
+  expect_error(nd$Z[1, "W_t"], 'var must be one of "t", "Z_t", "Z_tm", "layers", "labels"')
+  expect_error(nd$Z[1, t = 1], "times must be given by name as the first index")
+
+  # Valid forms with no var still return everything
+  expect_named(bm[2], c("t", "W_t", "W_tm", "layers", "labels"))
+  expect_named(bm[t = 2], c("t", "W_t", "W_tm", "layers", "labels"))
+  expect_named(bm[2, ], c("t", "W_t", "W_tm", "layers", "labels"))
+})
