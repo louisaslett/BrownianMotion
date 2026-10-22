@@ -28,22 +28,3 @@ test_that("intersection layers on an interval with equal endpoint values termina
   expect_valid_bm(bm)
 })
 
-test_that("plot() of an N-d path without layers builds", {
-  skip("Suspected bug: plot.BrownianMotionNd/NdZ error when there are no layers")
-  withr::local_seed(1)
-  bm <- local_bm_nd(2)
-  sim(bm, 1:2)
-  expect_plot_ok(plot(bm))
-  expect_plot_ok(plot(bm$Z))
-})
-
-test_that("concat_bm() of N-d objects returns a fully formed BrownianMotionNd", {
-  skip("Suspected bug: concat_bm.BrownianMotionNd() omits cov, chol.inv and Z")
-  withr::local_seed(1)
-  bm <- local_bm_nd(2)
-  sim(bm, 1:2)
-  cc <- concat_bm(bm, bm)
-  expect_equal(cc$cov, bm$cov)
-  expect_s3_class(cc$Z, "BrownianMotionNdZ")
-  expect_no_error(add_points(cc, 10, c(0, 0)))
-})

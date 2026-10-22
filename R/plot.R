@@ -148,7 +148,7 @@ plot.BrownianMotionNd <- function(x, y, ...) {
   #path.2d <- bm[t=max(t[t <= t.lim[1]]):min(t[t > t.lim[2]]),]
   path.2d <- bm[t=t.lim[1]:t.lim[2],]
   # FIXME
-  for(iii in 1:length(path.2d$layers$inner.cube)) {
+  for(iii in seq_along(path.2d$layers$inner.cube)) {
     path.2d$layers$inner.cube[[iii]] <- unname(path.2d$layers$inner.cube[[iii]])
   }
   not.na <- !is.na(path.2d$W_t[,1])
@@ -247,8 +247,8 @@ plot.BrownianMotionNdZ <- function(x, y, ...) {
   path.2d <- bm$Z[t=t.lim[1]:t.lim[2],]
   not.na <- !is.na(path.2d$Z_t[,1])
   path.2d$t <- path.2d$t[not.na]
-  path.2d$W_t <- path.2d$Z_t[not.na,]
-  path.2d$W_tm <- path.2d$Z_tm[not.na,]
+  path.2d$W_t <- path.2d$Z_t[not.na,,drop = FALSE]
+  path.2d$W_tm <- path.2d$Z_tm[not.na,,drop = FALSE]
   # Correct inclusion of layers at the right end of interval
   # path.2d$layers <- path.2d$layers[path.2d$layers$t.l < t.lim[2],]
 
@@ -269,6 +269,8 @@ plot.BrownianMotionNdZ <- function(x, y, ...) {
       warning("an interval within the plot time limits requested has no layer information, so all layers suppressed on 2D plots.")
       show.layers <- FALSE
     }
+  } else {
+    show.layers <- FALSE
   }
 
   # Pairs or not

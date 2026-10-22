@@ -36,7 +36,9 @@ concat_bm.BrownianMotionNd <- function(..., t0 = NULL) {
   res <- new.env(parent = emptyenv())
   class(res) <- "BrownianMotionNd"
   res$dim <- bms[[1]]$dim
+  res$cov <- bms[[1]]$cov
   res$chol <- bms[[1]]$chol
+  res$chol.inv <- bms[[1]]$chol.inv
 
   if(!all(sapply(bms, function(bm) { bm$dim == res$dim }))) {
     stop("All arguments must be the same dimension")
@@ -53,6 +55,9 @@ concat_bm.BrownianMotionNd <- function(..., t0 = NULL) {
       res$Z.bm[[d]] <- concat_bm(lapply(bms, function(bm) { bm$Z.bm[[d]] }), t0 = t0)
     }
   }
+  # Dummy for accessing untransformed path, as in create_bm()
+  res$Z <- list(res)
+  class(res$Z) <- "BrownianMotionNdZ"
 
   res
 }

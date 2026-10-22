@@ -101,3 +101,21 @@ test_that("plot() of a concatenated N-d path builds", {
   layers(bm, 0, 2)
   expect_plot_ok(plot(concat_bm(bm, bm, t0 = 5)))
 })
+
+test_that("N-d and Z plots build when there are no layers", {
+  # Previously plot() errored on N-d paths without layers ("subscript out of
+  # bounds") and plot(bm$Z) failed with "object 'show.layers' not found".
+  withr::local_seed(62)
+  for (times in list(NULL, 1, 1:3)) {
+    bm <- create_bm(dim = 3, cov = c(1, 2, 3))
+    if (!is.null(times)) sim(bm, times)
+    expect_plot_ok(plot(bm))
+    expect_plot_ok(plot(bm$Z))
+    expect_plot_ok(plot(bm, dims = 2))
+    expect_plot_ok(plot(bm, pairs = FALSE))
+    expect_plot_ok(plot(bm$Z, pairs = FALSE))
+    expect_plot_ok(plot(bm, layers.2d = "detailed"))
+  }
+  skip_if_not_installed("sf")
+  expect_plot_ok(plot(bm, layers.2d = "union"))
+})

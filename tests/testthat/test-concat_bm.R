@@ -142,3 +142,31 @@ test_that("draws just before a concat_bm() join follow the Brownian bridge law",
   expect_lt(abs(mean(d) - q), 4 * s / sqrt(length(d)))
   expect_equal(stats::sd(d), s, tolerance = 0.35) # pre-fix sd was about 7x too large
 })
+
+test_that("concat_bm() of N-d objects gives a fully formed BrownianMotionNd", {
+  # Previously the result lacked cov, chol.inv and the Z view, so bm$Z,
+  # add_points() and add_segment() failed on it.
+  withr::local_seed(61)
+  cov <- matrix(c(1, 0.6, 0.6, 2), 2)
+  bm <- create_bm(dim = 2, cov = cov)
+  sim(bm, 1:2)
+  for (cc in list(concat_bm(bm), concat_bm(bm, bm), concat_bm(bm, t0 = 5))) {
+    expect_setequal(ls(cc, all.names = TRUE), ls(bm, all.names = TRUE))
+    expect_equal(cc$cov, cov)
+    expect_equal(cc$chol.inv, solve(chol(cov)))
+    expect_s3_class(cc$Z, "BrownianMotionNdZ")
+    expect_identical(cc$Z[[1]], cc)
+    n <- nrow(bm[, "W_t"])
+    # Original path survives (left limits, since the join itself is a jump)
+    expect_equal(cc[1:n, "W_tm"], bm[, "W_tm"])
+    expect_equal(cc$Z[1:n, "Z_tm"], bm$Z[, "Z_tm"])
+    expect_valid_bm_nd(cc)
+  }
+  cc <- concat_bm(bm, bm)
+  add_points(cc, 10, c(1, -1))
+  expect_equal(cc[t = 10, "W_t"], matrix(c(1, -1), 1))
+  add_segment(cc, l = 10, W_t = c(3, 4))
+  expect_equal(cc[t = 10, "W_t"], matrix(c(3, 4), 1))
+  sim(cc, 11)
+  expect_valid_bm_nd(cc)
+})

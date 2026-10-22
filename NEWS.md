@@ -36,6 +36,11 @@
   rather than before it, giving draws outside the layer bounds.
 * `add_segment()` now moves the bounds of localised bridge layers by the
   correct amount.
+* `concat_bm()` of multi-dimensional paths now returns a complete object;
+  previously `bm$Z`, `add_points()` and `add_segment()` failed due to `cov` and
+  `chol_inv` variables not being copied.
+* `plot()` of a multi-dimensional path, or of its `$Z` view, now works when
+  the path has no layers.
 * Indexing with three or more unsorted indices (e.g. `bm[c(2, 3, 1), "W_t"]`)
   now returns values in the requested order.
 * `delete_skeleton(type = "label")` now deletes only user labels; previously
