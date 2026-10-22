@@ -27,11 +27,24 @@
 #' @param delta.u provide bounds via the positive change in Brownian motion. May be specified together with \code{delta.l} to provide asymmetric first passage delta.
 #' @param label a user specified label for the first passage time created by this layer (optional).
 #'
-#' @return
-#' The Brownian motion object which was passed in argument \code{bm} is
-#' updated in place and returned, enabling chaining of commands with
-#' dplyr (and other) style pipes.
+#' @return The Brownian motion object \code{bm}, updated in place and returned
+#'   invisibly so that calls can be chained with pipes.
 #'
+#' @examples
+#' set.seed(1)
+#' bm <- create_bm()
+#'
+#' # First time the path moves 1 away from its current end point
+#' bm |> first_passage(delta = 1)
+#'
+#' # Asymmetric limits, given relative to the end point...
+#' bm |> first_passage(delta.l = -1, delta.u = 3)
+#'
+#' # ... or as absolute levels, with a label on the passage time
+#' end <- bm["end", "W_t"]
+#' bm |> first_passage(l = end - 2, u = end + 2, label = "exit")
+#' bm["exit", "t"]
+#' plot(bm)
 #' @export
 first_passage <- function(bm, l = NULL, u = NULL, delta.l = NULL, delta.u = NULL, delta = NULL, label = NULL) {
   if("BrownianMotionNd" %in% class(bm)) {

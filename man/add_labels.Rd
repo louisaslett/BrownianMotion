@@ -7,13 +7,33 @@
 add_labels(bm, t, label = names(t))
 }
 \arguments{
-\item{bm}{a Brownian motion object from which simulation should continue.
+\item{bm}{a Brownian motion object.
 Note the object is updated in place}
 
-\item{t}{vector of fixed times of the Brownian motion.}
+\item{t}{vector of times in the skeleton to label.}
 
 \item{label}{vector of length 1 or the length of t indicating the introduction of user specified labels (if any). By default, uses any names in the vector of times.}
 }
+\value{
+The Brownian motion object \code{bm}, updated in place and returned
+  invisibly so that calls can be chained with pipes.
+}
 \description{
-Description of adding labels
+Attaches user labels to times already in the skeleton. Labelled times can
+then be used for indexing, e.g. \code{bm["mylabel", "W_t"]}. A time can
+carry several labels, and the names used internally by the package (such as
+\code{"start"}, \code{"end"} and \code{"user"}) cannot be used.
+}
+\examples{
+set.seed(1)
+bm <- create_bm()
+bm |> sim(1:4)
+
+bm |> add_labels(t = c(1, 3), label = "odd")
+bm |> add_labels(t = c(peak = 2))  # names of t give the labels
+bm["odd", "t"]
+bm[, "labels"]
+}
+\seealso{
+\code{\link{delete_labels}}
 }

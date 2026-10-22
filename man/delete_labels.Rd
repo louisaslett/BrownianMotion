@@ -7,13 +7,32 @@
 delete_labels(bm, t = NA, label = NA)
 }
 \arguments{
-\item{bm}{a Brownian motion object from which simulation should continue.
+\item{bm}{a Brownian motion object.
 Note the object is updated in place}
 
-\item{t}{vector of fixed times of the Brownian motion.}
+\item{t}{vector of times in the skeleton from which to remove labels.}
 
-\item{label}{vector of length 1 or the length of t indicating the introduction of user specified labels (if any). By default, uses any names in the vector of times.}
+\item{label}{vector of user labels to remove.}
+}
+\value{
+The Brownian motion object \code{bm}, updated in place and returned
+  invisibly so that calls can be chained with pipes.
 }
 \description{
-Description of deleting labels
+Removes user labels. Give \code{label} alone to remove those labels from all
+times, \code{t} alone to remove all user labels from those times, or both to
+remove those labels from those times only. Labels used internally by the
+package cannot be deleted.
+}
+\examples{
+set.seed(1)
+bm <- create_bm()
+bm |> sim(c(a = 1, b = 2, a = 3))
+
+bm |> delete_labels(t = 3, label = "a")  # "a" remains at t = 1
+bm |> delete_labels(label = "b")         # "b" removed everywhere
+bm[, "labels"]
+}
+\seealso{
+\code{\link{add_labels}}
 }

@@ -1,12 +1,28 @@
 #' Manually add labels after simulation
 #'
-#' Description of adding labels
+#' Attaches user labels to times already in the skeleton. Labelled times can
+#' then be used for indexing, e.g. \code{bm["mylabel", "W_t"]}. A time can
+#' carry several labels, and the names used internally by the package (such as
+#' \code{"start"}, \code{"end"} and \code{"user"}) cannot be used.
 #'
-#' @param bm a Brownian motion object from which simulation should continue.
+#' @param bm a Brownian motion object.
 #'   Note the object is updated in place
-#' @param t vector of fixed times of the Brownian motion.
+#' @param t vector of times in the skeleton to label.
 #' @param label vector of length 1 or the length of t indicating the introduction of user specified labels (if any). By default, uses any names in the vector of times.
 #'
+#' @return The Brownian motion object \code{bm}, updated in place and returned
+#'   invisibly so that calls can be chained with pipes.
+#'
+#' @examples
+#' set.seed(1)
+#' bm <- create_bm()
+#' bm |> sim(1:4)
+#'
+#' bm |> add_labels(t = c(1, 3), label = "odd")
+#' bm |> add_labels(t = c(peak = 2))  # names of t give the labels
+#' bm["odd", "t"]
+#' bm[, "labels"]
+#' @seealso \code{\link{delete_labels}}
 #' @export
 add_labels <- function(bm, t, label = names(t)) {
   UseMethod("add_labels")
@@ -47,13 +63,28 @@ add_labels.BrownianMotion <- function(bm, t, label = names(t)) {
 
 #' Manually delete labels after simulation
 #'
-#' Description of deleting labels
+#' Removes user labels. Give \code{label} alone to remove those labels from all
+#' times, \code{t} alone to remove all user labels from those times, or both to
+#' remove those labels from those times only. Labels used internally by the
+#' package cannot be deleted.
 #'
-#' @param bm a Brownian motion object from which simulation should continue.
+#' @param bm a Brownian motion object.
 #'   Note the object is updated in place
-#' @param t vector of fixed times of the Brownian motion.
-#' @param label vector of length 1 or the length of t indicating the introduction of user specified labels (if any). By default, uses any names in the vector of times.
+#' @param t vector of times in the skeleton from which to remove labels.
+#' @param label vector of user labels to remove.
 #'
+#' @return The Brownian motion object \code{bm}, updated in place and returned
+#'   invisibly so that calls can be chained with pipes.
+#'
+#' @examples
+#' set.seed(1)
+#' bm <- create_bm()
+#' bm |> sim(c(a = 1, b = 2, a = 3))
+#'
+#' bm |> delete_labels(t = 3, label = "a")  # "a" remains at t = 1
+#' bm |> delete_labels(label = "b")         # "b" removed everywhere
+#' bm[, "labels"]
+#' @seealso \code{\link{add_labels}}
 #' @export
 delete_labels <- function(bm, t = NA, label = NA) {
   UseMethod("delete_labels")

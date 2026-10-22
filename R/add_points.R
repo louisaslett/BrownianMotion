@@ -4,10 +4,23 @@
 #'
 #' @param bm a Brownian motion object from which simulation should continue.
 #'   Note the object is updated in place
-#' @param t vector of fixed times of the Brownian motion.  Defaults to value of 0.
-#' @param W_t matrix of size the length of t (rows) x dimension (column). If dim = 1, a vector of the length of t is acceptable. If dim > 1 and the length of t = 1, then a vector of length 1 is acceptable (corresponding to the same value at every co-ordinate), or length d is acceptable (corresponding to the d components). Defaults to 0 for every component.
+#' @param t vector of times at which to fix the Brownian motion.
+#' @param W_t matrix of size the length of t (rows) x dimension (column). If dim = 1, a vector of the length of t is acceptable. If dim > 1 and the length of t = 1, then a vector of length 1 is acceptable (corresponding to the same value at every co-ordinate), or length d is acceptable (corresponding to the d components).
 #' @param label vector of length 1 or the length of t indicating the introduction of user specified labels (if any). By default, uses any names in the vector of times.
 #'
+#' @return The Brownian motion object \code{bm}, updated in place and returned
+#'   invisibly so that calls can be chained with pipes.
+#'
+#' @examples
+#' # Force the path through W_0 = 101 and W_1 = 99 (a Brownian bridge)
+#' bm <- create_bm(-1, 100)
+#' bm |> add_points(c(0, 1), c(101, 99))
+#' bm[, "W_t"]
+#'
+#' # In several dimensions, give one value per component
+#' bm3 <- create_bm(dim = 3)
+#' bm3 |> add_points(t = 1, W_t = c(-1, 0, 1))
+#' bm3[t = 1, "W_t"]
 #' @export
 add_points <- function(bm, t, W_t, label = names(t)) {
   UseMethod("add_points")

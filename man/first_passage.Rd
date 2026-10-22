@@ -31,9 +31,8 @@ Note the object is updated in place.}
 \item{label}{a user specified label for the first passage time created by this layer (optional).}
 }
 \value{
-The Brownian motion object which was passed in argument \code{bm} is
-updated in place and returned, enabling chaining of commands with
-dplyr (and other) style pipes.
+The Brownian motion object \code{bm}, updated in place and returned
+  invisibly so that calls can be chained with pipes.
 }
 \description{
 Finds the first passage time of a Brownian motion object to a specified lower,
@@ -54,4 +53,20 @@ between the endpoint and the ultimate first passage, resulting in implicit impos
 of nested constraints.  When plotting a Brownian motion these are visible as dashed
 red lines nested within the solid red line constraint imposed by the overall first
 passage simulation.
+}
+\examples{
+set.seed(1)
+bm <- create_bm()
+
+# First time the path moves 1 away from its current end point
+bm |> first_passage(delta = 1)
+
+# Asymmetric limits, given relative to the end point...
+bm |> first_passage(delta.l = -1, delta.u = 3)
+
+# ... or as absolute levels, with a label on the passage time
+end <- bm["end", "W_t"]
+bm |> first_passage(l = end - 2, u = end + 2, label = "exit")
+bm["exit", "t"]
+plot(bm)
 }

@@ -1,5 +1,11 @@
 #' Create / move a segment
 #'
+#' Shifts the part of the path over \code{[l, r)} by a constant amount,
+#' introducing a discontinuity (jump) at \code{l} and/or \code{r}. The shift is
+#' given either directly by \code{delta}, or by the value \code{W_t} that the
+#' path should take at time \code{l}. Layers in the interval are moved with the
+#' path.
+#'
 #' @param bm a Brownian motion object from which simulation should continue.
 #'   Note the object is updated in place
 #' @param l closed left end of interval to add a segment.  By default, `-Inf` which
@@ -8,9 +14,25 @@
 #'     results in the introduction of a segment by shifting the entire path from `l`
 #' @param W_t vector of length the dimension of the Brownian motion specifying the coordinate of the Brownian motion at the time l (specified by the user). A vector of length 1 is acceptable (corresponding to the same value at every co-ordinate). Defaults to NULL, meaning this argument is ignored in favor of delta.
 #' @param delta vector of length the dimension of the Brownian motion specifying the shift of the Brownian motion at the time l (specified by the user). A vector of length 1 is acceptable (corresponding to the same shift for every co-ordinate). Defaults to NULL, meaning this argument is ignored in favor of W_t.
-#' @param label vector of length 1 or the length of t indicating the introduction of user specified labels (if any). By default, uses any names in the vector of times.
+#' @param label optional user label to attach to the start and end times of the
+#'   segment.
 #'
+#' @return The Brownian motion object \code{bm}, updated in place and returned
+#'   invisibly so that calls can be chained with pipes.
 #'
+#' @examples
+#' set.seed(1)
+#' bm <- create_bm()
+#' bm |> sim(1:5)
+#'
+#' # Move the path over [2, 4) up by 3, giving jumps at t = 2 and t = 4
+#' bm |> add_segment(l = 2, r = 4, delta = 3)
+#'
+#' # Jump to W_5 = 0 and carry on from there
+#' bm |> add_segment(l = 5, W_t = 0) |> sim(6)
+#' bm[, "W_t"]
+#' bm[, "W_tm"]  # left limits, which differ from W_t at the jumps
+#' plot(bm)
 #' @export
 add_segment <- function(bm, l = -Inf, r = Inf, W_t = NULL, delta = NULL, label = NULL) {
   UseMethod("add_segment")

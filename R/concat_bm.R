@@ -1,9 +1,32 @@
 #' Copy / Concatenate Brownian motion objects
 #'
-#' @param ... multiple Brownian motion objects which will be concatenated together in the order provided into a new BrownianMotion object.
-#'   Note the object is updated in place
+#' Joins Brownian motion objects end to end, in the order given, into a new
+#' object. Each path after the first is shifted in time to start where the
+#' previous one ends, keeping its own values, so there is in general a jump at
+#' each join. Given a single object, this returns a copy of it, which is the way
+#' to duplicate a path: plain assignment (\code{bm2 <- bm}) only creates a second
+#' reference to the same object.
+#'
+#' @param ... Brownian motion objects to concatenate, all of the same dimension
+#'   and covariance. The objects passed in are not modified.
 #' @param t0 scalar representing the time the new Brownian motion should be initialised.  Defaults to value of initial time of the first Brownian motion object to be concatenated.
 #'
+#' @return A new Brownian motion object of the same class as the inputs.
+#'
+#' @examples
+#' set.seed(1)
+#' bm <- create_bm()
+#' bm |> sim(1:3)
+#'
+#' # A copy, which can be extended without changing bm
+#' bm.copy <- concat_bm(bm)
+#' bm.copy |> sim(10)
+#' bm[, "t"]
+#'
+#' # Two copies end to end, starting at t = 5
+#' bm2 <- concat_bm(bm, bm, t0 = 5)
+#' bm2[, "t"]
+#' plot(bm2)
 #' @export
 concat_bm <- function(..., t0 = NULL) {
   bms <- list(...)

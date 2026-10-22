@@ -19,6 +19,22 @@ results in right truncation of the path from `l`}
 \item{type}{one of `"all"`, `"layer"` or `"label"` to specify whether to delete both path
 observations and layers, just layers, or just user labels in the interval}
 }
+\value{
+The Brownian motion object \code{bm}, updated in place and returned
+  invisibly so that calls can be chained with pipes.
+}
 \description{
 Eliminate parts of path, layer or both from the skeleton
+}
+\examples{
+set.seed(1)
+bm <- create_bm()
+bm |> sim(1:6) |> layers(0, 6, type = "bessel")
+
+# Remove only the layers over [2, 4)
+bm |> delete_skeleton(l = 2, r = 4, type = "layer")
+
+# Remove everything after t = 5
+bm |> delete_skeleton(l = 5)
+bm[, "t"]
 }

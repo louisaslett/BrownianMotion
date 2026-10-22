@@ -1,4 +1,8 @@
-#' Refine an intersection layer
+#' Refine layers
+#'
+#' Tightens the bounds of every layer which overlaps the interval
+#' \code{(s, t)}, without adding points to the skeleton. All layer types
+#' (Bessel, intersection and localised) can be refined.
 #'
 #' @param bm a Brownian motion object from which simulation should continue.
 #'   Note the object is updated in place
@@ -8,6 +12,18 @@
 #'   this by specifying the \code{mult} argument which will result in layer
 #'   sizes of \code{mult*sqrt(t-s)}. By default uses the setting on creation of the Brownian motion object.
 #'
+#' @return The Brownian motion object \code{bm}, updated in place and returned
+#'   invisibly so that calls can be chained with pipes.
+#'
+#' @examples
+#' set.seed(1)
+#' bm <- create_bm()
+#' bm |> sim(1:3) |> layers(0, 3, type = "bessel")
+#' bm[, "layers"]
+#'
+#' # Tighten all layers over [0, 3]
+#' bm |> refine(0, 3, mult = 0.2)
+#' bm[, "layers"]
 #' @export
 refine <- function(bm, s, t, mult = bm$mult) {
 #refine <- function(bm, s, t, mult = ifelse(bm$sp.refine, bm$sp.refine, 1)) {

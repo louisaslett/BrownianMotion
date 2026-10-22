@@ -1,9 +1,15 @@
 #' Construct new layers
 #'
-#' TODO UPDATE ME
-#' Performs unbiased simulation of the smallest specified layers which contain the
-#' Brownian motion between two known sample points by retrospective Bernoulli
-#' sampling and inversion sampling.
+#' Simulates layers (bounds which contain the Brownian motion path) for each
+#' interval between consecutive skeleton times in \code{[s, t]}. If \code{s} or
+#' \code{t} are not already in the skeleton, they are simulated first.
+#'
+#' Three types of layer are available. \code{"bessel"} and
+#' \code{"intersection"} layers are simulated exactly by retrospective Bernoulli
+#' sampling and inversion sampling, and existing layers of either of these types
+#' in \code{[s, t]} are converted to the requested type where possible.
+#' \code{"localised"} layers are obtained by simulating first passage times, and
+#' are only added to intervals which do not already have a layer.
 #'
 #' @param bm a Brownian motion object from which simulation should continue.
 #'   Note the object is updated in place
@@ -17,11 +23,22 @@
 #' @param prefer indicates whether there is a preference for "bessel" or "intersection" layers where possible. If of length 1, then this specifies the preference for every dimension. If of length dim, then this specifies preference for each dimension (in order). By default uses the setting on creation of the Brownian motion object.
 #' @param label vector of length 1 or the length of t indicating the introduction of user specified labels (if any). By default, uses any names in the vector of times.
 #'
-#' @return
-#' The Brownian motion object which was passed in argument \code{bm} is
-#' updated in place and returned, enabling chaining of commands with
-#' dplyr (and other) style pipes.
+#' @return The Brownian motion object \code{bm}, updated in place and returned
+#'   invisibly so that calls can be chained with pipes.
 #'
+#' @examples
+#' set.seed(1)
+#' bm <- create_bm()
+#' bm |> sim(c(1, 2, 4))
+#'
+#' # Bessel layers over [0, 2], then [2, 3]: t = 3 is not yet in the skeleton,
+#' # so it is simulated first
+#' bm |> layers(0, 2, type = "bessel") |> layers(2, 3)
+#'
+#' # Localised layers, which may extend the path past its current end
+#' bm |> layers(4, 6, type = "localised")
+#' bm[, "layers"]
+#' plot(bm)
 #' @export
 layers <- function(bm, s, t, type = bm$prefer, refine = bm$refine, mult = bm$mult, prefer = bm$prefer, label = c(names(s), names(t))) {
   UseMethod("layers")

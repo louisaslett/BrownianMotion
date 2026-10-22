@@ -35,12 +35,27 @@ specified at the time of creation of \code{bm}.}
 \item{label}{vector of length 1 or the length of t indicating the introduction of user specified labels (if any). By default, uses any names in the vector of times.}
 }
 \value{
-the Brownian motion object which was passed in argument \code{bm} is
-  updated in place and returned, enabling chaining of commands with
-  dplyr (and other) style pipes.
+The Brownian motion object \code{bm}, updated in place and returned
+  invisibly so that calls can be chained with pipes.
 }
 \description{
 Simulates Brownian motion at chosen times, automatically applying the correct
 algorithm to condition on the current known (ie previously simulated) states
 of the trajectory.
+}
+\examples{
+set.seed(1)
+bm <- create_bm()
+
+# Simulate forwards in time, then fill in between existing points
+bm |> sim(c(1, 2, 3)) |> sim(c(0.5, 1.5))
+bm[, "t"]
+
+# Times given names are labelled
+bm |> sim(c(special = 4))
+bm["special", "W_t"]
+
+# Simulation inside a layer conditions on the layer bounds
+bm |> layers(1, 2, type = "bessel") |> sim(1.25)
+plot(bm)
 }

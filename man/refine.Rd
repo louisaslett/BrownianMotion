@@ -2,7 +2,7 @@
 % Please edit documentation in R/refine.R
 \name{refine}
 \alias{refine}
-\title{Refine an intersection layer}
+\title{Refine layers}
 \usage{
 refine(bm, s, t, mult = bm$mult)
 }
@@ -18,6 +18,22 @@ Note the object is updated in place}
 this by specifying the \code{mult} argument which will result in layer
 sizes of \code{mult*sqrt(t-s)}. By default uses the setting on creation of the Brownian motion object.}
 }
+\value{
+The Brownian motion object \code{bm}, updated in place and returned
+  invisibly so that calls can be chained with pipes.
+}
 \description{
-Refine an intersection layer
+Tightens the bounds of every layer which overlaps the interval
+\code{(s, t)}, without adding points to the skeleton. All layer types
+(Bessel, intersection and localised) can be refined.
+}
+\examples{
+set.seed(1)
+bm <- create_bm()
+bm |> sim(1:3) |> layers(0, 3, type = "bessel")
+bm[, "layers"]
+
+# Tighten all layers over [0, 3]
+bm |> refine(0, 3, mult = 0.2)
+bm[, "layers"]
 }

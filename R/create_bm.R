@@ -10,9 +10,26 @@
 #' @param refine indicates whether refinement should be by default carried out. If of length 1, then this specifies refinement for every dimension. If of length dim, then this specifies refinement for each dimension (in order).
 #' @param mult set the default mult parameter to be used for any layer operations on this path, including for the level of refinement if \code{refine=TRUE}.
 #' @param prefer indicates whether there is a preference for "bessel" or "intersection" layers where possible. If of length 1, then this specifies the preference for every dimension. If of length dim, then this specifies preference for each dimension (in order).
-#' create_bm(....., refine = TRUE)
-#' create_bm(....., refine = FALSE)
-#' create_bm(....., refine = list(spatial = TRUE, temporal = FALSE))
+#'
+#' @return A new Brownian motion object: of class \code{BrownianMotion} when
+#'   \code{dim = 1}, or \code{BrownianMotionNd} otherwise. The object is an
+#'   environment, so functions which modify it (such as \code{\link{sim}})
+#'   update it in place; use \code{\link{concat_bm}} to take a copy.
+#'
+#' @examples
+#' # Standard Brownian motion started at W_0 = 0
+#' bm <- create_bm()
+#'
+#' # A path started at W_{-1} = 100 and forced through two further points
+#' bm <- create_bm(t = c(-1, 0, 1), W_t = c(100, 101, 99))
+#' bm[, "W_t"]
+#'
+#' # Three-dimensional Brownian motion with correlated components
+#' bm3 <- create_bm(dim = 3, cov = diag(0.5, 3) + 0.5)
+#' bm3$cov
+#'
+#' # Independent components with different variances
+#' bm2 <- create_bm(dim = 2, cov = c(1, 4))
 #' @export
 create_bm <- function(t = 0, W_t = 0, dim = 1, cov = 1, refine = TRUE, mult = 1, prefer = "bessel") {
   # t checks

@@ -19,10 +19,24 @@
 #'   specified at the time of creation of \code{bm}.
 #' @param label vector of length 1 or the length of t indicating the introduction of user specified labels (if any). By default, uses any names in the vector of times.
 #'
-#' @return the Brownian motion object which was passed in argument \code{bm} is
-#'   updated in place and returned, enabling chaining of commands with
-#'   dplyr (and other) style pipes.
+#' @return The Brownian motion object \code{bm}, updated in place and returned
+#'   invisibly so that calls can be chained with pipes.
 #'
+#' @examples
+#' set.seed(1)
+#' bm <- create_bm()
+#'
+#' # Simulate forwards in time, then fill in between existing points
+#' bm |> sim(c(1, 2, 3)) |> sim(c(0.5, 1.5))
+#' bm[, "t"]
+#'
+#' # Times given names are labelled
+#' bm |> sim(c(special = 4))
+#' bm["special", "W_t"]
+#'
+#' # Simulation inside a layer conditions on the layer bounds
+#' bm |> layers(1, 2, type = "bessel") |> sim(1.25)
+#' plot(bm)
 #' @export
 sim <- function(bm, t, refine = bm$refine, mult = bm$mult, prefer = bm$prefer, label = names(t)) {
   UseMethod("sim")
