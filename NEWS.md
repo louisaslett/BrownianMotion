@@ -56,6 +56,8 @@
   now returns values in the requested order.
 * `delete_skeleton(type = "label")` now deletes only user labels; previously
   it also deleted the layers in the interval.
+* `refine()` now checks its arguments. Previously a `mult` of zero or less made
+  it loop forever, and invalid `s` or `t` silently did nothing.
 * `create_bm()` now rejects non-numeric and non-finite `t`, `W_t` and `cov`
   with a clear error, rather than failing later.
 * Times and values in a path no longer pick up stray names (e.g. `q`) from

@@ -45,7 +45,18 @@ refine.BrownianMotionNd <- function(bm, ...) {
 
 #' @export
 refine.BrownianMotion <- function(bm, s, t, mult = bm$mult) {
-  # TODO: tidy up and add error handling, this is a quick prototype
+  if(!("BrownianMotion" %in% class(bm))) {
+    stop("bm argument must be a BrownianMotion object.")
+  }
+  if(anyNA(c(s, t, mult)) || !is.realscalar(s) || !is.realscalar(t) || !is.realscalar(mult)) {
+    stop("s, t and mult must be real scalars.")
+  }
+  if(s >= t) {
+    stop("s must be less than t.")
+  }
+  if(!is.finite(mult) || mult <= 0) {
+    stop("mult must be strictly positive and finite.")
+  }
 
   lyrs <- which(bm$layers$t.u > s & bm$layers$t.l<t)
   for(l in lyrs) {
