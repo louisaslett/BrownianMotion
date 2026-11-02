@@ -21,6 +21,10 @@
 #'   \item{Editing a path}{\code{\link{add_segment}},
 #'     \code{\link{delete_skeleton}}, \code{\link{concat_bm}}}
 #'   \item{Labels}{\code{\link{add_labels}}, \code{\link{delete_labels}}}
+#'   \item{Inspecting a path}{\code{\link[=print.BrownianMotion]{print}},
+#'     \code{\link[=summary.BrownianMotion]{summary}},
+#'     \code{\link[=plot.BrownianMotion]{plot}} and
+#'     \code{\link[=BrownianMotion-indexing]{indexing}}}
 #' }
 #'
 #' @section Layer types:

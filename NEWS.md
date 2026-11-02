@@ -26,6 +26,20 @@
 
 ## New features
 
+* New `print()` methods for Brownian motion objects (one and several
+  dimensions, and the transformed view `bm$Z`). Printing a path now gives an
+  overview of its skeleton, layers, jumps and labels, followed by a table of
+  its points showing how each arose and the layer and bounds over the
+  interval to the next point, in place of the bare environment. Long paths
+  show only their first and last points; see `?print.BrownianMotion` for the
+  `n`, `digits` and `width` arguments. Matching `format()` methods return the
+  same output as a character vector.
+* New `summary()` methods, which report the time range and spacing of the
+  skeleton, the start, end and extremes of the path, any jumps and labels,
+  the layers of each type with the time they cover, any gaps between layers
+  and the bounds which contain the whole path over the layered time, and the
+  default settings. The summary is a list, so these values can also be used
+  programmatically (see `?summary.BrownianMotion`).
 * `create_bm()` accepts `cov` as a vector of length `dim`, giving a diagonal
   covariance matrix (as described in the tutorial vignette).
 

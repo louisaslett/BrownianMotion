@@ -197,6 +197,18 @@ bm |> sim(bm["end", "t"] + rexp(1, bm["end", "W_t"]/10))
 plot(bm)
 ```
 
+Finally, for a quick overview of everything above, simply print the path. This lists the skeleton points (only the first and last few, for a long path), together with how each point arose (`fixed` for forced points, `sim` for simulated ones, and `passage` for first passage times, which we meet in [Layers](#layers)), any layer over the interval to the next point, and any user labels:
+
+```{r}
+bm
+```
+
+while `summary()` reports the time range and spacing of the skeleton, the extremes of the path, and the layers, jumps, labels and default settings:
+
+```{r}
+summary(bm)
+```
+
 ## Manipulating and existing skeleton
 
 Having initialised the path at $W_{-1}=100$ we may naturally wish to simulate a time prior to the time the path was intisialised. Simulating prior to the initialised time is ambiguous once the path also includes `layers` (see [Layers, layers, everywhere!](#layers)). As a result, directly using the `sim()` function (for instance, simulating the path at time $t=-2$) will result in an error:
